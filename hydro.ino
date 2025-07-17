@@ -1,8 +1,14 @@
 // A0 -> Flammable Gas 
 // A1 -> TDS
-#include "Adafruit_BMP085.h"    // For BMP180 Air Pressure Sensor
+#define TDS_PIN A1
+#define FLG_PIN A0
+#define PH_PIN A5
+
+#include "Adafruit_BMP085.h"    // BMP180 Air Pressure Sensor
+#include "DFRobot_PH.h"         // DFTRobot Analog pH Sensor 
 
 Adafruit_BMP085 bmp;
+DFRobot_PH ph;
 
 void setup() {
   // put your setup code here, to run once:
@@ -15,9 +21,12 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
 
+  if(!bmp.begin()){
+    Serial.println("BMP180 not found!");
+  }
 
   Serial.println("TDS: ");
-  int tds = analogRead(A1);
+  int tds = analogRead(TDS_PIN);
   Serial.println(tds);
   Serial.println("---");
   Serial.println("");
@@ -26,7 +35,7 @@ void loop() {
 
   // Flammable Gas Sensor
   Serial.println("Flammable Gas: ");
-  int particleRaw = analogRead(A0);
+  float particleRaw = analogRead(FLG_PIN);
   Serial.println(particleRaw);
   Serial.println("---");
   Serial.println("");
@@ -34,7 +43,7 @@ void loop() {
   delay(10);
 
   Serial.println("Air Pressure: ");
-  int pressure = bmp.readPressure();
+  float pressure = bmp.readPressure();
   Serial.println(pressure);
   Serial.println("---");
   Serial.println("");
@@ -42,7 +51,7 @@ void loop() {
   delay(10);
 
   Serial.println("Temperature: ");
-  int temp = bmp.readTemperature();
+  float temp = bmp.readTemperature();
   Serial.println(temp);
   Serial.println("---");
   Serial.println("");
@@ -50,9 +59,25 @@ void loop() {
   delay(10);
 
   Serial.println("Altitude: ");
-  int alt = bmp.readAltitude();
+  float alt = bmp.readAltitude();
   Serial.println(alt);
   Serial.println("---");
+  Serial.println("");
+
+  delay(10);
+
+  Serial.println("pH: ");
+  float voltage = analogRead(PH_PIN)/1024.0*5000;
+  float phValue = ph.readPH(voltage, temp); 
+  Serial.println(phValue);
+  Serial.println("---");
+
+  delay(10);
+
+  Serial.println("");
+  Serial.println("");
+  Serial.println("");
+  Serial.println("");
   Serial.println("");
 
   delay(10);
