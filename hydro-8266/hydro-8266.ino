@@ -1,27 +1,42 @@
-#include <SoftwareSerial.h>
+#define CLK_PIN D7
+#define DATA_PIN D6
 
-SoftwareSerial arduinoSerial(D7, D6); // rx = D7, tx = D6
+bool prevClk = 0;
+
+uint32_t data = 0;
+int bitCounter = -1;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  arduinoSerial.begin(9600);
   Serial.println("---ESP STARTED---");
+
+
+  pinMode(CLK_PIN, INPUT);
+  pinMode(DATA_PIN, INPUT);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  Serial.println("From ESP: ");
-  //char buffer[20] = "";
+
+  bool clk = digitalRead(CLK_PIN);
   
-  if (arduinoSerial.available()){
-    for(int i = 0; i < 2; i++){
-      String buffer = arduinoSerial.readStringUntil('\n');
-      Serial.println(buffer);
+  if(clk && !prevClk){
+    bitCounter++;
+    bool takenData = digitalRead(DATA_PIN);
+    Serial.println(takenData);
+    data = (data << 1) | (takenData & 1);
+    Serial.println(data);
+    Serial.println(String("BC: ")+bitCounter);
+    if(bitCounter == 32){
+      float exactData = data/100;
+      //Serial.println(exactData);
+      data = 0;
+      bitCounter = 0;
     }
-    Serial.println("");
-  }else{
-    Serial.println("No message from Arduino");
+
   }
-  delay(500);
+
+
+
+  prevClk = clk;
 }
