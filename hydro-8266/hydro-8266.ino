@@ -4,7 +4,8 @@
 bool prevClk = 0;
 
 uint32_t data = 0;
-int bitCounter = -1;
+uint32_t bitCounter = 0;
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -18,6 +19,12 @@ void setup() {
 
 void loop() {
 
+  listenClk();
+
+
+}
+
+void listenClk(){
   bool clk = digitalRead(CLK_PIN);
   
   if(clk && !prevClk){
@@ -28,15 +35,13 @@ void loop() {
     Serial.println(data);
     Serial.println(String("BC: ")+bitCounter);
     if(bitCounter == 32){
-      float exactData = data/100;
-      //Serial.println(exactData);
+      float exactData = (float)data/100;
+      Serial.println(exactData);
       data = 0;
       bitCounter = 0;
+
     }
 
   }
-
-
-
   prevClk = clk;
 }

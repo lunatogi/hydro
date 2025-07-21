@@ -66,9 +66,9 @@ void sendBitwiseData(uint32_t data){
     Serial.print(send_bit);
     digitalWrite(DATA_PIN, send_bit);
     digitalWrite(CLK_PIN, HIGH);
-    delay(5);
+    delay(1);
     digitalWrite(CLK_PIN, LOW);
-    delay(5);
+    delay(1);
   }
   Serial.println("");
   digitalWrite(DATA_PIN, LOW);
