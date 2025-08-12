@@ -2,18 +2,29 @@
 // A1 -> TDS
 #define TDS_PIN A1
 #define FLG_PIN A0
-#define PH_PIN A5
+#define PH_PIN A0
 
 #define CLK_PIN 11
 #define DATA_PIN 10
 
+// Data wire is conntec to the Arduino digital pin 4
+#define ONE_WIRE_BUS 13
+
 #include "Adafruit_BMP085.h"    // BMP180 Air Pressure Sensor
 #include "DFRobot_PH.h"         // DFTRobot Analog pH Sensor 
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+// Setup a oneWire instance to communicate with any OneWire devices
+OneWire oneWire(ONE_WIRE_BUS);
+
+// Pass our oneWire reference to Dallas Temperature sensor 
+DallasTemperature sensors(&oneWire);
 
 Adafruit_BMP085 bmp;
 DFRobot_PH ph;
 
-float temp;
+float temp = 30.0;
 
 uint32_t bitwiseAlt;
 uint32_t bitwiseTemp;
@@ -28,32 +39,33 @@ uint32_t tds;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  if(!bmp.begin()){
-    Serial.println("BMP180 not found!");
-  }
+  //if(!bmp.begin()){
+  //  Serial.println("BMP180 not found!");
+  //}
 
   pinMode(CLK_PIN, OUTPUT);
   pinMode(DATA_PIN, OUTPUT);
   digitalWrite(DATA_PIN, LOW);
   digitalWrite(CLK_PIN, LOW);
+
+  sensors.begin();
 }
 
 void loop() {         // temp/100, alt/100
   // put your main code here, to run repeatedly:
 
-  readBMP();
-
-  delay(100);
-
-  sendBitwiseData(bitwiseTemp);
+  //readBMP();
 
 
+  //sendBitwiseData(bitwiseTemp);
+
+  readOneWire();
   
   //readFlyingFish();
-  //readpH();
+  readpH();
   //readTDS();
-
-  delay(5000);
+  delay(2000);
+  //delay(5000);
 }
 
 void sendBitwiseData(uint32_t data){
@@ -74,6 +86,13 @@ void sendBitwiseData(uint32_t data){
   digitalWrite(DATA_PIN, LOW);
 }
 
+void readOneWire(){
+  sensors.requestTemperatures(); 
+  Serial.println("Temperature:");
+  temp = sensors.getTempCByIndex(0) + 1.5;
+  Serial.println(temp); 
+}
+
 void readBMP(){
 
   pressure = bmp.readPressure();
@@ -82,16 +101,16 @@ void readBMP(){
   float alt = bmp.readAltitude();     
   bitwiseAlt = alt * 100;
 
-  Serial.println("Air Pressure:");
-  Serial.println(pressure);
+  //Serial.println("Air Pressure:");
+  //Serial.println(pressure);
 
-  Serial.println("Temperature:");
+  Serial.println("Temperature BMP:");
   temp = temperature;
-  Serial.println(bitwiseTemp);
+  Serial.println(temp);
 
-  Serial.println("Altitude:");
-  Serial.println(bitwiseAlt);
-  Serial.println("");
+  //Serial.println("Altitude:");
+  //Serial.println(bitwiseAlt);
+  //Serial.println("");
 
   delay(10);
 }
@@ -99,7 +118,7 @@ void readBMP(){
 void readpH(){
   Serial.println("pH: ");
   float voltage = analogRead(PH_PIN)/1024.0*5000;
-  float phValue = ph.readPH(voltage, temp);
+  float phValue = ph.readPH(voltage, temp) + 0.3;
   bitwisephValue = phValue * 100;
   Serial.println(phValue);
   Serial.println("---");
