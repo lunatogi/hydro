@@ -58,7 +58,7 @@ void setup() {
   digitalWrite(CLK_PIN, LOW);
 
   sensors.begin();
-  state = SEND_STATE;
+  state = RECEIVE_STATE;
 }
 
 void loop() {         // temp/100, alt/100
@@ -123,9 +123,9 @@ void listenESP(){
       Serial.println(exactData);
       rx_data = 0;
     }
-    delay(500);
+    
   }
-
+  delay(500);
 
 }
 

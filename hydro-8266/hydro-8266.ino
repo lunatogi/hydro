@@ -29,12 +29,12 @@ void setup() {
   pinMode(TXDATA_PIN, OUTPUT);
   digitalWrite(TXDATA_PIN, LOW);
 
-  state = RECEIVE_STATE;
+  state = SEND_STATE;
 }
 
 void loop() {
 
-  listenUNO();
+
   switch(state){
     case IDLE_STATE:
       Serial.println("IDLE STATE");
