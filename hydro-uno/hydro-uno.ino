@@ -8,6 +8,10 @@
 #define TXDATA_PIN 10
 #define RXDATA_PIN 9
 
+#define IDLE_STATE 0
+#define RECEIVE_STATE 1
+#define SEND_STATE 2
+
 // Data wire is conntec to the Arduino digital pin 4
 #define ONE_WIRE_BUS 13
 
@@ -38,7 +42,7 @@ uint16_t bitwiseAlt;
 uint16_t bitwiseTemp;
 uint16_t particleRaw;
 
-
+int state = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -54,16 +58,30 @@ void setup() {
   digitalWrite(CLK_PIN, LOW);
 
   sensors.begin();
+  state = SEND_STATE;
 }
 
 void loop() {         // temp/100, alt/100
   // put your main code here, to run repeatedly:
 
 
+  switch(state){
+    case IDLE_STATE:
+      Serial.println("IDLE STATE");
+      break;
+    case RECEIVE_STATE:
+      Serial.println("RECEIVE STATE");
+      listenESP();
+      break;
+    case SEND_STATE: 
+      Serial.println("SEND STATE");
+      readOneWire();
+      sendBitwiseData(bitwiseTemp);
+      break;
+  }
 
 
-
-  listenESP();
+  
 
   //readOneWire();
   //readpH();
@@ -121,9 +139,9 @@ void sendBitwiseData(uint16_t data){
     Serial.print(send_bit);
     digitalWrite(TXDATA_PIN, send_bit);
     digitalWrite(CLK_PIN, HIGH);
-    delay(1);
+    delay(3);
     digitalWrite(CLK_PIN, LOW);
-    delay(1);
+    delay(3);
   }
   Serial.println("");
   digitalWrite(TXDATA_PIN, LOW);

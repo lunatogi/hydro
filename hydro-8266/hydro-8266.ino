@@ -2,6 +2,10 @@
 #define RXDATA_PIN D6
 #define TXDATA_PIN D5
 
+#define IDLE_STATE 0
+#define RECEIVE_STATE 1
+#define SEND_STATE 2
+
 bool clk = 0;
 bool prevClk = 0;
 
@@ -10,8 +14,9 @@ uint16_t rx_data = 0;
 uint16_t bitCounter = 0;
 uint16_t sentBitCounter = 0;
 
-
 uint16_t maxBitPerData = 16;
+
+int state = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -23,10 +28,28 @@ void setup() {
   pinMode(RXDATA_PIN, INPUT);
   pinMode(TXDATA_PIN, OUTPUT);
   digitalWrite(TXDATA_PIN, LOW);
+
+  state = RECEIVE_STATE;
 }
 
 void loop() {
-  sendBitwiseData(43690);
+
+  listenUNO();
+  switch(state){
+    case IDLE_STATE:
+      Serial.println("IDLE STATE");
+      break;
+    case RECEIVE_STATE:
+      //Serial.println("RECEIVE STATE");
+      
+      break;
+    case SEND_STATE: 
+      Serial.println("SEND STATE");
+      sendBitwiseData(43690);
+      break;
+  }
+
+  
   delay(1);
 }
 
