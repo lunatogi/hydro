@@ -1,11 +1,12 @@
 // A0 -> Flammable Gas 
 // A1 -> TDS
+#define PH_PIN A0
 #define TDS_PIN A1
 #define FLG_PIN A2
-#define PH_PIN A0
 
 #define CLK_PIN 11
 #define TXDATA_PIN 10
+#define RXDATA_PIN 9
 
 // Data wire is conntec to the Arduino digital pin 4
 #define ONE_WIRE_BUS 13
@@ -30,6 +31,7 @@ uint16_t tds;
 
 //Communication variables     (bitwise suffix actually means its for communication)
 uint16_t maxBitPerData = 16;
+uint16_t rx_data = 0;
 
 uint16_t bitwisephValue;
 uint16_t bitwiseAlt;
@@ -47,6 +49,7 @@ void setup() {
 
   pinMode(CLK_PIN, OUTPUT);
   pinMode(TXDATA_PIN, OUTPUT);
+  pinMode(RXDATA_PIN, INPUT);
   digitalWrite(TXDATA_PIN, LOW);
   digitalWrite(CLK_PIN, LOW);
 
@@ -56,27 +59,59 @@ void setup() {
 void loop() {         // temp/100, alt/100
   // put your main code here, to run repeatedly:
 
-  
 
 
-  
 
-  readOneWire();
-  readpH();
 
-  //digitalWrite(CLK_PIN, HIGH);
-  sendBitwiseData(bitwiseTemp);
-  delay(1);
-  sendBitwiseData(bitwisephValue);
+  listenESP();
+
+  //readOneWire();
+  //readpH();
+
+  //sendBitwiseData(bitwiseTemp);
+  //delay(1);
+  //sendBitwiseData(bitwisephValue);
+
+
+
+
+
+
+
+
 
   //readBMP();
   //readTDS();
   //readFlyingFish();
-  delay(2000);
+  delay(1);
   //delay(5000);
 }
 
-void sendBitwiseData(uint32_t data){
+void listenESP(){
+  for(int i = 0; i < maxBitPerData; i++){
+    digitalWrite(CLK_PIN, HIGH);
+    delay(5);
+    bool rx_bit = digitalRead(RXDATA_PIN);
+    digitalWrite(CLK_PIN, LOW);
+    Serial.print("---");
+    Serial.print("Counter: ");
+    Serial.println(i);
+    Serial.print("Read bit: ");
+    Serial.println(rx_bit);
+    rx_data = (rx_data << 1) | (rx_bit & 1);
+    if(i == maxBitPerData-1){
+      float exactData = (float)rx_data/100;
+      Serial.print("Taken Data: ");
+      Serial.println(exactData);
+      rx_data = 0;
+    }
+    delay(500);
+  }
+
+
+}
+
+void sendBitwiseData(uint16_t data){
   bool send_bit;
   Serial.println("");
   Serial.println(data);

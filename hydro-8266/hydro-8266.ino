@@ -4,10 +4,12 @@
 
 bool clk = 0;
 bool prevClk = 0;
-bool dataFull = false;
 
-uint16_t data = 0;
+//Communication
+uint16_t rx_data = 0;
 uint16_t bitCounter = 0;
+uint16_t sentBitCounter = 0;
+
 
 uint16_t maxBitPerData = 16;
 
@@ -19,34 +21,59 @@ void setup() {
 
   pinMode(CLK_PIN, INPUT);
   pinMode(RXDATA_PIN, INPUT);
-
+  pinMode(TXDATA_PIN, OUTPUT);
+  digitalWrite(TXDATA_PIN, LOW);
 }
 
 void loop() {
-  //Serial.println("CLK: ");
-  //Serial.println(clk);
-  //Serial.println("PrevCLK");
-  //Serial.println(prevClk);
-  listenUNO();
+  sendBitwiseData(43690);
+  delay(1);
 }
 
+void sendUNO(){
+
+}
+
+void sendBitwiseData(uint16_t data){
+  bool send_bit;
+  //Serial.println("Trying to send");
+  if(sentBitCounter < maxBitPerData){
+    //Serial.println("Bit counter less than max bit");
+    clk = digitalRead(CLK_PIN);
+    //Serial.println(clk);
+    if(clk && !prevClk){                                                //Send at each posedge clk
+      Serial.println("Posedge");
+      send_bit = (data >> (maxBitPerData-(1 + sentBitCounter))) & 1;    //Starting from MSB
+      Serial.print("Sent bit: ");
+      Serial.println(send_bit);
+      Serial.println(sentBitCounter);
+      digitalWrite(TXDATA_PIN, send_bit);
+      sentBitCounter++;
+      if(sentBitCounter == maxBitPerData){
+        sentBitCounter = 0;
+        digitalWrite(TXDATA_PIN, LOW);
+      }
+    }
+    prevClk = clk;
+  }
+  
+}
 
 
 void listenUNO(){
   clk = digitalRead(CLK_PIN);
   if(clk && !prevClk){
     bitCounter++;
-    bool takenData = digitalRead(RXDATA_PIN);
-    //Serial.println(takenData);
-    data = (data << 1) | (takenData & 1);
+    bool rx_bit = digitalRead(RXDATA_PIN);
+    //Serial.println(rx_bit);
+    rx_data = (rx_data << 1) | (rx_bit & 1);
     //Serial.println(data);
     //Serial.println(String("BC: ")+bitCounter);
     if(bitCounter == maxBitPerData){
-      float exactData = (float)data/100;
+      float exactData = (float)rx_data/100;
       Serial.println(exactData);
-      data = 0;
+      rx_data = 0;
       bitCounter = 0;
-      dataFull = true;
     }
 
   }
