@@ -16,7 +16,13 @@ uint16_t sentBitCounter = 0;
 
 uint16_t maxBitPerData = 16;
 
+bool startSend = false;
+
+//Internal variables
 int state = 0;
+String cmd = ""         //Command from web
+
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -29,24 +35,42 @@ void setup() {
   pinMode(TXDATA_PIN, OUTPUT);
   digitalWrite(TXDATA_PIN, LOW);
 
-  state = SEND_STATE;
+  state = IDLE_STATE;
 }
 
 void loop() {
 
 
   switch(state){
-    case IDLE_STATE:
-      Serial.println("IDLE STATE");
+    case IDLE_STATE:{
+      //Serial.println("IDLE STATE");
+      cmd = Serial.readString();
+      cmd.trim();
+      if(cmd.equals("r")){
+        digitalWrite(TXDATA_PIN, HIGH);
+        startSend = true;
+        state = SEND_STATE;
+      }
       break;
-    case RECEIVE_STATE:
+    }
+    case RECEIVE_STATE:{
       //Serial.println("RECEIVE STATE");
       
       break;
-    case SEND_STATE: 
-      Serial.println("SEND STATE");
-      sendBitwiseData(43690);
+    }
+    case SEND_STATE: {
+      //Serial.println("SEND STATE");
+      if(startSend){
+        digitalWrite(TXDATA_PIN, LOW);
+        startSend = false;
+      }else{
+        sendBitwiseData(43690);
+        
+      }
+      
+      
       break;
+    }
   }
 
   
