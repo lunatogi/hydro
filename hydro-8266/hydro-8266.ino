@@ -67,13 +67,24 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   AwsFrameInfo *info = (AwsFrameInfo*)arg;
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
       data[len] = 0;
-      if(strcmp((char*)data, "updateSensorValue") == 0){
-        temp += 5;
-        ph += 5;
-        pres += 5;
+
+      String msg = (char*)data;
+
+      Serial.print("Message from web: ");
+      Serial.println(msg);
+      if(msg.startsWith("refTemp")) {
+        String valStr = msg.substring(msg.indexOf(':') + 1);
+        refTemp = valStr.toFloat();
+      } else if(msg.startsWith("refpH")){
+        String valStr = msg.substring(msg.indexOf(':') + 1);
+        refpH = valStr.toFloat();
+      } else if(msg.startsWith("refPres")){
+        String valStr = msg.substring(msg.indexOf(':') + 1);
+        refPres = valStr.toFloat();
       }
+
       String sensorReadings = getSensorReadings();
-      Serial.println(sensorReadings);
+      //Serial.println(sensorReadings);
       notifyClients(sensorReadings);
     //}
   }
@@ -150,18 +161,31 @@ void SPISlaveSetup(){
     char * rawData = cData + 1;     //Drop the first letter which says the value type
     char index = cData[0];
     Serial.print("Mesaj: ");
-    if(index == 't'){
+    if(index == 't'){             //  t->temperature, p->pH, r->pressure
       temp = atof(rawData);
       Serial.println(temp);
+      //Send ref value of the data
+      String sValue = String(refTemp);
+      SPISlave.setData(sValue.c_str());
     }else if(index == 'p'){
       ph = atof(rawData);
       Serial.println(ph);
+      //Send ref value of the data
+      String sValue = String(refpH);
+      SPISlave.setData(sValue.c_str());
+    }else if(index == 'r'){
+      ph = atof(rawData);
+      Serial.println(ph);
+      //Send ref value of the data
+      String sValue = String(refPres);
+      SPISlave.setData(sValue.c_str());
     }else{
       String message = String(cData+1);      // So that we can get rid of 
       Serial.println(message);
+      SPISlave.setData("Ask me a question!");
     }
     
-    SPISlave.setData("Ask me a question!");
+    
   });
 
   SPISlave.onDataSent([]() {
@@ -183,7 +207,7 @@ void setup() {
 void loop() {
   if ((millis() - lastTime) > timerDelay) {
     String sensorReadings = getSensorReadings();
-    Serial.print(sensorReadings);
+    Serial.println(sensorReadings);
     notifyClients(sensorReadings);
     lastTime = millis();
   }

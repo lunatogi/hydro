@@ -12,9 +12,24 @@ function getReadings(){
     websocket.send("getReadings");
 }
 
-function updateSensorValue(){        // 0 -> temperature, 1 -> pH, 2 -> pressure
-    websocket.send("updateSensorValue");
-
+function updateSensorValue(sensor){        // 0 -> temperature, 1 -> pH, 2 -> pressure
+    //websocket.send("updateSensorValue");
+    if(sensor === 0) {
+        let element = document.getElementById('inputTemp');
+        let value = element.value;
+        element.value = ''; // Clear the input field after sending
+        websocket.send(`refTemp:${value}`);
+    }else if(sensor === 1) {
+        let element = document.getElementById('inputpH');
+        let value = element.value;
+        element.value = '';
+        websocket.send(`refpH:${value}`);
+    } else if(sensor === 2) {
+        let element = document.getElementById('inputPres');
+        let value = element.value;
+        element.value = '';
+        websocket.send(`refPres:${value}`);
+    }
 
 
 }
@@ -43,14 +58,14 @@ function initButton() {
             window.location.href = `index.html`;
         });
 
-        document.getElementById('buttonTemp').addEventListener('click', function() {
-            window.location.href = `index.html`;
+        document.getElementById('buttonTempRef').addEventListener('click', function() {
+            updateSensorValue(0);
         });
-        document.getElementById('buttonMainDash').addEventListener('click', function() {
-            window.location.href = `index.html`;
+        document.getElementById('buttonpHRef').addEventListener('click', function() {
+            updateSensorValue(1);
         });
-        document.getElementById('buttonMainDash').addEventListener('click', function() {
-            window.location.href = `index.html`;
+        document.getElementById('buttonPresRef').addEventListener('click', function() {
+            updateSensorValue(2);
         });
     }
     

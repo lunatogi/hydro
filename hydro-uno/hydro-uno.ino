@@ -28,10 +28,16 @@ DallasTemperature sensors(&oneWire);
 //Adafruit_BMP085 bmp;
 DFRobot_PH ph;
 
+//Current and ref sensor values
 float temp = 30.0;
 float phValue = 0;
 float particle = 1;
 float tds = 2;
+
+float refTemp = 17.3;
+float refpH = 8.8;
+float refPres = 5.09;
+///////////////////////////////
 
 ///////////////////// SPI ////////////////////////
 class ESPMaster {
@@ -89,8 +95,30 @@ void sendESP(const char *message) {
   esp.writeData(message);
   delay(10);
   Serial.print("Slave: ");
-  Serial.println(esp.readData());
+  String retData = String(esp.readData());
+  Serial.println(retData);
   Serial.println();
+  // Route by header letter: t=temperature, p=pH, r=pressure
+  switch (message[0]) {
+    case 't':
+      refTemp = retData.toFloat();
+      Serial.print("Ref Temp: ");
+      Serial.println(refTemp);
+      break;
+    case 'p':
+      refpH = retData.toFloat();
+      Serial.print("Ref pH: ");
+      Serial.println(refpH);
+      break;
+    case 'r':
+      refPres = retData.toFloat();
+      Serial.print("Ref Pressure: ");
+      Serial.println(refPres);
+      break;
+    default:
+      Serial.println("Unknown message header");
+      break;
+  }
 }
 
 void SPIMasterSetup(){
@@ -111,7 +139,7 @@ void setup() {
   //  Serial.println("BMP180 not found!");
   //}
 }
-int tt = 0;
+
 void loop() {         // temp/100, alt/100
   // put your main code here, to run repeatedly:
 
