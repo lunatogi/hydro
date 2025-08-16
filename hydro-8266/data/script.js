@@ -43,9 +43,6 @@ function initWebSocket() {
 }
 
 function initButton() {
-    //document.getElementById('button').addEventListener('click', function() {
-    //    updateSensorValue();
-    //});
     const btnAdmin = document.getElementById('buttonAdmin');
     const btnMainDash = document.getElementById('buttonMainDash');
     if(btnAdmin) {          // In main dashboard
@@ -53,6 +50,7 @@ function initButton() {
             window.location.href = `admin.html`;
         });
     }
+    
     if(btnMainDash) {       // In admin panel
         btnMainDash.addEventListener('click', function() {
             window.location.href = `index.html`;
@@ -69,8 +67,6 @@ function initButton() {
         });
     }
     
-    
-
 }
 
 // When websocket is established, call the getReadings() function
@@ -84,7 +80,7 @@ function onClose(event) {
     setTimeout(initWebSocket, 2000);
 }
 
-// Function that receives the message from the ESP32 with the readings
+// Function that receives the message from the ESP with the readings
 function onMessage(event) {
     console.log(event.data);
     var myObj = JSON.parse(event.data);
@@ -94,6 +90,7 @@ function onMessage(event) {
         var key = keys[i];
         let value = myObj[key];
         value = value.toFixed(2);
-        document.getElementById(key).innerHTML = value;
+        let docElement = document.getElementById(key);
+        if (docElement) docElement.innerHTML = value;
     }
 }
