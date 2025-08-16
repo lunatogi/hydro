@@ -1,35 +1,38 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>ESP IOT DASHBOARD</title>
+        <title>ESP IOT ADMIN</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="icon" type="image/png" href="favicon.png">
         <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
         <div class="topnav">
-            <h1>SENSOR READINGS</h1>
+            <h1>SENSOR ADMIN</h1>
         </div>
         <div class="content">
             <div class="card-grid">
                 <div class="card">
                     <p class="card-title"> Temperature</p>
-                    <p class="reading"><span id="temperature"></span> &deg;C</p>
-                    <p class="ref">Reference value: <span id="refTemperature"></span> &deg;C</p>
+                    <input type="number" id="quantity" name="quantity" placeholder="°C">
+                    <p><button id="buttonTempRef" class="button">Set Ref</button></p>
                 </div>
                 <div class="card">
                     <p class="card-title"> pH</p>
-                    <p class="reading"><span id="ph"></span></p>
-                    <p class="ref">Reference value: <span id="refpH"></span></p>
+                    <input type="number" id="quantity" name="quantity">
+                    <p><button id="buttonpHRef" class="button">Set Ref</button></p>
                 </div>
                 <div class="card">
                     <p class="card-title"> Pressure</p>
-                    <p class="reading"><span id="pressure"></span> hpa</p>
-                    <p class="ref">Reference value: <span id="refPressure"></span></p>
+                    <input type="number" id="quantity" name="quantity">
+                    <p><button id="buttonPresRef" class="button">Set Ref</button></p>
                 </div>
-
+                <div class="card">
+                    <p class="card-title"> Update</p>
+                    <p><button id="button" class="button">Add Value</button></p>
+                </div>
                 <div class="cardButton">
-                    <p><button id="buttonAdmin" class="buttonAdmin">Admin Panel</button></p>
+                    <p><button id="buttonMainDash" class="buttonMainDash">Main Dashboard</button></p>
                 </div>
             </div>
         </div>

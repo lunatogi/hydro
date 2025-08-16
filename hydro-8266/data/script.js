@@ -12,8 +12,11 @@ function getReadings(){
     websocket.send("getReadings");
 }
 
-function updateSensorValue(){
+function updateSensorValue(){        // 0 -> temperature, 1 -> pH, 2 -> pressure
     websocket.send("updateSensorValue");
+
+
+
 }
 
 function initWebSocket() {
@@ -25,7 +28,34 @@ function initWebSocket() {
 }
 
 function initButton() {
-    document.getElementById('button').addEventListener('click', updateSensorValue);
+    //document.getElementById('button').addEventListener('click', function() {
+    //    updateSensorValue();
+    //});
+    const btnAdmin = document.getElementById('buttonAdmin');
+    const btnMainDash = document.getElementById('buttonMainDash');
+    if(btnAdmin) {          // In main dashboard
+        btnAdmin.addEventListener('click', function() {
+            window.location.href = `admin.html`;
+        });
+    }
+    if(btnMainDash) {       // In admin panel
+        btnMainDash.addEventListener('click', function() {
+            window.location.href = `index.html`;
+        });
+
+        document.getElementById('buttonTemp').addEventListener('click', function() {
+            window.location.href = `index.html`;
+        });
+        document.getElementById('buttonMainDash').addEventListener('click', function() {
+            window.location.href = `index.html`;
+        });
+        document.getElementById('buttonMainDash').addEventListener('click', function() {
+            window.location.href = `index.html`;
+        });
+    }
+    
+    
+
 }
 
 // When websocket is established, call the getReadings() function

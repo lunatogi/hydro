@@ -29,9 +29,16 @@ unsigned long timerDelay = 10000;
 // Create a sensor object
 //Adafruit_BME280 bme;         // BME280 connect to ESP32 I2C (GPIO 21 = SDA, GPIO 22 = SCL)
 
+//Current and ref sensor values
 float temp = 25.0;
 float ph = 21.1;
 float pres = 1.54;
+
+float refTemp = 27.4;
+float refpH = 7.0;
+float refPres = 1.12;
+////////////////////////////
+
 
 ////////////////////// WEB SOCKET /////////////////////////
 void initWebSocket() {
@@ -111,6 +118,9 @@ String getSensorReadings(){
   readings["temperature"] = temp;
   readings["ph"] = ph;
   readings["pressure"] = pres;
+  readings["refTemperature"] = refTemp;
+  readings["refpH"] = refpH;
+  readings["refPressure"] = refPres;
   String jsonString = JSON.stringify(readings);
   return jsonString;
 }
@@ -164,7 +174,7 @@ void SPISlaveSetup(){
 void setup() {
   Serial.begin(115200);
   Serial.println("");
-  Serial.println("Started");
+  Serial.println("ESP Started");
 
   WebSocketSetup();
   SPISlaveSetup();

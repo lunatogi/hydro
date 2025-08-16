@@ -29,13 +29,24 @@ body {
     box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5);
 }
 .card-title {
-    font-size: 1.2rem;
+    font-size: 1.7rem;
     font-weight: bold;
     color: #034078;
+}
+.cardButton {
+    background-color: white;
+    box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5);
+    align-items: center;
+    justify-content: center;
+    display: flex;
 }
 .reading {
     font-size: 1.2rem;
     color: #1282A2;
+}
+.ref {
+    font-size: 0.8rem;
+    color: #034078;
 }
 .button {
 padding: 15px 50px;
@@ -59,4 +70,53 @@ user-select: none;
     background-color: #0f8b8d;
     box-shadow: 2 2px #CDCDCD;
     transform: translateY(2px);
+}
+.buttonAdmin {
+padding: 15px 30px;
+font-size: 24px;
+text-align: center;
+outline: none;
+color: #fff;
+background-color: #0f8b8d;
+border: none;
+border-radius: 5px;
+-webkit-touch-callout: none;
+-webkit-user-select: none;
+-khtml-user-select: none;
+-moz-user-select: none;
+-ms-user-select: none;
+user-select: none;
+-webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+.buttonAdmin:active {
+    background-color: #0f8b8d;
+    box-shadow: 2 2px #CDCDCD;
+    transform: translateY(2px);
+}
+.buttonMainDash {
+padding: 15px 20px;
+font-size: 24px;
+text-align: center;
+outline: none;
+color: #fff;
+background-color: #0f8b8d;
+border: none;
+border-radius: 5px;
+-webkit-touch-callout: none;
+-webkit-user-select: none;
+-khtml-user-select: none;
+-moz-user-select: none;
+-ms-user-select: none;
+user-select: none;
+-webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+.buttonMainDash:active {
+    background-color: #0f8b8d;
+    box-shadow: 2 2px #CDCDCD;
+    transform: translateY(2px);
+}
+input[type=number] {
+  width: 150px;
+  padding: 5px;
+  font-size: 16px;
 }
