@@ -176,7 +176,7 @@ void SPISlaveSetup(){
     char * rawData = cData + 1;     //Drop the first letter which says the value type
     char index = cData[0];
     Serial.print("Mesaj: ");
-    if(index == 't'){             //  t->temperature, p->pH, r->pressure
+    if(index == 't'){             //  t->temperature, p->pH, r->pressure, d=dissolved solids (tds), f=particle (ff)
       temp = atof(rawData);
       Serial.println(temp);
       //Send ref value of the data
@@ -189,10 +189,22 @@ void SPISlaveSetup(){
       String sValue = String(refpH);
       SPISlave.setData(sValue.c_str());
     }else if(index == 'r'){
-      ph = atof(rawData);
-      Serial.println(ph);
+      pres = atof(rawData);
+      Serial.println(pres);
       //Send ref value of the data
       String sValue = String(refPres);
+      SPISlave.setData(sValue.c_str());
+    }else if(index == 'd'){
+      tds = atoi(rawData);
+      Serial.println(tds);
+      //Send ref value of the data
+      String sValue = String(refTDS);
+      SPISlave.setData(sValue.c_str());
+    }else if(index == 'f'){
+      ff = atof(rawData);
+      Serial.println(ff);
+      //Send ref value of the data
+      String sValue = String(refFF);
       SPISlave.setData(sValue.c_str());
     }else{
       String message = String(cData+1);      // So that we can get rid of 

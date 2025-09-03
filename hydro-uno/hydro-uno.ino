@@ -31,12 +31,15 @@ DFRobot_PH ph;
 //Current and ref sensor values
 float temp = 30.0;
 float phValue = 0;
-float particle = 1;
+float pres = 2.21;
 float tds = 2;
+float ff = 1;
 
 float refTemp = 17.3;
 float refpH = 8.8;
 float refPres = 5.09;
+int refTDS = 313;
+float refFF = 32;
 ///////////////////////////////
 
 ///////////////////// SPI ////////////////////////
@@ -90,35 +93,45 @@ public:
 ESPMaster esp(SS);
 
 void sendESP(const char *message) {
-  Serial.print("Master: ");
-  Serial.println(message);
   esp.writeData(message);
   delay(10);
-  Serial.print("Slave: ");
   String retData = String(esp.readData());
-  Serial.println(retData);
-  Serial.println();
-  // Route by header letter: t=temperature, p=pH, r=pressure
+  //Serial.print("Master: ");
+  //Serial.println(message);
+  //Serial.print("Slave: ");
+  //Serial.println(retData);
+  // Route by header letter: t=temperature, p=pH, r=pressure, d=dissolved solids (tds), f=particle (ff)
   switch (message[0]) {
     case 't':
       refTemp = retData.toFloat();
-      Serial.print("Ref Temp: ");
+      Serial.print("InRef Temp: ");
       Serial.println(refTemp);
       break;
     case 'p':
       refpH = retData.toFloat();
-      Serial.print("Ref pH: ");
+      Serial.print("InRef pH: ");
       Serial.println(refpH);
       break;
     case 'r':
       refPres = retData.toFloat();
-      Serial.print("Ref Pressure: ");
+      Serial.print("InRef Pressure: ");
       Serial.println(refPres);
+      break;
+    case 'd':
+      refTDS = retData.toInt();
+      Serial.print("InRef TDS: ");
+      Serial.println(refTDS);
+      break;
+    case 'f':
+      refFF = retData.toFloat();
+      Serial.print("InRef Particle: ");
+      Serial.println(refFF);
       break;
     default:
       Serial.println("Unknown message header");
       break;
   }
+  Serial.println("");
 }
 
 void SPIMasterSetup(){
@@ -142,48 +155,33 @@ void setup() {
 
 void loop() {         // temp/100, alt/100
   // put your main code here, to run repeatedly:
+  Run();
+  delay(1000);
+}
 
-  readOneWire();
+void Run(){
+  Serial.println("---");
+  readOneWire();                    // Temperature
   String tempS = "t"+String(temp);
   sendESP(tempS.c_str());
 
-  readpH();
+  readpH();                         // pH
   String phS = "p"+String(phValue);
   sendESP(phS.c_str());
-  delay(1000);
 
+  readTDS();                        // Particle (TDS)
+  String tdsS = "d"+String(tds);
+  sendESP(tdsS.c_str());
 
-
-  
-
-  //readOneWire();
-  //readpH();
-
-  //sendBitwiseData(bitwiseTemp);
-  //delay(1);
-  //sendBitwiseData(bitwisephValue);
-
-
-
-
-
-
-
-
-
-  //readBMP();
-  //readTDS();
-  //readFlyingFish();
-  delay(1);
-  //delay(5000);
+  readFlyingFish();
+  String ffS = "f"+String(ff);
+  sendESP(ffS.c_str());
 }
-
-
 
 
 void readOneWire(){
   sensors.requestTemperatures(); 
-  Serial.println("Temperature:");
+  Serial.print("Temperature:");
   temp = sensors.getTempCByIndex(0) + 1.5;
   Serial.println(temp); 
 }
@@ -213,31 +211,26 @@ void readBMP(){
 */
 
 void readpH(){
-  Serial.println("pH: ");
+  Serial.print("pH: ");
   float voltage = analogRead(PH_PIN)/1024.0*5000;
   phValue = ph.readPH(voltage, temp) + 0.3;
   Serial.println(phValue);
-  Serial.println("---");
 
   delay(10);
 }
 
 void readFlyingFish(){
-  Serial.println("Flammable Gas: ");
-  particle = analogRead(FLG_PIN);
-  Serial.println(particle);
-  Serial.println("---");
-  Serial.println("");
+  Serial.print("Flammable Gas: ");
+  ff = analogRead(FLG_PIN);
+  Serial.println(ff);
 
   delay(10);
 }
 
 void readTDS(){
-  Serial.println("TDS: ");
+  Serial.print("TDS: ");
   tds = analogRead(TDS_PIN);
   Serial.println(tds);
-  Serial.println("---");
-  Serial.println("");
 
   delay(10);
 }
