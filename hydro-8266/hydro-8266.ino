@@ -33,10 +33,14 @@ unsigned long timerDelay = 10000;
 float temp = 25.0;
 float ph = 21.1;
 float pres = 1.54;
+int tds = 10;
+float ff = 33;
 
 float refTemp = 27.4;
 float refpH = 7.0;
 float refPres = 1.12;
+int refTDS = 131;
+float refFF = 23;
 ////////////////////////////
 
 
@@ -81,6 +85,12 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       } else if(msg.startsWith("refPres")){
         String valStr = msg.substring(msg.indexOf(':') + 1);
         refPres = valStr.toFloat();
+      } else if(msg.startsWith("refTDS")){
+        String valStr = msg.substring(msg.indexOf(':') + 1);
+        refTDS = valStr.toInt();
+      } else if(msg.startsWith("refFF")){
+        String valStr = msg.substring(msg.indexOf(':') + 1);
+        refFF = valStr.toFloat();
       }
 
       String sensorReadings = getSensorReadings();
@@ -129,9 +139,14 @@ String getSensorReadings(){
   readings["temperature"] = temp;
   readings["ph"] = ph;
   readings["pressure"] = pres;
+  readings["tds"] = tds;
+  readings["ff"] = ff;
+
   readings["refTemperature"] = refTemp;
   readings["refpH"] = refpH;
   readings["refPressure"] = refPres;
+  readings["refTDS"] = refTDS;
+  readings["refFF"] = refFF;
   String jsonString = JSON.stringify(readings);
   return jsonString;
 }
