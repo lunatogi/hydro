@@ -6,14 +6,17 @@
      12       D6      MISO  |   D12
      14       D5      SCK   |   D13
 */
+// Analog Pins
 #define PH_PIN A0
 #define TDS_PIN A1
 #define FLG_PIN A2
 
-// Data wire is conntec to the Arduino digital pin 4
-#define ONE_WIRE_BUS 8
+//Digital Pins
+#define ONE_WIRE_BUS 8          // Data wire is conntec to the Arduino digital pin 4
+#define MOTOR_DATA 7
+#define MOTOR_CLK 6
 
-//#include "Adafruit_BMP085.h"    // BMP180 Air Pressure Sensor
+//#include "Adafruit_BMP085.h"  // BMP180 Air Pressure Sensor
 #include "DFRobot_PH.h"         // DFTRobot Analog pH Sensor 
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -151,6 +154,10 @@ void setup() {
   //if(!bmp.begin()){
   //  Serial.println("BMP180 not found!");
   //}
+  pinMode(MOTOR_DATA, OUTPUT);
+  pinMode(MOTOR_CLK, OUTPUT);
+  digitalWrite(MOTOR_DATA, LOW);
+  digitalWrite(MOTOR_CLK, LOW);
 }
 
 void loop() {         // temp/100, alt/100
@@ -160,6 +167,7 @@ void loop() {         // temp/100, alt/100
 }
 
 void Run(){
+  /*
   Serial.println("---");
   readOneWire();                    // Temperature
   String tempS = "t"+String(temp);
@@ -176,6 +184,23 @@ void Run(){
   readFlyingFish();
   String ffS = "f"+String(ff);
   sendESP(ffS.c_str());
+  */
+  delay(10000);
+  AdjustMotors(0b10101010);
+  digitalWrite(MOTOR_DATA, LOW);
+  digitalWrite(MOTOR_CLK, LOW);
+  
+}
+
+void AdjustMotors(uint8_t data){
+  for(int i = 0; i < 8; i++){
+    bool bit = (data >> i) & 1;
+    digitalWrite(MOTOR_DATA, bit);
+    digitalWrite(MOTOR_CLK, HIGH);
+    delay(1);
+    digitalWrite(MOTOR_CLK, LOW);
+    delay(1);
+  }
 }
 
 
