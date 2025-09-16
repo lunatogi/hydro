@@ -144,7 +144,7 @@ void SPIMasterSetup(){
   sendESP("Hello Slave!");         // Unnecessary
 }
 ///////////////////////////////////////////////////////
-
+uint8_t mtrData = 0b10101010;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -162,8 +162,20 @@ void setup() {
 
 void loop() {         // temp/100, alt/100
   // put your main code here, to run repeatedly:
-  Run();
-  delay(1000);
+  delay(5000);
+  AdjustMotors(mtrData);
+  mtrData++;
+}
+
+void AdjustMotors(uint8_t data){
+  for(int i = 0; i < 8; i++){
+    bool bit = (data >> i) & 1;
+    digitalWrite(MOTOR_DATA, bit);
+    digitalWrite(MOTOR_CLK, HIGH);
+    delay(1);
+    digitalWrite(MOTOR_CLK, LOW);
+    delay(1);
+  }
 }
 
 void Run(){
@@ -185,23 +197,11 @@ void Run(){
   String ffS = "f"+String(ff);
   sendESP(ffS.c_str());
   */
-  delay(10000);
-  AdjustMotors(0b10101010);
-  digitalWrite(MOTOR_DATA, LOW);
-  digitalWrite(MOTOR_CLK, LOW);
+
   
 }
 
-void AdjustMotors(uint8_t data){
-  for(int i = 0; i < 8; i++){
-    bool bit = (data >> i) & 1;
-    digitalWrite(MOTOR_DATA, bit);
-    digitalWrite(MOTOR_CLK, HIGH);
-    delay(1);
-    digitalWrite(MOTOR_CLK, LOW);
-    delay(1);
-  }
-}
+
 
 
 void readOneWire(){
