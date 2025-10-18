@@ -40,8 +40,19 @@ function updateSensorValue(sensor){        // 0 -> temperature, 1 -> pH, 2 -> pr
         element.value = '';
         websocket.send(`refFF:${value}`);
     }
+}
 
+function adjustMotors(){        
+    //websocket.send("updateSensorValue");
 
+    let element = document.getElementById('adjMotorIDinput');
+    let id = element.value;
+    element.value = ''; // Clear the input field after sending
+    element = document.getElementById('adjMotorValueinput');
+    let value = element.value;
+    element.value = '';
+    element.value = ''; // Clear the input field after sending
+    websocket.send(`${id}:${value}`);
 }
 
 function initWebSocket() {
@@ -80,6 +91,9 @@ function initButton() {
         });
         document.getElementById('buttonFFRef').addEventListener('click', function() {
             updateSensorValue(4);
+        });
+        document.getElementById('buttonAdjMotor').addEventListener('click', function() {
+            adjustMotors();
         });
     }
     

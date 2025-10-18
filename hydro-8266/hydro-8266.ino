@@ -41,6 +41,11 @@ float refpH = 7.0;
 float refPres = 1.12;
 int refTDS = 131;
 float refFF = 23;
+
+//Motor Values
+uint8_t motorID = 1;
+uint16_t motorValue = 1;
+String motorMsg = "1:1";
 ////////////////////////////
 
 
@@ -91,6 +96,16 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       } else if(msg.startsWith("refFF")){
         String valStr = msg.substring(msg.indexOf(':') + 1);
         refFF = valStr.toFloat();
+      }else if (msg[0] >= '0' && msg[0] <= '9'){
+        motorMsg = msg;
+        String motorIDStr = msg.substring(0, msg.indexOf(':'));
+        String motorValueStr = msg.substring(msg.indexOf(':') + 1);
+        motorID = motorIDStr.toInt();
+        motorValue = motorValueStr.toInt();
+        Serial.print("Motor ID: ");
+        Serial.println(motorID);
+        Serial.print("Motor Value: ");
+        Serial.println(motorValue);
       }
 
       String sensorReadings = getSensorReadings();
@@ -206,17 +221,14 @@ void SPISlaveSetup(){
       //Send ref value of the data
       String sValue = String(refFF);
       SPISlave.setData(sValue.c_str());
-    }else{
-      String message = String(cData+1);      // So that we can get rid of 
-      Serial.println(message);
-      SPISlave.setData("Ask me a question!");
+    }else{   
+      SPISlave.setData(motorMsg.c_str());         // Send motor adjustment values
+      Serial.println(motorMsg);
     }
-    
-    
   });
 
   SPISlave.onDataSent([]() {
-    Serial.println("Answer Sent");
+    //Serial.println("Answer Sent");
   });
 
   SPISlave.begin();

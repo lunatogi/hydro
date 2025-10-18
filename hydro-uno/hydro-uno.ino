@@ -43,8 +43,9 @@ float refpH = 8.8;
 float refPres = 5.09;
 int refTDS = 313;
 float refFF = 32;
-///////////////////////////////
-
+/////////////MOTOR/////////////
+uint8_t mtrID = 0b00000000;
+uint16_t mtrData = 0b1010101010101010;
 ///////////////////// SPI ////////////////////////
 class ESPMaster {
 private:
@@ -131,7 +132,19 @@ void sendESP(const char *message) {
       Serial.println(refFF);
       break;
     default:
-      Serial.println("Unknown message header");
+      Serial.println(retData);
+
+      //Motor Adjutment Values
+      String motorIDStr = retData.substring(0, retData.indexOf(':'));
+      String motorDataStr = retData.substring(retData.indexOf(':') + 1);
+      mtrID = motorIDStr.toInt();
+      mtrData = motorDataStr.toInt();
+      //
+      Serial.print("Motor ID: ");
+      Serial.println(mtrID);
+      Serial.print("Motor Data: ");
+      Serial.println(mtrData);
+
       break;
   }
   Serial.println("");
@@ -144,7 +157,7 @@ void SPIMasterSetup(){
   sendESP("Hello Slave!");         // Unnecessary
 }
 ///////////////////////////////////////////////////////
-uint8_t mtrData = 0b10101010;
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -162,9 +175,10 @@ void setup() {
 
 void loop() {         // temp/100, alt/100
   // put your main code here, to run repeatedly:
-  delay(5000);
-  AdjustMotors(mtrData);
-  mtrData++;
+  delay(1000);
+  //AdjustMotors(mtrData);
+  //mtrData++;
+  Run();
 }
 
 void AdjustMotors(uint8_t data){
@@ -179,7 +193,7 @@ void AdjustMotors(uint8_t data){
 }
 
 void Run(){
-  /*
+  
   Serial.println("---");
   readOneWire();                    // Temperature
   String tempS = "t"+String(temp);
@@ -196,8 +210,8 @@ void Run(){
   readFlyingFish();
   String ffS = "f"+String(ff);
   sendESP(ffS.c_str());
-  */
-
+  
+  sendESP("0");   // Takes motor adjustment values
   
 }
 
