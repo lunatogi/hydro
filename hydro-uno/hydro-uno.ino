@@ -45,7 +45,9 @@ int refTDS = 313;
 float refFF = 32;
 /////////////MOTOR/////////////
 uint8_t mtrID = 0b00000000;
+uint8_t o_mtrID = 0b00000001;
 uint16_t mtrData = 0b1010101010101010;
+uint16_t o_mtrData = 0b0101010101010101;
 ///////////////////// SPI ////////////////////////
 class ESPMaster {
 private:
@@ -176,6 +178,15 @@ void setup() {
 void loop() {         // temp/100, alt/100
   // put your main code here, to run repeatedly:
   delay(1000);
+  if((o_mtrID != mtrID) && (o_mtrData != mtrData){
+    uint8_t mtrData_L = mtrData & 0b11111111;
+    uint8_t mtrdData_H = ((mtrData) >> 8) & 0b11111111;
+    AdjustMotors(mtrID);
+    AdjustMotors(mtrData_L);
+    AdjustMotors(mtrdData_H);
+    o_mtrID = mtrID;
+    o_mtrData = mtrData;
+  }
   //AdjustMotors(mtrData);
   //mtrData++;
   Run();
