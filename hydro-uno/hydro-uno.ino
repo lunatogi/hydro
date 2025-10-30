@@ -173,11 +173,12 @@ void setup() {
   pinMode(MOTOR_CLK, OUTPUT);
   digitalWrite(MOTOR_DATA, LOW);
   digitalWrite(MOTOR_CLK, LOW);
+  delay(3000);
 }
 
 void loop() {         // temp/100, alt/100
   // put your main code here, to run repeatedly:
-  delay(3000);
+  
 
   //AdjustMotors(0b00000001);
   //AdjustMotors(0b00010110);
@@ -199,7 +200,6 @@ void loop() {         // temp/100, alt/100
 
 void AdjustMotors(uint8_t data){
   for(int i = 0; i < 8; i++){
-    Serial.println("Adjusted Motors");
     bool bit = (data >> i) & 1;
     digitalWrite(MOTOR_DATA, bit);
     digitalWrite(MOTOR_CLK, HIGH);
