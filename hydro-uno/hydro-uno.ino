@@ -177,10 +177,15 @@ void setup() {
 
 void loop() {         // temp/100, alt/100
   // put your main code here, to run repeatedly:
-  delay(1000);
-  if((o_mtrID != mtrID) && (o_mtrData != mtrData){
+  delay(3000);
+
+  //AdjustMotors(0b00000001);
+  //AdjustMotors(0b00010110);
+  //AdjustMotors(0);
+
+  if((o_mtrID != mtrID) || (o_mtrData != mtrData)){
     uint8_t mtrData_L = mtrData & 0b11111111;
-    uint8_t mtrdData_H = ((mtrData) >> 8) & 0b11111111;
+    uint8_t mtrdData_H = mtrData >> 8;
     AdjustMotors(mtrID);
     AdjustMotors(mtrData_L);
     AdjustMotors(mtrdData_H);
@@ -194,6 +199,7 @@ void loop() {         // temp/100, alt/100
 
 void AdjustMotors(uint8_t data){
   for(int i = 0; i < 8; i++){
+    Serial.println("Adjusted Motors");
     bool bit = (data >> i) & 1;
     digitalWrite(MOTOR_DATA, bit);
     digitalWrite(MOTOR_CLK, HIGH);
