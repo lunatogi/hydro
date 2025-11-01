@@ -43,6 +43,9 @@ float refpH = 8.8;
 float refPres = 5.09;
 int refTDS = 313;
 float refFF = 32;
+
+float margin_Temp = 0.7f;
+float margin_Hum = 0.5f;
 /////////////MOTOR/////////////
 uint8_t mtrID = 0b00000000;
 uint8_t o_mtrID = 0b00000001;
@@ -106,7 +109,7 @@ void sendESP(const char *message) {
   //Serial.println(message);
   //Serial.print("Slave: ");
   //Serial.println(retData);
-  // Route by header letter: t=temperature, p=pH, r=pressure, d=dissolved solids (tds), f=particle (ff)
+  // Route by header letter: t=temperature, p=pH, r=pressure, d=dissolved solids (tds), f=particle (ff), m=margin of error temperature, n=margin of error humidity
   switch (message[0]) {
     case 't':
       refTemp = retData.toFloat();
@@ -211,24 +214,33 @@ void AdjustMotors(uint8_t data){
 
 void Run(){
   
+  String ESPval = "";
+
   Serial.println("---");
   readOneWire();                    // Temperature
-  String tempS = "t"+String(temp);
-  sendESP(tempS.c_str());
+  ESPval = "t"+String(temp);
+  sendESP(ESPval.c_str());
 
   readpH();                         // pH
-  String phS = "p"+String(phValue);
-  sendESP(phS.c_str());
+  ESPval = "p"+String(phValue);
+  sendESP(ESPval.c_str());
 
   readTDS();                        // Particle (TDS)
-  String tdsS = "d"+String(tds);
-  sendESP(tdsS.c_str());
+  ESPval = "d"+String(tds);
+  sendESP(ESPval.c_str());
 
   readFlyingFish();
-  String ffS = "f"+String(ff);
-  sendESP(ffS.c_str());
+  ESPval = "f"+String(ff);
+  sendESP(ESPval.c_str());
   
   sendESP("0");   // Takes motor adjustment values
+
+  //Send Debug Values
+  ESPval = "m"+String(margin_Temp);
+  sendESP(ESPval.c_str());
+
+  ESPval = "n"+String(margin_Hum);
+  sendESP(ESPval.c_str());
   
 }
 

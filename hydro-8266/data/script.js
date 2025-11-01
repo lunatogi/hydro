@@ -119,7 +119,7 @@ function onMessage(event) {
     for (var i = 0; i < keys.length; i++){
         var key = keys[i];
         let value = myObj[key];
-        value = value.toFixed(2);
+        if (!Number.isInteger(value)) value = value.toFixed(2);
         let docElement = document.getElementById(key);
         if (docElement) docElement.innerHTML = value;
     }

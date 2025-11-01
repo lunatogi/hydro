@@ -42,6 +42,10 @@ float refPres = 1.12;
 int refTDS = 131;
 float refFF = 23;
 
+float margin_Temp = 0.8f;
+float margin_Hum = 0.6f;
+
+
 //Motor Values
 uint8_t motorID = 1;
 uint16_t motorValue = 1;
@@ -162,6 +166,11 @@ String getSensorReadings(){
   readings["refPressure"] = refPres;
   readings["refTDS"] = refTDS;
   readings["refFF"] = refFF;
+
+  readings["consoleLastMotorID"] = motorID;
+  readings["consoleLastMotorData"] = motorValue;
+  readings["consoleTempMOE"] = margin_Temp;
+  readings["consoleHumMOE"] = margin_Hum;
   String jsonString = JSON.stringify(readings);
   return jsonString;
 }
@@ -191,40 +200,56 @@ void SPISlaveSetup(){
     char * rawData = cData + 1;     //Drop the first letter which says the value type
     char index = cData[0];
     Serial.print("Mesaj: ");
-    if(index == 't'){             //  t->temperature, p->pH, r->pressure, d=dissolved solids (tds), f=particle (ff)
-      temp = atof(rawData);
-      Serial.println(temp);
-      //Send ref value of the data
-      String sValue = String(refTemp);
-      SPISlave.setData(sValue.c_str());
-    }else if(index == 'p'){
-      ph = atof(rawData);
-      Serial.println(ph);
-      //Send ref value of the data
-      String sValue = String(refpH);
-      SPISlave.setData(sValue.c_str());
-    }else if(index == 'r'){
-      pres = atof(rawData);
-      Serial.println(pres);
-      //Send ref value of the data
-      String sValue = String(refPres);
-      SPISlave.setData(sValue.c_str());
-    }else if(index == 'd'){
-      tds = atoi(rawData);
-      Serial.println(tds);
-      //Send ref value of the data
-      String sValue = String(refTDS);
-      SPISlave.setData(sValue.c_str());
-    }else if(index == 'f'){
-      ff = atof(rawData);
-      Serial.println(ff);
-      //Send ref value of the data
-      String sValue = String(refFF);
-      SPISlave.setData(sValue.c_str());
-    }else{   
-      SPISlave.setData(motorMsg.c_str());         // Send motor adjustment values
-      Serial.println(motorMsg);
+    String sValue = "";
+    switch(index){                  //  t->temperature, p->pH, r->pressure, d=dissolved solids (tds), f=particle (ff), m=margin of error temperature, n=margin of error humidity, i=last motor id, k=last motor value
+      case 't':
+        temp = atof(rawData);
+        Serial.println(temp);
+        //Send ref value of the data
+        sValue = String(refTemp);
+        SPISlave.setData(sValue.c_str());
+        break;
+      case 'p':
+        ph = atof(rawData);
+        Serial.println(ph);
+        //Send ref value of the data
+        sValue = String(refpH);
+        SPISlave.setData(sValue.c_str());
+        break;
+      case 'r':
+        pres = atof(rawData);
+        Serial.println(pres);
+        //Send ref value of the data
+        sValue = String(refPres);
+        SPISlave.setData(sValue.c_str());
+        break;
+      case 'd':
+        tds = atoi(rawData);
+        Serial.println(tds);
+        //Send ref value of the data
+        sValue = String(refTDS);
+        SPISlave.setData(sValue.c_str());
+        break;
+      case 'f':
+        ff = atof(rawData);
+        Serial.println(ff);
+        //Send ref value of the data
+        sValue = String(refFF);
+        SPISlave.setData(sValue.c_str());
+        break;
+      case 'm':
+        margin_Temp = atof(rawData);
+        Serial.println(margin_Temp);
+        break;
+      case 'n':
+        margin_Hum = atof(rawData);
+        Serial.println(margin_Temp);
+        break;
+      default:
+        SPISlave.setData(motorMsg.c_str());         // Send motor adjustment values
+        Serial.println(motorMsg);
     }
+    
   });
 
   SPISlave.onDataSent([]() {
