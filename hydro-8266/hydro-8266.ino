@@ -30,17 +30,19 @@ unsigned long timerDelay = 10000;
 //Adafruit_BME280 bme;         // BME280 connect to ESP32 I2C (GPIO 21 = SDA, GPIO 22 = SCL)
 
 //Current and ref sensor values
-float temp = 25.0;
+float temp = 25.0f;
 float ph = 21.1;
-float pres = 1.54;
+float pres = 1.54f;
 int tds = 10;
 float ff = 33;
+float hum = 55.3f;
 
-float refTemp = 27.4;
-float refpH = 7.0;
-float refPres = 1.12;
+float refTemp = 27.4f;
+float refpH = 7.0f;
+float refPres = 1.12f;
 int refTDS = 131;
-float refFF = 23;
+float refFF = 23.0f;
+float refHum = 70.0f;
 
 float margin_Temp = 0.8f;
 float margin_Hum = 0.6f;
@@ -85,21 +87,25 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
 
       Serial.print("Message from web: ");
       Serial.println(msg);
+      String valStr = "";
       if(msg.startsWith("refTemp")) {
-        String valStr = msg.substring(msg.indexOf(':') + 1);
+        valStr = msg.substring(msg.indexOf(':') + 1);
         refTemp = valStr.toFloat();
       } else if(msg.startsWith("refpH")){
-        String valStr = msg.substring(msg.indexOf(':') + 1);
+        valStr = msg.substring(msg.indexOf(':') + 1);
         refpH = valStr.toFloat();
       } else if(msg.startsWith("refPres")){
-        String valStr = msg.substring(msg.indexOf(':') + 1);
+        valStr = msg.substring(msg.indexOf(':') + 1);
         refPres = valStr.toFloat();
       } else if(msg.startsWith("refTDS")){
-        String valStr = msg.substring(msg.indexOf(':') + 1);
+        valStr = msg.substring(msg.indexOf(':') + 1);
         refTDS = valStr.toInt();
       } else if(msg.startsWith("refFF")){
-        String valStr = msg.substring(msg.indexOf(':') + 1);
+        valStr = msg.substring(msg.indexOf(':') + 1);
         refFF = valStr.toFloat();
+      } else if(msg.startsWith("refHum")){
+        valStr = msg.substring(msg.indexOf(':') + 1);
+        refHum = valStr.toFloat();
       }else if (msg[0] >= '0' && msg[0] <= '9'){
         motorMsg = msg;
         String motorIDStr = msg.substring(0, msg.indexOf(':'));
@@ -160,12 +166,14 @@ String getSensorReadings(){
   readings["pressure"] = pres;
   readings["tds"] = tds;
   readings["ff"] = ff;
+  readings["humidity"] = hum;
 
   readings["refTemperature"] = refTemp;
   readings["refpH"] = refpH;
   readings["refPressure"] = refPres;
   readings["refTDS"] = refTDS;
   readings["refFF"] = refFF;
+  readings["refHum"] = refHum;
 
   readings["consoleLastMotorID"] = motorID;
   readings["consoleLastMotorData"] = motorValue;
@@ -187,7 +195,13 @@ void WebSocketSetup(){
     //request->send(200, "text/html", "<h1>ESP8266 is alive ✅</h1>");
   });
 
-  server.serveStatic("/", LittleFS, "/");
+  server.onNotFound([](AsyncWebServerRequest *req){
+    Serial.printf("404: %s %s\n", req->methodToString(), req->url().c_str());
+    if (req->method() == HTTP_OPTIONS) { req->send(204); return; }
+    req->send(404, "text/plain", "Not found: " + req->url());
+  });
+
+  server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
 
   // Start server
   server.begin();
@@ -201,7 +215,7 @@ void SPISlaveSetup(){
     char index = cData[0];
     Serial.print("Mesaj: ");
     String sValue = "";
-    switch(index){                  //  t->temperature, p->pH, r->pressure, d=dissolved solids (tds), f=particle (ff), m=margin of error temperature, n=margin of error humidity, i=last motor id, k=last motor value
+    switch(index){                  //  t->temperature, p->pH, r->pressure, d=dissolved solids (tds), f=particle (ff), h=humidity, m=margin of error temperature, n=margin of error humidity, i=last motor id, k=last motor value
       case 't':
         temp = atof(rawData);
         Serial.println(temp);
@@ -235,6 +249,13 @@ void SPISlaveSetup(){
         Serial.println(ff);
         //Send ref value of the data
         sValue = String(refFF);
+        SPISlave.setData(sValue.c_str());
+        break;
+      case 'h':
+        hum = atof(rawData);
+        Serial.println(hum);
+        //Send ref value of the data
+        sValue = String(refHum);
         SPISlave.setData(sValue.c_str());
         break;
       case 'm':

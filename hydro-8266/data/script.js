@@ -39,6 +39,11 @@ function updateSensorValue(sensor){        // 0 -> temperature, 1 -> pH, 2 -> pr
         let value = element.value;
         element.value = '';
         websocket.send(`refFF:${value}`);
+    }else if(sensor === 5) {
+        let element = document.getElementById('inputHum');
+        let value = element.value;
+        element.value = '';
+        websocket.send(`refHum:${value}`);
     }
 }
 
@@ -91,6 +96,9 @@ function initButton() {
         });
         document.getElementById('buttonFFRef').addEventListener('click', function() {
             updateSensorValue(4);
+        });
+        document.getElementById('buttonHumRef').addEventListener('click', function() {
+            updateSensorValue(5);
         });
         document.getElementById('buttonAdjMotor').addEventListener('click', function() {
             adjustMotors();

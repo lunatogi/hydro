@@ -3,7 +3,7 @@
     <head>
         <title>ESP IOT ADMIN</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="icon" type="image/png" href="favicon.png">
+        <!-- <link rel="icon" type="image/png" href="favicon.png"> -->
         <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
@@ -20,12 +20,12 @@
                     <p class="ref">Cooling is <span id="consoleCooling" style="color: red">OFF</span></p>
                     <p class="ref">Humidifying is <span id="consoleHumidifying" style="color: red">OFF</span></p>
                     <p class="ref">Dehumidifying is <span id="consoleDehumidifying" style="color: red">OFF</span></p>
-                    <p class="ref">Temperature Margin of Error: <span id="consoleTempMOE"></span></p>
-                    <p class="ref">Humidity Margin of Error: <span id="consoleHumMOE"></span></p>
+                    <p class="ref">Temperature Margin of Error: +-<span id="consoleTempMOE"></span> &deg;C</p>
+                    <p class="ref">Humidity Margin of Error: +-<span id="consoleHumMOE"> %</span></p>
                 </div>
 
                 <div class="card">
-                    <p class="card-title"> Adjust Motors</p>
+                    <p class="card-title">Adjust Motors</p>
                     <p class="ref">Motor ID: <span id="adjMotorIDref"></span></p>
                     <input type="number" id="adjMotorIDinput" name="quantity">
                     <p class="ref">Value: <span id="adjMotorValueref"></span></p>
@@ -34,7 +34,7 @@
                 </div>
 
                 <div class="card">
-                    <p class="card-title"> Temperature</p>
+                    <p class="card-title">Temperature</p>
                     <p class="reading">Current: <span id="temperature"></span> &deg;C</p>
                     <p class="ref">Reference value: <span id="refTemperature"></span> &deg;C</p>
                     <input type="number" id="inputTemp" name="quantity">
@@ -42,7 +42,15 @@
                 </div>
 
                 <div class="card">
-                    <p class="card-title"> pH</p>
+                    <p class="card-title">Humidity</p>
+                    <p class="reading">Current: <span id="humidity"></span> %</p>
+                    <p class="ref">Reference value: <span id="refHum"></span> %</p>
+                    <input type="number" id="inputHum" name="quantity">
+                    <p><button id="buttonHumRef" class="button">Set Ref</button></p>
+                </div>
+
+                <div class="card">
+                    <p class="card-title">pH</p>
                     <p class="reading">Current: <span id="ph"></span></p>
                     <p class="ref">Reference value: <span id="refpH"></span></p>
                     <input type="number" id="inputpH" name="quantity">
@@ -50,7 +58,7 @@
                 </div>
 
                 <div class="card">
-                    <p class="card-title"> Pressure</p>
+                    <p class="card-title">Pressure</p>
                     <p class="reading">Current: <span id="pressure"></span> hpa</p>
                     <p class="ref">Reference value: <span id="refPressure"></span> hpa</p>
                     <input type="number" id="inputPres" name="quantity">
@@ -58,7 +66,7 @@
                 </div>
 
                 <div class="card">
-                    <p class="card-title"> TDS</p>
+                    <p class="card-title">TDS</p>
                     <p class="reading">Current: <span id="tds"></span> ppm</p>
                     <p class="ref">Reference value: <span id="refTDS"></span> ppm</p>
                     <input type="number" id="inputTDS" name="quantity">
@@ -66,7 +74,7 @@
                 </div>
 
                 <div class="card">
-                    <p class="card-title"> Flying Fish</p>
+                    <p class="card-title">Flying Fish</p>
                     <p class="reading">Current: <span id="ff"></span></p>
                     <p class="ref">Reference value: <span id="refFF"></span></p>
                     <input type="number" id="inputFF" name="quantity">

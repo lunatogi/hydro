@@ -19,30 +19,37 @@
 //#include "Adafruit_BMP085.h"  // BMP180 Air Pressure Sensor
 #include "DFRobot_PH.h"         // DFTRobot Analog pH Sensor 
 #include <OneWire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_AHTX0.h>
 #include <DallasTemperature.h>
 #include <SPI.h>
 
 // Setup a oneWire instance to communicate with any OneWire devices
 OneWire oneWire(ONE_WIRE_BUS);
-
 // Pass our oneWire reference to Dallas Temperature sensor 
 DallasTemperature sensors(&oneWire);
 
 //Adafruit_BMP085 bmp;
 DFRobot_PH ph;
 
-//Current and ref sensor values
-float temp = 30.0;
-float phValue = 0;
-float pres = 2.21;
-float tds = 2;
-float ff = 1;
+//Adafruit AHT10 settings
+Adafruit_AHTX0 aht10;
+sensors_event_t aht10Temp, aht10Hum;
 
-float refTemp = 17.3;
-float refpH = 8.8;
-float refPres = 5.09;
+//Current and ref sensor values
+float temp = 30.0f;
+float phValue = 0.0f;
+float pres = 2.21f;
+float tds = 2.0f;
+float ff = 1.0f;
+float hum = 0.0f;
+
+float refTemp = 17.3f;
+float refpH = 8.8f;
+float refPres = 5.09f;
 int refTDS = 313;
-float refFF = 32;
+float refFF = 32.0f;
+float refHum = 73.0f;
 
 float margin_Temp = 0.7f;
 float margin_Hum = 0.5f;
@@ -109,7 +116,7 @@ void sendESP(const char *message) {
   //Serial.println(message);
   //Serial.print("Slave: ");
   //Serial.println(retData);
-  // Route by header letter: t=temperature, p=pH, r=pressure, d=dissolved solids (tds), f=particle (ff), m=margin of error temperature, n=margin of error humidity
+  // Route by header letter: t=temperature, p=pH, r=pressure, d=dissolved solids (tds), f=particle (ff), h=humidity, m=margin of error temperature, n=margin of error humidity
   switch (message[0]) {
     case 't':
       refTemp = retData.toFloat();
@@ -135,6 +142,11 @@ void sendESP(const char *message) {
       refFF = retData.toFloat();
       Serial.print("InRef Particle: ");
       Serial.println(refFF);
+      break;
+    case 'h':
+      refHum = retData.toFloat();
+      Serial.print("InRef Humidity: ");
+      Serial.println(refHum);
       break;
     default:
       Serial.println(retData);
@@ -176,6 +188,15 @@ void setup() {
   pinMode(MOTOR_CLK, OUTPUT);
   digitalWrite(MOTOR_DATA, LOW);
   digitalWrite(MOTOR_CLK, LOW);
+
+  while (aht10.begin() != true) //for ESP-01 use aht10.begin(0, 2);
+  {
+    Serial.println(F("AHT1x not connected or fail to load calibration coefficient")); //(F()) save string to flash & keeps dynamic memory free
+
+    delay(2000);
+  }
+
+
   delay(3000);
 }
 
@@ -213,7 +234,6 @@ void AdjustMotors(uint8_t data){
 }
 
 void Run(){
-  
   String ESPval = "";
 
   Serial.println("---");
@@ -232,6 +252,10 @@ void Run(){
   readFlyingFish();
   ESPval = "f"+String(ff);
   sendESP(ESPval.c_str());
+
+  readHumidity();
+  ESPval = "h"+String(hum);
+  sendESP(ESPval.c_str());
   
   sendESP("0");   // Takes motor adjustment values
 
@@ -241,11 +265,7 @@ void Run(){
 
   ESPval = "n"+String(margin_Hum);
   sendESP(ESPval.c_str());
-  
 }
-
-
-
 
 void readOneWire(){
   sensors.requestTemperatures(); 
@@ -301,5 +321,12 @@ void readTDS(){
   Serial.println(tds);
 
   delay(10);
+}
+
+void readHumidity(){
+  aht10.getEvent(&aht10Hum, &aht10Temp);
+  hum = aht10Hum.relative_humidity;
+  Serial.print("Humudity: ");
+  Serial.println(hum);
 }
 
