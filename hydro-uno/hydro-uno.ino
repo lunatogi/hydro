@@ -116,55 +116,65 @@ void sendESP(const char *message) {
   //Serial.println(message);
   //Serial.print("Slave: ");
   //Serial.println(retData);
-  // Route by header letter: t=temperature, p=pH, r=pressure, d=dissolved solids (tds), f=particle (ff), h=humidity, m=margin of error temperature, n=margin of error humidity
+  // Route by header letter: t=temperature, p=pH, r=pressure, d=dissolved solids (tds), f=particle (ff), h=humidity, m=margin of error temperature, n=margin of error humidity, e=engin
   switch (message[0]) {
     case 't':
       refTemp = retData.toFloat();
       Serial.print("InRef Temp: ");
       Serial.println(refTemp);
+      Serial.println("");
       break;
     case 'p':
       refpH = retData.toFloat();
       Serial.print("InRef pH: ");
       Serial.println(refpH);
+      Serial.println("");
       break;
     case 'r':
       refPres = retData.toFloat();
       Serial.print("InRef Pressure: ");
       Serial.println(refPres);
+      Serial.println("");
       break;
     case 'd':
       refTDS = retData.toInt();
       Serial.print("InRef TDS: ");
       Serial.println(refTDS);
+      Serial.println("");
       break;
     case 'f':
       refFF = retData.toFloat();
       Serial.print("InRef Particle: ");
       Serial.println(refFF);
+      Serial.println("");
       break;
     case 'h':
       refHum = retData.toFloat();
       Serial.print("InRef Humidity: ");
       Serial.println(refHum);
+      Serial.println("");
       break;
-    default:
-      Serial.println(retData);
-
+    case 'e':
       //Motor Adjutment Values
-      String motorIDStr = retData.substring(0, retData.indexOf(':'));
-      String motorDataStr = retData.substring(retData.indexOf(':') + 1);
+      String retDataStr = retData;
+      String motorIDStr = retDataStr.substring(0, retData.indexOf(':'));
+      String motorDataStr = retDataStr.substring(retData.indexOf(':') + 1);
       mtrID = motorIDStr.toInt();
       mtrData = motorDataStr.toInt();
-      //
+      
       Serial.print("Motor ID: ");
       Serial.println(mtrID);
       Serial.print("Motor Data: ");
       Serial.println(mtrData);
-
+      Serial.println("");
+      break;
+    default:
+      Serial.print("No respond message: ");
+      Serial.println(retData);
+      Serial.println("");
       break;
   }
-  Serial.println("");
+  //Serial.println("");
 }
 
 void SPIMasterSetup(){
@@ -257,7 +267,7 @@ void Run(){
   ESPval = "h"+String(hum);
   sendESP(ESPval.c_str());
   
-  sendESP("0");   // Takes motor adjustment values
+  sendESP("e0");   // Takes motor adjustment values
 
   //Send Debug Values
   ESPval = "m"+String(margin_Temp);
