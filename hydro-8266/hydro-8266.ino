@@ -33,8 +33,8 @@ unsigned long timerDelay = 10000;
 float temp = 25.0f;
 float ph = 21.1;
 float pres = 1.54f;
-int tds = 10;
-float ff = 33;
+int tds_ = 10;
+float ff_ = 33;
 float hum = 55.3f;
 
 float refTemp = 27.4f;
@@ -47,13 +47,64 @@ float refHum = 70.0f;
 float margin_Temp = 0.8f;
 float margin_Hum = 0.6f;
 
-
 //Motor Values
 uint8_t motorID = 1;
 uint16_t motorValue = 1;
 String motorMsg = "1:1";
-////////////////////////////
 
+////////////////////// SENSORS /////////////////////////
+struct Sensor {
+  const char* name;
+
+  float ref;      
+  float margin;
+
+  float value;
+};
+
+Sensor temperature = {
+  .name = "Temperature Sensor",
+  .ref = 17.3f,
+  .margin = 1.0f,
+  .value = 0,
+};
+
+Sensor humidity = {
+  .name = "Humidity Sensor",
+  .ref = 73.0f,
+  .margin = 3.0f,
+  .value = 0,
+};
+
+Sensor pH = {
+  .name = "pH Sensor",
+  .ref = 8.8f,
+  .margin = 1.0f,
+  .value = 0,
+};
+
+Sensor pressure = {
+  .name = "Pressure Sensor",
+  .ref = 5.09f,
+  .margin = 1.0f,
+  .value = 0,
+};
+
+Sensor tds = {
+  .name = "TDS Sensor",
+  .ref = 313.0f,
+  .margin = 1.0f,
+  .value = 0,
+};
+
+Sensor ff = {
+  .name = "Air Quality Sensor",
+  .ref = 32.0f,
+  .margin = 1.0f,
+  .value = 0,
+};
+
+Sensor sensors[] = {temperature, humidity, pH, pressure, tds, ff};
 
 ////////////////////// WEB SOCKET /////////////////////////
 void initWebSocket() {
@@ -90,22 +141,22 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       String valStr = "";
       if(msg.startsWith("refTemp")) {
         valStr = msg.substring(msg.indexOf(':') + 1);
-        refTemp = valStr.toFloat();
+        temperature.ref = valStr.toFloat();
       } else if(msg.startsWith("refpH")){
         valStr = msg.substring(msg.indexOf(':') + 1);
-        refpH = valStr.toFloat();
+        pH.ref = valStr.toFloat();
       } else if(msg.startsWith("refPres")){
         valStr = msg.substring(msg.indexOf(':') + 1);
-        refPres = valStr.toFloat();
+        pressure.ref = valStr.toFloat();
       } else if(msg.startsWith("refTDS")){
         valStr = msg.substring(msg.indexOf(':') + 1);
-        refTDS = valStr.toInt();
+        tds.ref = valStr.toInt();
       } else if(msg.startsWith("refFF")){
         valStr = msg.substring(msg.indexOf(':') + 1);
-        refFF = valStr.toFloat();
+        ff.ref = valStr.toFloat();
       } else if(msg.startsWith("refHum")){
         valStr = msg.substring(msg.indexOf(':') + 1);
-        refHum = valStr.toFloat();
+        humidity.ref = valStr.toFloat();
       }else if (msg[0] >= '0' && msg[0] <= '9'){
         motorMsg = msg;
         String motorIDStr = msg.substring(0, msg.indexOf(':'));
@@ -161,24 +212,24 @@ void listFS(){
 
 // Get Sensor Readings and return JSON object
 String getSensorReadings(){
-  readings["temperature"] = temp;
-  readings["ph"] = ph;
-  readings["pressure"] = pres;
-  readings["tds"] = tds;
-  readings["ff"] = ff;
-  readings["humidity"] = hum;
+  readings["temperature"] = temperature.value;
+  readings["ph"] = pH.value;
+  readings["pressure"] = pressure.value;
+  readings["tds"] = tds.value;
+  readings["ff"] = ff.value;
+  readings["humidity"] = humidity.value;
 
-  readings["refTemperature"] = refTemp;
-  readings["refpH"] = refpH;
-  readings["refPressure"] = refPres;
-  readings["refTDS"] = refTDS;
-  readings["refFF"] = refFF;
-  readings["refHum"] = refHum;
+  readings["refTemperature"] = temperature.ref;
+  readings["refpH"] = pH.ref;
+  readings["refPressure"] = pressure.ref;
+  readings["refTDS"] = tds.ref;
+  readings["refFF"] = ff.ref;
+  readings["refHum"] = humidity.ref;
 
   readings["consoleLastMotorID"] = motorID;
   readings["consoleLastMotorData"] = motorValue;
-  readings["consoleTempMOE"] = margin_Temp;
-  readings["consoleHumMOE"] = margin_Hum;
+  readings["consoleTempMOE"] = temperature.margin;
+  readings["consoleHumMOE"] = humidity.margin;
   String jsonString = JSON.stringify(readings);
   return jsonString;
 }
@@ -217,54 +268,54 @@ void SPISlaveSetup(){
     String sValue = "";
     switch(index){                  //  t->temperature, p->pH, r->pressure, d=dissolved solids (tds), f=particle (ff), h=humidity, m=margin of error temperature, n=margin of error humidity, i=last motor id, k=last motor value
       case 't':
-        temp = atof(rawData);
-        Serial.println(temp);
+        temperature.value = atof(rawData);
+        Serial.println(temperature.value);
         //Send ref value of the data
-        sValue = String(refTemp);
+        sValue = String(temperature.ref);
         SPISlave.setData(sValue.c_str());
         break;
       case 'p':
-        ph = atof(rawData);
-        Serial.println(ph);
+        pH.value = atof(rawData);
+        Serial.println(pH.value);
         //Send ref value of the data
-        sValue = String(refpH);
+        sValue = String(pH.ref);
         SPISlave.setData(sValue.c_str());
         break;
       case 'r':
-        pres = atof(rawData);
-        Serial.println(pres);
+        pressure.value = atof(rawData);
+        Serial.println(pressure.value);
         //Send ref value of the data
-        sValue = String(refPres);
+        sValue = String(pressure.ref);
         SPISlave.setData(sValue.c_str());
         break;
       case 'd':
-        tds = atoi(rawData);
-        Serial.println(tds);
+        tds.value = atoi(rawData);
+        Serial.println(tds.value);
         //Send ref value of the data
-        sValue = String(refTDS);
+        sValue = String(tds.ref);
         SPISlave.setData(sValue.c_str());
         break;
       case 'f':
-        ff = atof(rawData);
-        Serial.println(ff);
+        ff.value = atof(rawData);
+        Serial.println(ff.value);
         //Send ref value of the data
-        sValue = String(refFF);
+        sValue = String(ff.ref);
         SPISlave.setData(sValue.c_str());
         break;
       case 'h':
-        hum = atof(rawData);
-        Serial.println(hum);
+        humidity.value = atof(rawData);
+        Serial.println(humidity.value);
         //Send ref value of the data
-        sValue = String(refHum);
+        sValue = String(humidity.ref);
         SPISlave.setData(sValue.c_str());
         break;
       case 'm':
-        margin_Temp = atof(rawData);
-        Serial.println(margin_Temp);
+        temperature.margin = atof(rawData);
+        Serial.println(temperature.margin);
         break;
       case 'n':
-        margin_Hum = atof(rawData);
-        Serial.println(margin_Temp);
+        humidity.margin = atof(rawData);
+        Serial.println(temperature.margin);
         break;
       default:
         SPISlave.setData(motorMsg.c_str());         // Send motor adjustment values

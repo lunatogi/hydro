@@ -27,7 +27,7 @@
 // Setup a oneWire instance to communicate with any OneWire devices
 OneWire oneWire(ONE_WIRE_BUS);
 // Pass our oneWire reference to Dallas Temperature sensor 
-DallasTemperature sensors(&oneWire);
+DallasTemperature obj_tempSensor(&oneWire);
 
 //Adafruit_BMP085 bmp;
 DFRobot_PH ph;
@@ -38,26 +38,96 @@ sensors_event_t aht10Temp, aht10Hum;
 
 //Current and ref sensor values
 float temp = 30.0f;
-float phValue = 0.0f;
+float pH_ = 0.0f;
 float pres = 2.21f;
-float tds = 2.0f;
-float ff = 1.0f;
+float tds_ = 2.0f;
+float ff_ = 1.0f;
 float hum = 0.0f;
 
 float refTemp = 17.3f;
 float refpH = 8.8f;
 float refPres = 5.09f;
-int refTDS = 313;
+float refTDS = 313.0f;
 float refFF = 32.0f;
 float refHum = 73.0f;
 
-float margin_Temp = 0.7f;
-float margin_Hum = 0.5f;
+float margin_Temp = 1.0f;
+float margin_Hum = 3.0f;
 /////////////MOTOR/////////////
 uint8_t mtrID = 0b00000000;
 uint8_t o_mtrID = 0b00000001;
 uint16_t mtrData = 0b1010101010101010;
 uint16_t o_mtrData = 0b0101010101010101;
+
+struct Sensor {
+  const char* name;
+
+  float ref;      
+  float margin;
+
+  float value;
+
+  bool increaseEnabled;
+  bool decreaseEnabled;
+};
+
+
+Sensor temperature = {
+  .name = "Temperature Sensor",
+  .ref = 17.3f,
+  .margin = 1.0f,
+  .value = 0,
+  .increaseEnabled = false,
+  .decreaseEnabled = false
+};
+
+Sensor humidity = {
+  .name = "Humidity Sensor",
+  .ref = 73.0f,
+  .margin = 3.0f,
+  .value = 0,
+  .increaseEnabled = false,
+  .decreaseEnabled = false
+};
+
+Sensor pH = {
+  .name = "pH Sensor",
+  .ref = 8.8f,
+  .margin = 1.0f,
+  .value = 0,
+  .increaseEnabled = false,
+  .decreaseEnabled = false
+};
+
+Sensor pressure = {
+  .name = "Pressure Sensor",
+  .ref = 5.09f,
+  .margin = 1.0f,
+  .value = 0,
+  .increaseEnabled = false,
+  .decreaseEnabled = false
+};
+
+Sensor tds = {
+  .name = "TDS Sensor",
+  .ref = 313.0f,
+  .margin = 1.0f,
+  .value = 0,
+  .increaseEnabled = false,
+  .decreaseEnabled = false
+};
+
+Sensor ff = {
+  .name = "Air Quality Sensor",
+  .ref = 32.0f,
+  .margin = 1.0f,
+  .value = 0,
+  .increaseEnabled = false,
+  .decreaseEnabled = false
+};
+
+Sensor sensors[] = {temperature, humidity, pH, pressure, tds, ff};
+
 ///////////////////// SPI ////////////////////////
 class ESPMaster {
 private:
@@ -116,42 +186,42 @@ void sendESP(const char *message) {
   //Serial.println(message);
   //Serial.print("Slave: ");
   //Serial.println(retData);
-  // Route by header letter: t=temperature, p=pH, r=pressure, d=dissolved solids (tds), f=particle (ff), h=humidity, m=margin of error temperature, n=margin of error humidity, e=engin
+  // Route by header letter: t=temperature, p=pH, r=pressure, d=dissolved solids (tds), f=particle (ff.value), h=humidity, m=margin of error temperature, n=margin of error humidity, e=engin
   switch (message[0]) {
     case 't':
-      refTemp = retData.toFloat();
+      temperature.ref = retData.toFloat();
       Serial.print("InRef Temp: ");
-      Serial.println(refTemp);
+      Serial.println(temperature.ref);
       Serial.println("");
       break;
     case 'p':
-      refpH = retData.toFloat();
+      pH.ref = retData.toFloat();
       Serial.print("InRef pH: ");
-      Serial.println(refpH);
+      Serial.println(pH.ref);
       Serial.println("");
       break;
     case 'r':
-      refPres = retData.toFloat();
+      pressure.ref = retData.toFloat();
       Serial.print("InRef Pressure: ");
-      Serial.println(refPres);
+      Serial.println(pressure.ref);
       Serial.println("");
       break;
     case 'd':
-      refTDS = retData.toInt();
+      tds.ref = retData.toFloat();
       Serial.print("InRef TDS: ");
-      Serial.println(refTDS);
+      Serial.println(tds.ref);
       Serial.println("");
       break;
     case 'f':
-      refFF = retData.toFloat();
+      ff.ref = retData.toFloat();
       Serial.print("InRef Particle: ");
-      Serial.println(refFF);
+      Serial.println(ff.ref);
       Serial.println("");
       break;
     case 'h':
-      refHum = retData.toFloat();
+      humidity.ref = retData.toFloat();
       Serial.print("InRef Humidity: ");
-      Serial.println(refHum);
+      Serial.println(humidity.ref);
       Serial.println("");
       break;
     case 'e':
@@ -188,7 +258,7 @@ void SPIMasterSetup(){
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  sensors.begin();    //OneWire temperature sensor
+  obj_tempSensor.begin();    //OneWire temperature sensor
  	SPIMasterSetup();
 
   //if(!bmp.begin()){
@@ -210,7 +280,7 @@ void setup() {
   delay(3000);
 }
 
-void loop() {         // temp/100, alt/100
+void loop() {         // temperature.value/100, alt/100
   // put your main code here, to run repeatedly:
   
 
@@ -229,7 +299,7 @@ void loop() {         // temp/100, alt/100
   }
   //AdjustMotors(mtrData);
   //mtrData++;
-  Run();
+  ReadAndSendESP();
 }
 
 void AdjustMotors(uint8_t data){
@@ -243,45 +313,45 @@ void AdjustMotors(uint8_t data){
   }
 }
 
-void Run(){
+void ReadAndSendESP(){
   String ESPval = "";
 
   Serial.println("---");
   readOneWire();                    // Temperature
-  ESPval = "t"+String(temp);
+  ESPval = "t"+String(temperature.value);
   sendESP(ESPval.c_str());
 
   readpH();                         // pH
-  ESPval = "p"+String(phValue);
+  ESPval = "p"+String(pH.value);
   sendESP(ESPval.c_str());
 
   readTDS();                        // Particle (TDS)
-  ESPval = "d"+String(tds);
+  ESPval = "d"+String(tds.value);
   sendESP(ESPval.c_str());
 
   readFlyingFish();
-  ESPval = "f"+String(ff);
+  ESPval = "f"+String(ff.value);
   sendESP(ESPval.c_str());
 
   readHumidity();
-  ESPval = "h"+String(hum);
+  ESPval = "h"+String(humidity.value);
   sendESP(ESPval.c_str());
   
   sendESP("e0");   // Takes motor adjustment values
 
   //Send Debug Values
-  ESPval = "m"+String(margin_Temp);
+  ESPval = "m"+String(temperature.margin);
   sendESP(ESPval.c_str());
 
-  ESPval = "n"+String(margin_Hum);
+  ESPval = "n"+String(humidity.margin);
   sendESP(ESPval.c_str());
 }
 
 void readOneWire(){
-  sensors.requestTemperatures(); 
+  obj_tempSensor.requestTemperatures(); 
   Serial.print("Temperature:");
-  temp = sensors.getTempCByIndex(0) + 1.5;
-  Serial.println(temp); 
+  temperature.value = obj_tempSensor.getTempCByIndex(0) + 1.5;
+  Serial.println(temperature.value); 
 }
 
 /*
@@ -297,8 +367,8 @@ void readBMP(){
   //Serial.println(pressure);
 
   Serial.println("Temperature BMP:");
-  temp = temperature;
-  Serial.println(temp);
+  temperature.value = temperature;
+  Serial.println(temperature.value);
 
   //Serial.println("Altitude:");
   //Serial.println(bitwiseAlt);
@@ -311,32 +381,32 @@ void readBMP(){
 void readpH(){
   Serial.print("pH: ");
   float voltage = analogRead(PH_PIN)/1024.0*5000;
-  phValue = ph.readPH(voltage, temp) + 0.3;
-  Serial.println(phValue);
+  pH.value = ph.readPH(voltage, temperature.value) + 0.3;
+  Serial.println(pH.value);
 
   delay(10);
 }
 
 void readFlyingFish(){
   Serial.print("Flammable Gas: ");
-  ff = analogRead(FLG_PIN);
-  Serial.println(ff);
+  ff.value = analogRead(FLG_PIN);
+  Serial.println(ff.value);
 
   delay(10);
 }
 
 void readTDS(){
   Serial.print("TDS: ");
-  tds = analogRead(TDS_PIN);
-  Serial.println(tds);
+  tds.value = analogRead(TDS_PIN);
+  Serial.println(tds.value);
 
   delay(10);
 }
 
 void readHumidity(){
   aht10.getEvent(&aht10Hum, &aht10Temp);
-  hum = aht10Hum.relative_humidity;
+  humidity.value = aht10Hum.relative_humidity;
   Serial.print("Humudity: ");
-  Serial.println(hum);
+  Serial.println(humidity.value);
 }
 
