@@ -16,6 +16,8 @@
 #define MOTOR_DATA 7
 #define MOTOR_CLK 6
 
+#define MAX_SENSOR 6
+
 //#include "Adafruit_BMP085.h"  // BMP180 Air Pressure Sensor
 #include "DFRobot_PH.h"         // DFTRobot Analog pH Sensor 
 #include <OneWire.h>
@@ -77,7 +79,7 @@ Sensor temperature = {
   .ref = 17.3f,
   .margin = 1.0f,
   .value = 0,
-  .increaseEnabled = false,
+  .increaseEnabled = true,
   .decreaseEnabled = false
 };
 
@@ -87,7 +89,7 @@ Sensor humidity = {
   .margin = 3.0f,
   .value = 0,
   .increaseEnabled = false,
-  .decreaseEnabled = false
+  .decreaseEnabled = true
 };
 
 Sensor pH = {
@@ -104,8 +106,8 @@ Sensor pressure = {
   .ref = 5.09f,
   .margin = 1.0f,
   .value = 0,
-  .increaseEnabled = false,
-  .decreaseEnabled = false
+  .increaseEnabled = true,
+  .decreaseEnabled = true
 };
 
 Sensor tds = {
@@ -113,7 +115,7 @@ Sensor tds = {
   .ref = 313.0f,
   .margin = 1.0f,
   .value = 0,
-  .increaseEnabled = false,
+  .increaseEnabled = true,
   .decreaseEnabled = false
 };
 
@@ -122,7 +124,7 @@ Sensor ff = {
   .ref = 32.0f,
   .margin = 1.0f,
   .value = 0,
-  .increaseEnabled = false,
+  .increaseEnabled = true,
   .decreaseEnabled = false
 };
 
@@ -186,7 +188,7 @@ void sendESP(const char *message) {
   //Serial.println(message);
   //Serial.print("Slave: ");
   //Serial.println(retData);
-  // Route by header letter: t=temperature, p=pH, r=pressure, d=dissolved solids (tds), f=particle (ff.value), h=humidity, m=margin of error temperature, n=margin of error humidity, e=engin
+  // Route by header letter: t=temperature, p=pH, r=pressure, d=dissolved solids (tds), f=particle (ff.value), h=humidity, m=margin of error temperature, n=margin of error humidity, e=engin, s=on or off positions for motors
   switch (message[0]) {
     case 't':
       temperature.ref = retData.toFloat();
@@ -238,6 +240,8 @@ void sendESP(const char *message) {
       Serial.println(mtrData);
       Serial.println("");
       break;
+    case 's':
+      
     default:
       Serial.print("No respond message: ");
       Serial.println(retData);
@@ -345,6 +349,36 @@ void ReadAndSendESP(){
 
   ESPval = "n"+String(humidity.margin);
   sendESP(ESPval.c_str());
+
+  ESPval = "s";
+  ESPval = ESPval + sumSwitches();
+  sendESP(ESPval.c_str());
+
+}
+
+String byteToBinary(uint16_t b) {
+  String s = "";
+  for (int i = 15; i >= 0; i--) {
+    s = s + ((b & (1 << i)) ? '1' : '0');
+  }
+  return s;
+}
+
+String sumSwitches(){         // If any motor is ON or OFF
+  String flagStr = "";
+  uint16_t flags = 0;
+  for(int i = MAX_SENSOR-1; i >= 0; i--){
+    flags = flags << 1;
+    if (sensors[i].increaseEnabled) flags |= 1;
+    flags = flags << 1;
+    if (sensors[i].decreaseEnabled) flags |= 1;
+
+  }
+
+  flagStr = byteToBinary(flags);
+  Serial.print("Switch Matrix: ");
+  Serial.println(flagStr);
+  return flagStr;
 }
 
 void readOneWire(){

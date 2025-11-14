@@ -29,23 +29,7 @@ unsigned long timerDelay = 10000;
 // Create a sensor object
 //Adafruit_BME280 bme;         // BME280 connect to ESP32 I2C (GPIO 21 = SDA, GPIO 22 = SCL)
 
-//Current and ref sensor values
-float temp = 25.0f;
-float ph = 21.1;
-float pres = 1.54f;
-int tds_ = 10;
-float ff_ = 33;
-float hum = 55.3f;
-
-float refTemp = 27.4f;
-float refpH = 7.0f;
-float refPres = 1.12f;
-int refTDS = 131;
-float refFF = 23.0f;
-float refHum = 70.0f;
-
-float margin_Temp = 0.8f;
-float margin_Hum = 0.6f;
+String switchMatrixStr = "";
 
 //Motor Values
 uint8_t motorID = 1;
@@ -226,6 +210,19 @@ String getSensorReadings(){
   readings["refFF"] = ff.ref;
   readings["refHum"] = humidity.ref;
 
+  readings["switch_temp_up"] = switchMatrixStr[4] - '0';
+  readings["switch_temp_down"] = switchMatrixStr[5] - '0';
+  readings["switch_hum_up"] = switchMatrixStr[6] - '0';
+  readings["switch_hum_down"] = switchMatrixStr[7] - '0';
+//  readings["switch_ph_up"] = 
+//  readings["switch_ph_down"] = 
+//  readings["switch_press_up"] = 
+//  readings["switch_press_down"] = 
+//  readings["switch_tds_up"] = 
+//  readings["switch_tds_down"] = 
+//  readings["switch_ff_up"] = 
+//  readings["switch_ff_down"] = 
+
   readings["consoleLastMotorID"] = motorID;
   readings["consoleLastMotorData"] = motorValue;
   readings["consoleTempMOE"] = temperature.margin;
@@ -266,7 +263,7 @@ void SPISlaveSetup(){
     char index = cData[0];
     Serial.print("Mesaj: ");
     String sValue = "";
-    switch(index){                  //  t->temperature, p->pH, r->pressure, d=dissolved solids (tds), f=particle (ff), h=humidity, m=margin of error temperature, n=margin of error humidity, i=last motor id, k=last motor value
+    switch(index){                  //  t-> temperature, p-> pH, r -> pressure, d-> dissolved solids (tds), f-> particle (ff), h-> humidity, m-> margin of error temperature, n-> margin of error humidity, i-> last motor id, k-> last motor value, s-> motor off on switches
       case 't':
         temperature.value = atof(rawData);
         Serial.println(temperature.value);
@@ -316,6 +313,10 @@ void SPISlaveSetup(){
       case 'n':
         humidity.margin = atof(rawData);
         Serial.println(temperature.margin);
+        break;
+      case 's':
+        switchMatrixStr = rawData;
+        Serial.println(rawData);
         break;
       default:
         SPISlave.setData(motorMsg.c_str());         // Send motor adjustment values

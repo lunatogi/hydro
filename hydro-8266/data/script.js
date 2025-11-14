@@ -127,8 +127,18 @@ function onMessage(event) {
     for (var i = 0; i < keys.length; i++){
         var key = keys[i];
         let value = myObj[key];
-        if (!Number.isInteger(value)) value = value.toFixed(2);
-        let docElement = document.getElementById(key);
-        if (docElement) docElement.innerHTML = value;
+        if(key.startsWith("switch")){
+            if(value === 1){
+                document.getElementById(key).innerHTML = "ON";
+                document.getElementById(key).style.color = "green";
+            } else{
+                document.getElementById(key).innerHTML = "OFF";
+                document.getElementById(key).style.color = "red";
+            }
+        }else{
+            if (!Number.isInteger(value)) value = value.toFixed(2);
+            let docElement = document.getElementById(key);
+            if (docElement) docElement.innerHTML = value;
+        }
     }
 }
