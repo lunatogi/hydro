@@ -69,67 +69,30 @@ struct Sensor {
 
   float value;
 
+  uint8_t upMotorID;
+  uint8_t downMotorID;
+
   bool increaseEnabled;
   bool decreaseEnabled;
 };
 
-
-Sensor temperature = {
-  .name = "Temperature Sensor",
-  .ref = 17.3f,
-  .margin = 1.0f,
-  .value = 0,
-  .increaseEnabled = true,
-  .decreaseEnabled = false
+enum {
+  IDX_TEMP = 0,
+  IDX_HUM,
+  IDX_PH,
+  IDX_PRESS,
+  IDX_TDS,
+  IDX_FF
 };
 
-Sensor humidity = {
-  .name = "Humidity Sensor",
-  .ref = 73.0f,
-  .margin = 3.0f,
-  .value = 0,
-  .increaseEnabled = false,
-  .decreaseEnabled = true
+Sensor sensors[MAX_SENSOR] = {
+  { "Temperature Sensor", 17.3f, 1.0f, 0, 40, 45, false,  false },
+  { "Humidity Sensor",    73.0f, 3.0f, 0, 50, 55, false, false  },
+  { "pH Sensor",          8.8f,  1.0f, 0, 60, 65, false, false  },
+  { "Pressure Sensor",    5.09f, 1.0f, 0, 70, 75, false,  false },
+  { "TDS Sensor",         313.0f,1.0f, 0, 80, 85, false,  false },
+  { "Air Quality Sensor", 32.0f, 1.0f, 0, 90, 95, false,  false },
 };
-
-Sensor pH = {
-  .name = "pH Sensor",
-  .ref = 8.8f,
-  .margin = 1.0f,
-  .value = 0,
-  .increaseEnabled = false,
-  .decreaseEnabled = false
-};
-
-Sensor pressure = {
-  .name = "Pressure Sensor",
-  .ref = 5.09f,
-  .margin = 1.0f,
-  .value = 0,
-  .increaseEnabled = true,
-  .decreaseEnabled = true
-};
-
-Sensor tds = {
-  .name = "TDS Sensor",
-  .ref = 313.0f,
-  .margin = 1.0f,
-  .value = 0,
-  .increaseEnabled = true,
-  .decreaseEnabled = false
-};
-
-Sensor ff = {
-  .name = "Air Quality Sensor",
-  .ref = 32.0f,
-  .margin = 1.0f,
-  .value = 0,
-  .increaseEnabled = true,
-  .decreaseEnabled = false
-};
-
-Sensor sensors[] = {temperature, humidity, pH, pressure, tds, ff};
-
 ///////////////////// SPI ////////////////////////
 class ESPMaster {
 private:
@@ -191,39 +154,39 @@ void sendESP(const char *message) {
   // Route by header letter: t=temperature, p=pH, r=pressure, d=dissolved solids (tds), f=particle (ff.value), h=humidity, m=margin of error temperature, n=margin of error humidity, e=engin, s=on or off positions for motors
   switch (message[0]) {
     case 't':
-      temperature.ref = retData.toFloat();
+      sensors[IDX_TEMP].ref = retData.toFloat();
       Serial.print("InRef Temp: ");
-      Serial.println(temperature.ref);
+      Serial.println(sensors[IDX_TEMP].ref);
       Serial.println("");
       break;
     case 'p':
-      pH.ref = retData.toFloat();
+      sensors[IDX_PH].ref = retData.toFloat();
       Serial.print("InRef pH: ");
-      Serial.println(pH.ref);
+      Serial.println(sensors[IDX_PH].ref);
       Serial.println("");
       break;
     case 'r':
-      pressure.ref = retData.toFloat();
+      sensors[IDX_PRESS].ref = retData.toFloat();
       Serial.print("InRef Pressure: ");
-      Serial.println(pressure.ref);
+      Serial.println(sensors[IDX_PRESS].ref);
       Serial.println("");
       break;
     case 'd':
-      tds.ref = retData.toFloat();
+      sensors[IDX_TDS].ref = retData.toFloat();
       Serial.print("InRef TDS: ");
-      Serial.println(tds.ref);
+      Serial.println(sensors[IDX_TDS].ref);
       Serial.println("");
       break;
     case 'f':
-      ff.ref = retData.toFloat();
+      sensors[IDX_FF].ref = retData.toFloat();
       Serial.print("InRef Particle: ");
-      Serial.println(ff.ref);
+      Serial.println(sensors[IDX_FF].ref);
       Serial.println("");
       break;
     case 'h':
-      humidity.ref = retData.toFloat();
+      sensors[IDX_HUM].ref = retData.toFloat();
       Serial.print("InRef Humidity: ");
-      Serial.println(humidity.ref);
+      Serial.println(sensors[IDX_HUM].ref);
       Serial.println("");
       break;
     case 'e':
@@ -240,8 +203,8 @@ void sendESP(const char *message) {
       Serial.println(mtrData);
       Serial.println("");
       break;
-    case 's':
-      
+    case 's':       // No process needed for switch flag send
+      break;
     default:
       Serial.print("No respond message: ");
       Serial.println(retData);
@@ -303,7 +266,9 @@ void loop() {         // temperature.value/100, alt/100
   }
   //AdjustMotors(mtrData);
   //mtrData++;
-  ReadAndSendESP();
+  ReadSensors();
+  processMotors();
+  SendStatesToESP();
 }
 
 void AdjustMotors(uint8_t data){
@@ -317,43 +282,123 @@ void AdjustMotors(uint8_t data){
   }
 }
 
-void ReadAndSendESP(){
-  String ESPval = "";
-
+void ReadSensors(){
   Serial.println("---");
   readOneWire();                    // Temperature
-  ESPval = "t"+String(temperature.value);
-  sendESP(ESPval.c_str());
-
   readpH();                         // pH
-  ESPval = "p"+String(pH.value);
-  sendESP(ESPval.c_str());
-
   readTDS();                        // Particle (TDS)
-  ESPval = "d"+String(tds.value);
-  sendESP(ESPval.c_str());
-
   readFlyingFish();
-  ESPval = "f"+String(ff.value);
+  readHumidity();
+}
+
+void SendStatesToESP(){
+  String ESPval = "";
+
+  ESPval = "t"+String(sensors[IDX_TEMP].value);
   sendESP(ESPval.c_str());
 
-  readHumidity();
-  ESPval = "h"+String(humidity.value);
+  ESPval = "p"+String(sensors[IDX_PH].value);
   sendESP(ESPval.c_str());
-  
+
+  ESPval = "d"+String(sensors[IDX_TDS].value);
+  sendESP(ESPval.c_str());
+
+  ESPval = "f"+String(sensors[IDX_FF].value);
+  sendESP(ESPval.c_str());
+
+  ESPval = "h"+String(sensors[IDX_HUM].value);
+  sendESP(ESPval.c_str());
+
   sendESP("e0");   // Takes motor adjustment values
 
   //Send Debug Values
-  ESPval = "m"+String(temperature.margin);
+  ESPval = "m"+String(sensors[IDX_TEMP].margin);
   sendESP(ESPval.c_str());
 
-  ESPval = "n"+String(humidity.margin);
+  ESPval = "n"+String(sensors[IDX_HUM].margin);
   sendESP(ESPval.c_str());
 
   ESPval = "s";
   ESPval = ESPval + sumSwitches();
   sendESP(ESPval.c_str());
+}
 
+void processMotors(){
+  Serial.println("*************");
+  for(int i = 0; i < MAX_SENSOR; i++){
+    
+    float curValue = sensors[i].value;
+    float refValue = sensors[i].ref;
+    float marginValue = sensors[i].margin;
+    bool increase = sensors[i].increaseEnabled;
+    bool decrease = sensors[i].decreaseEnabled;
+    uint8_t up_ID = sensors[i].upMotorID;
+    uint8_t down_ID = sensors[i].downMotorID; 
+    
+    if(i == 0){
+      Serial.print("Sensor: ");
+      Serial.println(sensors[i].name);
+      Serial.print("Current Value: ");
+      Serial.println(curValue);
+      Serial.print("Reference Value: ");
+      Serial.println(refValue);
+      Serial.print("Margin Value: ");
+      Serial.println(marginValue);
+      Serial.print("Increasing: ");
+      Serial.println(increase);
+      Serial.print("Decreasing: ");
+      Serial.println(decrease);
+    }
+
+
+    if((curValue < (refValue - marginValue)) && !increase){
+
+      AdjustMotors(up_ID);         // Open upMotor
+      AdjustMotors(123);          // Low bits
+      AdjustMotors(0);            // High bits
+
+      AdjustMotors(down_ID);         // Close downMotor
+      AdjustMotors(5);          // Low bits
+      AdjustMotors(0);            // High bits
+
+      sensors[i].increaseEnabled = true;
+      sensors[i].decreaseEnabled = false;
+    }else if((curValue > (refValue + marginValue)) && !decrease){
+
+      AdjustMotors(down_ID);           // Open downMotor
+      AdjustMotors(123);            // Low bits
+      AdjustMotors(0);            // High bits
+
+      AdjustMotors(up_ID);           // Open downMotor
+      AdjustMotors(5);            // Low bits
+      AdjustMotors(0);            // High bits
+
+      sensors[i].increaseEnabled = false;
+      sensors[i].decreaseEnabled = true;
+    }else{
+      if(increase){
+        uint8_t m_ID = sensors[i].upMotorID;
+        AdjustMotors(m_ID);
+        AdjustMotors(5);          // Low bits
+        AdjustMotors(0);            // High bits
+        sensors[i].increaseEnabled = false;
+      }else if(decrease){
+        uint8_t m_ID = sensors[i].downMotorID;
+        AdjustMotors(m_ID);
+        AdjustMotors(5);          // Low bits
+        AdjustMotors(0);            // High bits
+        sensors[i].decreaseEnabled = false;
+      }
+    }
+    if(i == 0){
+      Serial.println("AFTER");
+      Serial.print("Increasing: ");
+      Serial.println(increase);
+      Serial.print("Decreasing: ");
+      Serial.println(decrease);
+    }
+  }
+  Serial.println("*************");
 }
 
 String byteToBinary(uint16_t b) {
@@ -367,12 +412,11 @@ String byteToBinary(uint16_t b) {
 String sumSwitches(){         // If any motor is ON or OFF
   String flagStr = "";
   uint16_t flags = 0;
-  for(int i = MAX_SENSOR-1; i >= 0; i--){
+  for(int i = 0; i < MAX_SENSOR; i++){
     flags = flags << 1;
     if (sensors[i].increaseEnabled) flags |= 1;
     flags = flags << 1;
     if (sensors[i].decreaseEnabled) flags |= 1;
-
   }
 
   flagStr = byteToBinary(flags);
@@ -384,8 +428,10 @@ String sumSwitches(){         // If any motor is ON or OFF
 void readOneWire(){
   obj_tempSensor.requestTemperatures(); 
   Serial.print("Temperature:");
-  temperature.value = obj_tempSensor.getTempCByIndex(0) + 1.5;
-  Serial.println(temperature.value); 
+  sensors[IDX_TEMP].value = obj_tempSensor.getTempCByIndex(0) + 1.5;
+  Serial.println(sensors[IDX_TEMP].value);
+
+  delay(10);
 }
 
 /*
@@ -415,32 +461,34 @@ void readBMP(){
 void readpH(){
   Serial.print("pH: ");
   float voltage = analogRead(PH_PIN)/1024.0*5000;
-  pH.value = ph.readPH(voltage, temperature.value) + 0.3;
-  Serial.println(pH.value);
+  sensors[IDX_PH].value = ph.readPH(voltage, sensors[IDX_TEMP].value) + 0.3;
+  Serial.println(sensors[IDX_PH].value);
 
   delay(10);
 }
 
 void readFlyingFish(){
   Serial.print("Flammable Gas: ");
-  ff.value = analogRead(FLG_PIN);
-  Serial.println(ff.value);
+  sensors[IDX_FF].value = analogRead(FLG_PIN);
+  Serial.println(sensors[IDX_FF].value);
 
   delay(10);
 }
 
 void readTDS(){
   Serial.print("TDS: ");
-  tds.value = analogRead(TDS_PIN);
-  Serial.println(tds.value);
+  sensors[IDX_TDS].value = analogRead(TDS_PIN);
+  Serial.println(sensors[IDX_TDS].value);
 
   delay(10);
 }
 
 void readHumidity(){
   aht10.getEvent(&aht10Hum, &aht10Temp);
-  humidity.value = aht10Hum.relative_humidity;
+  sensors[IDX_HUM].value = aht10Hum.relative_humidity;
   Serial.print("Humudity: ");
-  Serial.println(humidity.value);
+  Serial.println(sensors[IDX_HUM].value);
+
+  delay(10);
 }
 

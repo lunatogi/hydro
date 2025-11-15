@@ -9,6 +9,8 @@
 //#include <Adafruit_BME280.h>
 //#include <Adafruit_Sensor.h>
 
+#define MAX_SENSOR 6
+
 // Replace with your network credentials
 const char* ssid = "KET0";
 const char* password = "keto4522";
@@ -194,6 +196,10 @@ void listFS(){
   }
 }
 
+String deleteEmptyFlagBits(String flags){
+  return flags.substring(16-(MAX_SENSOR*2));
+}
+
 // Get Sensor Readings and return JSON object
 String getSensorReadings(){
   readings["temperature"] = temperature.value;
@@ -210,10 +216,11 @@ String getSensorReadings(){
   readings["refFF"] = ff.ref;
   readings["refHum"] = humidity.ref;
 
-  readings["switch_temp_up"] = switchMatrixStr[4] - '0';
-  readings["switch_temp_down"] = switchMatrixStr[5] - '0';
-  readings["switch_hum_up"] = switchMatrixStr[6] - '0';
-  readings["switch_hum_down"] = switchMatrixStr[7] - '0';
+  switchMatrixStr = deleteEmptyFlagBits(switchMatrixStr);
+  readings["switch_temp_up"] = switchMatrixStr[0] - '0';      // Need this "-0" for javascript side
+  readings["switch_temp_down"] = switchMatrixStr[1] - '0';
+  readings["switch_hum_up"] = switchMatrixStr[2] - '0';
+  readings["switch_hum_down"] = switchMatrixStr[3] - '0';
 //  readings["switch_ph_up"] = 
 //  readings["switch_ph_down"] = 
 //  readings["switch_press_up"] = 
