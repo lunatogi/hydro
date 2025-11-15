@@ -196,10 +196,6 @@ void listFS(){
   }
 }
 
-String deleteEmptyFlagBits(String flags){
-  return flags.substring(16-(MAX_SENSOR*2));
-}
-
 // Get Sensor Readings and return JSON object
 String getSensorReadings(){
   readings["temperature"] = temperature.value;
@@ -216,7 +212,6 @@ String getSensorReadings(){
   readings["refFF"] = ff.ref;
   readings["refHum"] = humidity.ref;
 
-  switchMatrixStr = deleteEmptyFlagBits(switchMatrixStr);
   readings["switch_temp_up"] = switchMatrixStr[0] - '0';      // Need this "-0" for javascript side
   readings["switch_temp_down"] = switchMatrixStr[1] - '0';
   readings["switch_hum_up"] = switchMatrixStr[2] - '0';

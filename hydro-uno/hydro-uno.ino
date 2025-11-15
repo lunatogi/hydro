@@ -367,6 +367,10 @@ void processMotors(){
   }
 }
 
+String deleteEmptyFlagBits(String flags){
+  return flags.substring(16-(MAX_SENSOR*2));
+}
+
 String byteToBinary(uint16_t b) {
   String s = "";
   for (int i = 15; i >= 0; i--) {
@@ -386,6 +390,7 @@ String sumSwitches(){         // If any motor is ON or OFF
   }
 
   flagStr = byteToBinary(flags);
+  flagStr = deleteEmptyFlagBits(flagStr);
   Serial.print("Switch Matrix: ");
   Serial.println(flagStr);
   return flagStr;
