@@ -157,37 +157,31 @@ void sendESP(const char *message) {
       sensors[IDX_TEMP].ref = retData.toFloat();
       Serial.print("InRef Temp: ");
       Serial.println(sensors[IDX_TEMP].ref);
-      Serial.println("");
       break;
     case 'p':
       sensors[IDX_PH].ref = retData.toFloat();
       Serial.print("InRef pH: ");
       Serial.println(sensors[IDX_PH].ref);
-      Serial.println("");
       break;
     case 'r':
       sensors[IDX_PRESS].ref = retData.toFloat();
       Serial.print("InRef Pressure: ");
       Serial.println(sensors[IDX_PRESS].ref);
-      Serial.println("");
       break;
     case 'd':
       sensors[IDX_TDS].ref = retData.toFloat();
       Serial.print("InRef TDS: ");
       Serial.println(sensors[IDX_TDS].ref);
-      Serial.println("");
       break;
     case 'f':
       sensors[IDX_FF].ref = retData.toFloat();
       Serial.print("InRef Particle: ");
       Serial.println(sensors[IDX_FF].ref);
-      Serial.println("");
       break;
     case 'h':
       sensors[IDX_HUM].ref = retData.toFloat();
       Serial.print("InRef Humidity: ");
       Serial.println(sensors[IDX_HUM].ref);
-      Serial.println("");
       break;
     case 'e':
       //Motor Adjutment Values
@@ -201,7 +195,6 @@ void sendESP(const char *message) {
       Serial.println(mtrID);
       Serial.print("Motor Data: ");
       Serial.println(mtrData);
-      Serial.println("");
       break;
     case 's':       // No process needed for switch flag send
       break;
@@ -324,7 +317,6 @@ void SendStatesToESP(){
 }
 
 void processMotors(){
-  Serial.println("*************");
   for(int i = 0; i < MAX_SENSOR; i++){
     
     float curValue = sensors[i].value;
@@ -334,25 +326,8 @@ void processMotors(){
     bool decrease = sensors[i].decreaseEnabled;
     uint8_t up_ID = sensors[i].upMotorID;
     uint8_t down_ID = sensors[i].downMotorID; 
-    
-    if(i == 0){
-      Serial.print("Sensor: ");
-      Serial.println(sensors[i].name);
-      Serial.print("Current Value: ");
-      Serial.println(curValue);
-      Serial.print("Reference Value: ");
-      Serial.println(refValue);
-      Serial.print("Margin Value: ");
-      Serial.println(marginValue);
-      Serial.print("Increasing: ");
-      Serial.println(increase);
-      Serial.print("Decreasing: ");
-      Serial.println(decrease);
-    }
-
 
     if((curValue < (refValue - marginValue)) && !increase){
-
       AdjustMotors(up_ID);         // Open upMotor
       AdjustMotors(123);          // Low bits
       AdjustMotors(0);            // High bits
@@ -364,7 +339,6 @@ void processMotors(){
       sensors[i].increaseEnabled = true;
       sensors[i].decreaseEnabled = false;
     }else if((curValue > (refValue + marginValue)) && !decrease){
-
       AdjustMotors(down_ID);           // Open downMotor
       AdjustMotors(123);            // Low bits
       AdjustMotors(0);            // High bits
@@ -376,13 +350,13 @@ void processMotors(){
       sensors[i].increaseEnabled = false;
       sensors[i].decreaseEnabled = true;
     }else{
-      if(increase){
+      if(increase && (curValue >= (refValue - marginValue))){
         uint8_t m_ID = sensors[i].upMotorID;
         AdjustMotors(m_ID);
         AdjustMotors(5);          // Low bits
         AdjustMotors(0);            // High bits
         sensors[i].increaseEnabled = false;
-      }else if(decrease){
+      }else if(decrease && (curValue <= (refValue + marginValue))){
         uint8_t m_ID = sensors[i].downMotorID;
         AdjustMotors(m_ID);
         AdjustMotors(5);          // Low bits
@@ -390,15 +364,7 @@ void processMotors(){
         sensors[i].decreaseEnabled = false;
       }
     }
-    if(i == 0){
-      Serial.println("AFTER");
-      Serial.print("Increasing: ");
-      Serial.println(increase);
-      Serial.print("Decreasing: ");
-      Serial.println(decrease);
-    }
   }
-  Serial.println("*************");
 }
 
 String byteToBinary(uint16_t b) {
