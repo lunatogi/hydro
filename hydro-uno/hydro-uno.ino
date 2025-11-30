@@ -74,6 +74,9 @@ struct Sensor {
 
   bool increaseEnabled;
   bool decreaseEnabled;
+
+  float minValue;
+  float maxValue;
 };
 
 enum {
@@ -86,12 +89,12 @@ enum {
 };
 
 Sensor sensors[MAX_SENSOR] = {
-  { "Temperature Sensor", 17.3f, 1.0f, 0, 40, 45, false,  false },
-  { "Humidity Sensor",    73.0f, 3.0f, 0, 50, 55, false, false  },
-  { "pH Sensor",          8.8f,  1.0f, 0, 60, 65, false, false  },
-  { "Pressure Sensor",    5.09f, 1.0f, 0, 70, 75, false,  false },
-  { "TDS Sensor",         313.0f,1.0f, 0, 80, 85, false,  false },
-  { "Air Quality Sensor", 32.0f, 1.0f, 0, 90, 95, false,  false },
+  { "Temperature Sensor", 30.0f, 1.0f, 0, 40, 45, false,  false, 25.0f, 45.0f  },
+  { "Humidity Sensor",    73.0f, 3.0f, 0, 50, 55, false,  false, 30.0f, 90.0f  },
+  { "pH Sensor",          8.8f,  1.0f, 0, 60, 65, false,  false, 4.0f,  9.0f   },
+  { "Pressure Sensor",    5.09f, 1.0f, 0, 70, 75, false,  false, 0.5f,  3.0f   },
+  { "TDS Sensor",         313.0f,1.0f, 0, 80, 85, false,  false, 20.0f, 100.0f },
+  { "Air Quality Sensor", 32.0f, 1.0f, 0, 90, 95, false,  false, 50.0f, 600.0f },
 };
 ///////////////////// SPI ////////////////////////
 class ESPMaster {
@@ -147,6 +150,7 @@ void sendESP(const char *message) {
   esp.writeData(message);
   delay(10);
   String retData = String(esp.readData());
+  float retDataF = retData.toFloat();
   //Serial.print("Master: ");
   //Serial.println(message);
   //Serial.print("Slave: ");
@@ -154,32 +158,32 @@ void sendESP(const char *message) {
   // Route by header letter: t=temperature, p=pH, r=pressure, d=dissolved solids (tds), f=particle (ff.value), h=humidity, m=margin of error temperature, n=margin of error humidity, e=engin, s=on or off positions for motors
   switch (message[0]) {
     case 't':
-      sensors[IDX_TEMP].ref = retData.toFloat();
+      if(retDataF <= sensors[IDX_TEMP].maxValue && retDataF >= sensors[IDX_TEMP].minValue) sensors[IDX_TEMP].ref = retDataF;
       Serial.print("InRef Temp: ");
       Serial.println(sensors[IDX_TEMP].ref);
       break;
     case 'p':
-      sensors[IDX_PH].ref = retData.toFloat();
+      if(retDataF <= sensors[IDX_PH].maxValue && retDataF >= sensors[IDX_PH].minValue) sensors[IDX_PH].ref = retDataF;
       Serial.print("InRef pH: ");
       Serial.println(sensors[IDX_PH].ref);
       break;
     case 'r':
-      sensors[IDX_PRESS].ref = retData.toFloat();
+      if(retDataF <= sensors[IDX_PRESS].maxValue && retDataF >= sensors[IDX_PRESS].minValue) sensors[IDX_PRESS].ref = retDataF;
       Serial.print("InRef Pressure: ");
       Serial.println(sensors[IDX_PRESS].ref);
       break;
     case 'd':
-      sensors[IDX_TDS].ref = retData.toFloat();
+      if(retDataF <= sensors[IDX_TDS].maxValue && retDataF >= sensors[IDX_TDS].minValue) sensors[IDX_TDS].ref = retDataF;
       Serial.print("InRef TDS: ");
       Serial.println(sensors[IDX_TDS].ref);
       break;
     case 'f':
-      sensors[IDX_FF].ref = retData.toFloat();
+      if(retDataF <= sensors[IDX_FF].maxValue && retDataF >= sensors[IDX_FF].minValue) sensors[IDX_FF].ref = retDataF;
       Serial.print("InRef Particle: ");
       Serial.println(sensors[IDX_FF].ref);
       break;
     case 'h':
-      sensors[IDX_HUM].ref = retData.toFloat();
+      if(retDataF <= sensors[IDX_HUM].maxValue && retDataF >= sensors[IDX_HUM].minValue) sensors[IDX_HUM].ref = retDataF;
       Serial.print("InRef Humidity: ");
       Serial.println(sensors[IDX_HUM].ref);
       break;
@@ -205,6 +209,7 @@ void sendESP(const char *message) {
       break;
   }
   //Serial.println("");
+  delay(1);
 }
 
 void SPIMasterSetup(){
