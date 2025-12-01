@@ -33,7 +33,7 @@ function updateSensorValue(sensor){        // 0 -> temperature, 1 -> pH, 2 -> pr
         let element = document.getElementById('inputTDS');
         let value = element.value;
         element.value = '';
-        if(value >= 20.0 && value <= 100.0) websocket.send(`refTDS:${value}`);
+        if(value >= 0.0 && value <= 300.0) websocket.send(`refTDS:${value}`);
     }else if(sensor === 4) {
         let element = document.getElementById('inputFF');
         let value = element.value;

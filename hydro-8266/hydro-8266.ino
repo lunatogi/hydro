@@ -1,10 +1,11 @@
-#include "SPISlave.h"
+#include <SPISlave.h>
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include "LittleFS.h"
+#include <LittleFS.h>
 #include <Arduino_JSON.h>
+#include <EEPROM.h>
 #include <FS.h>
 //#include <Adafruit_BME280.h>
 //#include <Adafruit_Sensor.h>
@@ -48,49 +49,23 @@ struct Sensor {
   float value;
 };
 
-Sensor temperature = {
-  .name = "Temperature Sensor",
-  .ref = 25.0f,
-  .margin = 1.0f,
-  .value = 0,
+enum {
+  IDX_TEMP = 0,
+  IDX_HUM,
+  IDX_PH,
+  IDX_PRESS,
+  IDX_TDS,
+  IDX_FF
 };
 
-Sensor humidity = {
-  .name = "Humidity Sensor",
-  .ref = 73.0f,
-  .margin = 3.0f,
-  .value = 0,
+Sensor sensors[] = {
+  { "Temperature Sensor", 25.0f, 1.0f, 0 },
+  { "Humidity Sensor",    73.0f, 3.0f, 0 },
+  { "pH Sensor",           7.0f, 1.0f, 0 },
+  { "Pressure Sensor",     1.5f, 1.0f, 0 },
+  { "TDS Sensor",        300.0f, 1.0f, 0 },
+  { "Air Quality Sensor",  50.0f, 1.0f, 0 }
 };
-
-Sensor pH = {
-  .name = "pH Sensor",
-  .ref = 7.0f,
-  .margin = 1.0f,
-  .value = 0,
-};
-
-Sensor pressure = {
-  .name = "Pressure Sensor",
-  .ref = 1.5f,
-  .margin = 1.0f,
-  .value = 0,
-};
-
-Sensor tds = {
-  .name = "TDS Sensor",
-  .ref = 300.0f,
-  .margin = 1.0f,
-  .value = 0,
-};
-
-Sensor ff = {
-  .name = "Air Quality Sensor",
-  .ref = 50.0f,
-  .margin = 1.0f,
-  .value = 0,
-};
-
-Sensor sensors[] = {temperature, humidity, pH, pressure, tds, ff};
 
 ////////////////////// WEB SOCKET /////////////////////////
 void initWebSocket() {
@@ -127,22 +102,28 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       String valStr = "";
       if(msg.startsWith("refTemp")) {
         valStr = msg.substring(msg.indexOf(':') + 1);
-        temperature.ref = valStr.toFloat();
+        sensors[IDX_TEMP].ref = valStr.toFloat();
+        UpdateEEPROM(0, sensors[IDX_TEMP].ref);
       } else if(msg.startsWith("refpH")){
         valStr = msg.substring(msg.indexOf(':') + 1);
-        pH.ref = valStr.toFloat();
+        sensors[IDX_PH].ref = valStr.toFloat();
+        UpdateEEPROM(8, sensors[IDX_PH].ref);
       } else if(msg.startsWith("refPres")){
         valStr = msg.substring(msg.indexOf(':') + 1);
-        pressure.ref = valStr.toFloat();
+        sensors[IDX_PRESS].ref = valStr.toFloat();
+        UpdateEEPROM(12, sensors[IDX_PRESS].ref);
       } else if(msg.startsWith("refTDS")){
         valStr = msg.substring(msg.indexOf(':') + 1);
-        tds.ref = valStr.toInt();
+        sensors[IDX_TDS].ref = valStr.toInt();
+        UpdateEEPROM(16, sensors[IDX_TDS].ref);
       } else if(msg.startsWith("refFF")){
         valStr = msg.substring(msg.indexOf(':') + 1);
-        ff.ref = valStr.toFloat();
+        sensors[IDX_FF].ref = valStr.toFloat();
+        UpdateEEPROM(20, sensors[IDX_FF].ref);
       } else if(msg.startsWith("refHum")){
         valStr = msg.substring(msg.indexOf(':') + 1);
-        humidity.ref = valStr.toFloat();
+        sensors[IDX_HUM].ref = valStr.toFloat();
+        UpdateEEPROM(4, sensors[IDX_HUM].ref);
       }else if (msg[0] >= '0' && msg[0] <= '9'){
         motorMsg = msg;
         String motorIDStr = msg.substring(0, msg.indexOf(':'));
@@ -198,19 +179,19 @@ void listFS(){
 
 // Get Sensor Readings and return JSON object
 String getSensorReadings(){
-  readings["temperature"] = temperature.value;
-  readings["ph"] = pH.value;
-  readings["pressure"] = pressure.value;
-  readings["tds"] = tds.value;
-  readings["ff"] = ff.value;
-  readings["humidity"] = humidity.value;
+  readings["temperature"] = sensors[IDX_TEMP].value;
+  readings["ph"] = sensors[IDX_PH].value;
+  readings["pressure"] = sensors[IDX_PRESS].value;
+  readings["tds"] = sensors[IDX_TDS].value;
+  readings["ff"] = sensors[IDX_FF].value;
+  readings["humidity"] = sensors[IDX_HUM].value;
 
-  readings["refTemperature"] = temperature.ref;
-  readings["refpH"] = pH.ref;
-  readings["refPressure"] = pressure.ref;
-  readings["refTDS"] = tds.ref;
-  readings["refFF"] = ff.ref;
-  readings["refHum"] = humidity.ref;
+  readings["refTemperature"] = sensors[IDX_TEMP].ref;
+  readings["refpH"] = sensors[IDX_PH].ref;
+  readings["refPressure"] = sensors[IDX_PRESS].ref;
+  readings["refTDS"] = sensors[IDX_TDS].ref;
+  readings["refFF"] = sensors[IDX_FF].ref;
+  readings["refHum"] = sensors[IDX_HUM].ref;
 
   readings["switch_temp_up"] = switchMatrixStr[0] - '0';      // Need this "-0" for javascript side
   readings["switch_temp_down"] = switchMatrixStr[1] - '0';
@@ -227,8 +208,8 @@ String getSensorReadings(){
 
   readings["consoleLastMotorID"] = motorID;
   readings["consoleLastMotorData"] = motorValue;
-  readings["consoleTempMOE"] = temperature.margin;
-  readings["consoleHumMOE"] = humidity.margin;
+  readings["consoleTempMOE"] = sensors[IDX_TEMP].margin;
+  readings["consoleHumMOE"] = sensors[IDX_HUM].margin;
   String jsonString = JSON.stringify(readings);
   return jsonString;
 }
@@ -267,54 +248,54 @@ void SPISlaveSetup(){
     String sValue = "";
     switch(index){                  //  t-> temperature, p-> pH, r -> pressure, d-> dissolved solids (tds), f-> particle (ff), h-> humidity, m-> margin of error temperature, n-> margin of error humidity, i-> last motor id, k-> last motor value, s-> motor off on switches
       case 't':
-        temperature.value = atof(rawData);
-        Serial.println(temperature.value);
+        sensors[IDX_TEMP].value = atof(rawData);
+        Serial.println(sensors[IDX_TEMP].value);
         //Send ref value of the data
-        sValue = String(temperature.ref);
+        sValue = String(sensors[IDX_TEMP].ref);
         SPISlave.setData(sValue.c_str());
         break;
       case 'p':
-        pH.value = atof(rawData);
-        Serial.println(pH.value);
+        sensors[IDX_PH].value = atof(rawData);
+        Serial.println(sensors[IDX_PH].value);
         //Send ref value of the data
-        sValue = String(pH.ref);
+        sValue = String(sensors[IDX_PH].ref);
         SPISlave.setData(sValue.c_str());
         break;
       case 'r':
-        pressure.value = atof(rawData);
-        Serial.println(pressure.value);
+        sensors[IDX_PRESS].value = atof(rawData);
+        Serial.println(sensors[IDX_PRESS].value);
         //Send ref value of the data
-        sValue = String(pressure.ref);
+        sValue = String(sensors[IDX_PRESS].ref);
         SPISlave.setData(sValue.c_str());
         break;
       case 'd':
-        tds.value = atoi(rawData);
-        Serial.println(tds.value);
+        sensors[IDX_TDS].value = atoi(rawData);
+        Serial.println(sensors[IDX_TDS].value);
         //Send ref value of the data
-        sValue = String(tds.ref);
+        sValue = String(sensors[IDX_TDS].ref);
         SPISlave.setData(sValue.c_str());
         break;
       case 'f':
-        ff.value = atof(rawData);
-        Serial.println(ff.value);
+        sensors[IDX_FF].value = atof(rawData);
+        Serial.println(sensors[IDX_FF].value);
         //Send ref value of the data
-        sValue = String(ff.ref);
+        sValue = String(sensors[IDX_FF].ref);
         SPISlave.setData(sValue.c_str());
         break;
       case 'h':
-        humidity.value = atof(rawData);
-        Serial.println(humidity.value);
+        sensors[IDX_HUM].value = atof(rawData);
+        Serial.println(sensors[IDX_HUM].value);
         //Send ref value of the data
-        sValue = String(humidity.ref);
+        sValue = String(sensors[IDX_HUM].ref);
         SPISlave.setData(sValue.c_str());
         break;
       case 'm':
-        temperature.margin = atof(rawData);
-        Serial.println(temperature.margin);
+        sensors[IDX_TEMP].margin = atof(rawData);
+        Serial.println(sensors[IDX_TEMP].margin);
         break;
       case 'n':
-        humidity.margin = atof(rawData);
-        Serial.println(temperature.margin);
+        sensors[IDX_HUM].margin = atof(rawData);
+        Serial.println(sensors[IDX_HUM].margin);
         break;
       case 's':
         switchMatrixStr = rawData;
@@ -334,11 +315,51 @@ void SPISlaveSetup(){
   SPISlave.begin();
 }
 
+///////////////////////// EEPROM //////////////////////
+void UpdateEEPROM(int startAddress, float value){
+  union{
+    float val;
+    uint8_t b[4];   // little-endian -> b[0] LSB
+  }conv;
+
+  conv.val = value;
+
+  for(int j = 3; j >= 0; j--){
+    EEPROM.write(startAddress++, conv.b[j]);
+  }
+  
+  EEPROM.commit();
+}
+
+void EEPROMSetup(){
+  EEPROM.begin(128);
+
+  union{
+    uint32_t u;
+    float f;
+  } conv;
+
+  int eepromAddress = 0;
+
+  for(int i = 0; i < MAX_SENSOR; i++){
+    conv.u = 0;
+    for (int j = 0; j < 4; j++) {
+        uint8_t eByte = EEPROM.read(eepromAddress++);
+        conv.u = (conv.u << 8) | eByte;
+    }
+    sensors[i].ref = conv.f;
+  }
+
+}
+
+//////////////////////////////////////////////////////
+
 void setup() {
   Serial.begin(115200);
   Serial.println("");
   Serial.println("ESP Started");
 
+  EEPROMSetup();
   WebSocketSetup();
   SPISlaveSetup();
 }

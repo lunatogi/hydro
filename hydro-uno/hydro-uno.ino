@@ -18,12 +18,13 @@
 
 #define MAX_SENSOR 6
 
-//#include "Adafruit_BMP085.h"  // BMP180 Air Pressure Sensor
-#include "DFRobot_PH.h"         // DFTRobot Analog pH Sensor 
+//#include <Adafruit_BMP085.h>  // BMP180 Air Pressure Sensor
+#include <DFRobot_PH.h>         // DFTRobot Analog pH Sensor 
 #include <OneWire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AHTX0.h>
 #include <DallasTemperature.h>
+#include <EEPROM.h>
 #include <SPI.h>
 
 // Setup a oneWire instance to communicate with any OneWire devices
@@ -218,11 +219,47 @@ void SPIMasterSetup(){
   esp.begin();
   sendESP("Hello Slave!");         // Unnecessary
 }
-///////////////////////////////////////////////////////
+///////////////////////// EEPROM //////////////////////
+void UpdateEEPROM(){
+  union{
+    float val;
+    uint8_t b[4];   // little-endian -> b[0] LSB
+  }conv;
+
+  int eepromAddress = 0;
+  for(int i = 0; i < MAX_SENSOR; i++){
+    conv.val = sensors[i].ref;
+    for(int j = 3; j >= 0; j--){
+      EEPROM.update(eepromAddress++, conv.b[j]);
+    }
+  }
+}
+
+void EEPROMSetup(){
+  union{
+    uint32_t u;
+    float f;
+  } conv;
+
+  int eepromAddress = 0;
+
+  for(int i = 0; i < MAX_SENSOR; i++){
+    conv.u = 0;
+    for (int j = 0; j < 4; j++) {
+        uint8_t eByte = EEPROM.read(eepromAddress++);
+        conv.u = (conv.u << 8) | eByte;
+    }
+    sensors[i].ref = conv.f;
+  }
+
+}
+
+//////////////////////////////////////////////////////
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  EEPROMSetup();
   obj_tempSensor.begin();    //OneWire temperature sensor
  	SPIMasterSetup();
 
@@ -267,6 +304,7 @@ void loop() {         // temperature.value/100, alt/100
   ReadSensors();
   processMotors();
   SendStatesToESP();
+  UpdateEEPROM();
 }
 
 void AdjustMotors(uint8_t data){
