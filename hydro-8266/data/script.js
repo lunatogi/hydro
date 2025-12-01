@@ -18,32 +18,32 @@ function updateSensorValue(sensor){        // 0 -> temperature, 1 -> pH, 2 -> pr
         let element = document.getElementById('inputTemp');
         let value = element.value;
         element.value = ''; // Clear the input field after sending
-        websocket.send(`refTemp:${value}`);
+        if(value >= 25.0 && value <= 45.0) websocket.send(`refTemp:${value}`);
     }else if(sensor === 1) {
         let element = document.getElementById('inputpH');
         let value = element.value;
         element.value = '';
-        websocket.send(`refpH:${value}`);
+        if(value >= 4.0 && value <= 9.0) websocket.send(`refpH:${value}`);
     } else if(sensor === 2) {
         let element = document.getElementById('inputPres');
         let value = element.value;
         element.value = '';
-        websocket.send(`refPres:${value}`);
+        if(value >= 0.5 && value <= 3.0) websocket.send(`refPres:${value}`);
     }else if(sensor === 3) {
         let element = document.getElementById('inputTDS');
         let value = element.value;
         element.value = '';
-        websocket.send(`refTDS:${value}`);
+        if(value >= 20.0 && value <= 100.0) websocket.send(`refTDS:${value}`);
     }else if(sensor === 4) {
         let element = document.getElementById('inputFF');
         let value = element.value;
         element.value = '';
-        websocket.send(`refFF:${value}`);
+        if(value >= 50.0 && value <= 600.0) websocket.send(`refFF:${value}`);
     }else if(sensor === 5) {
         let element = document.getElementById('inputHum');
         let value = element.value;
         element.value = '';
-        websocket.send(`refHum:${value}`);
+        if(value >= 30.0 && value <= 90.0) websocket.send(`refHum:${value}`);
     }
 }
 

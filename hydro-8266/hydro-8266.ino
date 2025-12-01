@@ -50,7 +50,7 @@ struct Sensor {
 
 Sensor temperature = {
   .name = "Temperature Sensor",
-  .ref = 17.3f,
+  .ref = 25.0f,
   .margin = 1.0f,
   .value = 0,
 };
@@ -64,28 +64,28 @@ Sensor humidity = {
 
 Sensor pH = {
   .name = "pH Sensor",
-  .ref = 8.8f,
+  .ref = 7.0f,
   .margin = 1.0f,
   .value = 0,
 };
 
 Sensor pressure = {
   .name = "Pressure Sensor",
-  .ref = 5.09f,
+  .ref = 1.5f,
   .margin = 1.0f,
   .value = 0,
 };
 
 Sensor tds = {
   .name = "TDS Sensor",
-  .ref = 313.0f,
+  .ref = 300.0f,
   .margin = 1.0f,
   .value = 0,
 };
 
 Sensor ff = {
   .name = "Air Quality Sensor",
-  .ref = 32.0f,
+  .ref = 50.0f,
   .margin = 1.0f,
   .value = 0,
 };
