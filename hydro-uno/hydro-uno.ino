@@ -78,6 +78,9 @@ struct Sensor {
 
   float minValue;
   float maxValue;
+
+  int increasePin;
+  int decreasePin;
 };
 
 enum {
@@ -90,12 +93,12 @@ enum {
 };
 
 Sensor sensors[MAX_SENSOR] = {
-  { "Temperature Sensor", 30.0f, 1.0f, 0, 40, 45, false,  false, 25.0f, 45.0f  },
-  { "Humidity Sensor",    73.0f, 3.0f, 0, 50, 55, false,  false, 30.0f, 90.0f  },
-  { "pH Sensor",          8.8f,  1.0f, 0, 60, 65, false,  false, 4.0f,  9.0f   },
-  { "Pressure Sensor",    5.09f, 1.0f, 0, 70, 75, false,  false, 0.5f,  3.0f   },
-  { "TDS Sensor",         313.0f,1.0f, 0, 80, 85, false,  false, 20.0f, 100.0f },
-  { "Air Quality Sensor", 32.0f, 1.0f, 0, 90, 95, false,  false, 50.0f, 600.0f },
+  { "Temperature Sensor", 30.0f, 1.0f, 0, 40, 45, false,  false, 25.0f, 45.0f,  2, 3  },
+  { "Humidity Sensor",    73.0f, 3.0f, 0, 50, 55, false,  false, 30.0f, 90.0f,  4, 5  },
+  { "pH Sensor",          8.8f,  1.0f, 0, 60, 65, false,  false, 4.0f,  9.0f,   6, 7  },
+  { "Pressure Sensor",    5.09f, 1.0f, 0, 70, 75, false,  false, 0.5f,  3.0f,   9, 9  },
+  { "TDS Sensor",         313.0f,1.0f, 0, 80, 85, false,  false, 20.0f, 100.0f, 9, 9  },
+  { "Air Quality Sensor", 32.0f, 1.0f, 0, 90, 95, false,  false, 50.0f, 600.0f, 9, 9  },
 };
 ///////////////////// SPI ////////////////////////
 class ESPMaster {
@@ -256,12 +259,23 @@ void EEPROMSetup(){
 
 //////////////////////////////////////////////////////
 
+void PinConfiguration(){
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(6, OUTPUT);
+  pinMode(7, OUTPUT);
+  pinMode(9, OUTPUT);
+}
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   EEPROMSetup();
   obj_tempSensor.begin();    //OneWire temperature sensor
  	SPIMasterSetup();
+  PinConfiguration();
 
   //if(!bmp.begin()){
   //  Serial.println("BMP180 not found!");
@@ -369,6 +383,8 @@ void processMotors(){
     bool decrease = sensors[i].decreaseEnabled;
     uint8_t up_ID = sensors[i].upMotorID;
     uint8_t down_ID = sensors[i].downMotorID; 
+    int p_increase = sensors[i].increasePin;
+    int p_decrease = sensors[i].decreasePin;
 
     if((curValue < (refValue - marginValue)) && !increase){
       AdjustMotors(up_ID);         // Open upMotor
@@ -379,6 +395,8 @@ void processMotors(){
       AdjustMotors(5);          // Low bits
       AdjustMotors(0);            // High bits
 
+      digitalWrite(p_increase, HIGH);
+      digitalWrite(p_decrease, LOW);
       sensors[i].increaseEnabled = true;
       sensors[i].decreaseEnabled = false;
     }else if((curValue > (refValue + marginValue)) && !decrease){
@@ -390,6 +408,8 @@ void processMotors(){
       AdjustMotors(5);            // Low bits
       AdjustMotors(0);            // High bits
 
+      digitalWrite(p_increase, LOW);
+      digitalWrite(p_decrease, HIGH);
       sensors[i].increaseEnabled = false;
       sensors[i].decreaseEnabled = true;
     }else{
@@ -399,12 +419,14 @@ void processMotors(){
         AdjustMotors(5);          // Low bits
         AdjustMotors(0);            // High bits
         sensors[i].increaseEnabled = false;
+        digitalWrite(p_increase, LOW);
       }else if(decrease && (curValue <= (refValue + marginValue))){
         uint8_t m_ID = sensors[i].downMotorID;
         AdjustMotors(m_ID);
         AdjustMotors(5);          // Low bits
         AdjustMotors(0);            // High bits
         sensors[i].decreaseEnabled = false;
+        digitalWrite(p_decrease, LOW);
       }
     }
   }
