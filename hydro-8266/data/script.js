@@ -12,7 +12,7 @@ function getReadings(){
     websocket.send("getReadings");
 }
 
-function updateSensorValue(sensor){        // 0 -> temperature, 1 -> pH, 2 -> pressure, 3 -> TDS, 4 -> Flying Fish
+function updateSensorValue(sensor){        // 0 -> temperature, 1 -> pH, 2 -> pressure, 3 -> TDS, 4 -> Flying Fish, 5 -> humidity
     //websocket.send("updateSensorValue");
     if(sensor === 0) {
         let element = document.getElementById('inputTemp');
@@ -136,7 +136,7 @@ function onMessage(event) {
                 document.getElementById(key).style.color = "red";
             }
         }else{
-            if (!Number.isInteger(value)) value = value.toFixed(2);
+            if (!Number.isInteger(value) && value != null) value = value.toFixed(2);
             let docElement = document.getElementById(key);
             if (docElement) docElement.innerHTML = value;
         }
