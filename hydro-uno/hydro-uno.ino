@@ -29,14 +29,13 @@
 #include <RtcDS1302.h>
 #include <SPI.h>
 
-
 // Setup a oneWire instance to communicate with any OneWire devices
 OneWire oneWire(ONE_WIRE_BUS);
 // Pass our oneWire reference to Dallas Temperature sensor 
 DallasTemperature obj_tempSensor(&oneWire);
 
 //Real-time Clock Module
-ThreeWire threeWire(6, 7, 9);
+ThreeWire threeWire(6, 7, 9);   // DATA, CLK, RST
 RtcDS1302<ThreeWire> Rtc(threeWire);
 
 //Adafruit_BMP085 bmp;
@@ -270,7 +269,7 @@ void PinConfiguration(){
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT);
-  pinMode(5, OUTPUT);   // Currently using for Real-time Clock
+  pinMode(5, OUTPUT);       // Using for LEDs right now 
 }
 
 void RTCSetup(){
@@ -280,7 +279,7 @@ void RTCSetup(){
   //RtcDateTime cdt = RtcDateTime(__DATE__, __TIME__);
 
   //Taking initial time manually
-  RtcDateTime cdt = RtcDateTime("Dec 10 2025", "16:30:00");
+  RtcDateTime cdt = RtcDateTime("Dec 10 2025", "16:55:00");
 
   Rtc.SetDateTime(cdt);
 
@@ -299,9 +298,9 @@ void setup() {
   Serial.begin(9600);
   PinConfiguration();
   EEPROMSetup();
-  SPIMasterSetup();
-  RTCSetup();
   obj_tempSensor.begin();    //OneWire temperature sensor
+ 	SPIMasterSetup();
+  RTCSetup();
 
   //if(!bmp.begin()){
   //  Serial.println("BMP180 not found!");
@@ -313,14 +312,14 @@ void setup() {
   //digitalWrite(MOTOR_DATA, LOW);
   //digitalWrite(MOTOR_CLK, LOW);
 
-  //while (aht10.begin() != true) //for ESP-01 use aht10.begin(0, 2);
-  //{
-  //  Serial.println(F("AHT1x not connected or fail to load calibration coefficient")); //(F()) save string to flash & keeps dynamic memory free
+  while (aht10.begin() != true) //for ESP-01 use aht10.begin(0, 2);
+  {
+    Serial.println(F("AHT1x not connected or fail to load calibration coefficient")); //(F()) save string to flash & keeps dynamic memory free
 
-  //  delay(2000);
-  //}
-  Serial.println();
-  Serial.println("Arduino Started");
+    delay(2000);
+  }
+
+
   delay(3000);
 }
 
@@ -339,14 +338,12 @@ void loop() {         // temperature.value/100, alt/100
     o_mtrData = mtrData;
   }
   */
-  Serial.println("Executing...");
+
   ReadSensors();
   processMotors();
   SendStatesToESP();
   UpdateEEPROM();
   CheckRealTime();
-
-  delay(500);
 }
 
 void CheckRealTime(){
@@ -436,7 +433,6 @@ void printDateTime(const RtcDateTime& dt) {
     Serial.println();
   }
 }
-
 
 
 void AdjustMotors(uint8_t data){
