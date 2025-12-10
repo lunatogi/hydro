@@ -25,12 +25,19 @@
 #include <Adafruit_AHTX0.h>
 #include <DallasTemperature.h>
 #include <EEPROM.h>
+#include <ThreeWire.h>
+#include <RtcDS1302.h>
 #include <SPI.h>
+
 
 // Setup a oneWire instance to communicate with any OneWire devices
 OneWire oneWire(ONE_WIRE_BUS);
 // Pass our oneWire reference to Dallas Temperature sensor 
 DallasTemperature obj_tempSensor(&oneWire);
+
+//Real-time Clock Module
+ThreeWire threeWire(6, 7, 9);
+RtcDS1302<ThreeWire> Rtc(threeWire);
 
 //Adafruit_BMP085 bmp;
 DFRobot_PH ph;
@@ -94,7 +101,7 @@ enum {
 
 Sensor sensors[MAX_SENSOR] = {
   { "Temperature Sensor", 30.0f, 1.0f, 0, 40, 45, false,  false, 25.0f, 45.0f,  2, 3  },
-  { "Humidity Sensor",    73.0f, 3.0f, 0, 50, 55, false,  false, 30.0f, 90.0f,  4, 5  },
+  { "Humidity Sensor",    73.0f, 3.0f, 0, 50, 55, false,  false, 30.0f, 90.0f,  4, 0  },
   { "pH Sensor",          8.8f,  1.0f, 0, 60, 65, false,  false, 4.0f,  9.0f,   0, 0  },
   { "Pressure Sensor",    5.09f, 1.0f, 0, 70, 75, false,  false, 0.5f,  3.0f,   0, 0  },
   { "TDS Sensor",         313.0f,1.0f, 0, 80, 85, false,  false, 20.0f, 100.0f, 0, 0  },
@@ -263,16 +270,38 @@ void PinConfiguration(){
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT);
-  pinMode(5, OUTPUT);
+  pinMode(5, OUTPUT);   // Currently using for Real-time Clock
+}
+
+void RTCSetup(){
+  Rtc.Begin();
+
+  //Taking inital time from PC
+  //RtcDateTime cdt = RtcDateTime(__DATE__, __TIME__);
+
+  //Taking initial time manually
+  RtcDateTime cdt = RtcDateTime("Dec 10 2025", "16:30:00");
+
+  Rtc.SetDateTime(cdt);
+
+  // Check for pin correctness
+  digitalWrite(5, HIGH);
+  delay(1000);
+  digitalWrite(5, LOW);
+  delay(1000);
+  digitalWrite(5, HIGH);
+  delay(1000);
+  digitalWrite(5, LOW);
 }
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  EEPROMSetup();
-  obj_tempSensor.begin();    //OneWire temperature sensor
- 	SPIMasterSetup();
   PinConfiguration();
+  EEPROMSetup();
+  SPIMasterSetup();
+  RTCSetup();
+  obj_tempSensor.begin();    //OneWire temperature sensor
 
   //if(!bmp.begin()){
   //  Serial.println("BMP180 not found!");
@@ -284,14 +313,14 @@ void setup() {
   //digitalWrite(MOTOR_DATA, LOW);
   //digitalWrite(MOTOR_CLK, LOW);
 
-  while (aht10.begin() != true) //for ESP-01 use aht10.begin(0, 2);
-  {
-    Serial.println(F("AHT1x not connected or fail to load calibration coefficient")); //(F()) save string to flash & keeps dynamic memory free
+  //while (aht10.begin() != true) //for ESP-01 use aht10.begin(0, 2);
+  //{
+  //  Serial.println(F("AHT1x not connected or fail to load calibration coefficient")); //(F()) save string to flash & keeps dynamic memory free
 
-    delay(2000);
-  }
-
-
+  //  delay(2000);
+  //}
+  Serial.println();
+  Serial.println("Arduino Started");
   delay(3000);
 }
 
@@ -310,12 +339,105 @@ void loop() {         // temperature.value/100, alt/100
     o_mtrData = mtrData;
   }
   */
-
+  Serial.println("Executing...");
   ReadSensors();
   processMotors();
   SendStatesToESP();
   UpdateEEPROM();
+  CheckRealTime();
+
+  delay(500);
 }
+
+void CheckRealTime(){
+  RtcDateTime pdt = Rtc.GetDateTime();
+  Serial.println("---DateTime---");
+  printDateTime(pdt);
+  Serial.println("--------------");
+  if(pdt.Hour() >= 6 && pdt.Hour() < 21){
+    digitalWrite(5, HIGH);
+  }else{
+    digitalWrite(5, LOW);
+  }
+}
+
+// NOT USED RIGHT NOW
+void printDateTime(const RtcDateTime& dt) {
+  //Day of the week
+  Serial.print("Day of the week: ");
+  if (dt.DayOfWeek() == 1) {
+    Serial.println("Monday");
+  }
+  else if (dt.DayOfWeek() == 2) {
+    Serial.println("Tuesday");
+  }
+  else if (dt.DayOfWeek() == 3) {
+    Serial.println("Wednesday");
+  }
+  else if (dt.DayOfWeek() == 4) {
+    Serial.println("Thursday");
+  }
+  else if (dt.DayOfWeek() == 5) {
+    Serial.println("Friday");
+  }
+  else if (dt.DayOfWeek() == 6) {
+    Serial.println("Saturday");
+  }
+  else if (dt.DayOfWeek() == 7) {
+    Serial.println("Sunday");
+  }
+  // Current Date
+  Serial.print("Current Date: ");
+  if (dt.Day() < 10) {
+    Serial.print("0");
+    Serial.print(dt.Day());
+  }
+  else {
+    Serial.print(dt.Day());
+  }
+
+  //one tab
+  Serial.print("/");
+  if (dt.Month() < 10) {
+    Serial.print("0");
+    Serial.print(dt.Month());
+  }
+  else {
+    Serial.print(dt.Month());
+  }
+  Serial.print("/");
+  Serial.println(dt.Year());
+  //Current Time
+  Serial.print("Current Time: ");
+  if (dt.Hour() < 10) {
+    Serial.print("0");
+    Serial.print(dt.Hour());
+  }
+  else {
+    Serial.print(dt.Hour());
+  }
+  Serial.print(":");
+  if (dt.Minute() < 10) {
+    Serial.print("0");
+    Serial.print(dt.Minute());
+  }
+  else {
+    Serial.print(dt.Minute());
+  }
+
+  //one tab
+  Serial.print(":");
+  if (dt.Second() < 10) {
+    Serial.print("0");
+    Serial.print(dt.Second());
+    Serial.println();
+  }else {
+    Serial.print(dt.Second());
+    Serial.println();
+  }
+}
+
+
 
 void AdjustMotors(uint8_t data){
   for(int i = 0; i < 8; i++){
