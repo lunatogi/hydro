@@ -19,6 +19,13 @@ const char* password = "keto4522";
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
+// Static IP address
+IPAddress local_IP(192, 168, 68, 137);
+// Gateway IP address
+IPAddress gateway(192, 168, 68, 1);
+// Subnet IP address
+IPAddress subnet(255, 255, 252, 0);
+
 // Create a WebSocket object
 AsyncWebSocket ws("/ws");
 
@@ -150,6 +157,9 @@ void notifyClients(String sensorReadings) {
 // Initialize WiFi
 void initWiFi() {
   WiFi.mode(WIFI_STA);
+  if (!WiFi.config(local_IP, gateway, subnet)) {
+    Serial.println("STA Failed to configure");
+  }
   WiFi.begin(ssid, password);
   Serial.println("");
   Serial.print("Connecting to WiFi ..");
