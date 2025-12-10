@@ -95,10 +95,10 @@ enum {
 Sensor sensors[MAX_SENSOR] = {
   { "Temperature Sensor", 30.0f, 1.0f, 0, 40, 45, false,  false, 25.0f, 45.0f,  2, 3  },
   { "Humidity Sensor",    73.0f, 3.0f, 0, 50, 55, false,  false, 30.0f, 90.0f,  4, 5  },
-  { "pH Sensor",          8.8f,  1.0f, 0, 60, 65, false,  false, 4.0f,  9.0f,   6, 7  },
-  { "Pressure Sensor",    5.09f, 1.0f, 0, 70, 75, false,  false, 0.5f,  3.0f,   9, 9  },
-  { "TDS Sensor",         313.0f,1.0f, 0, 80, 85, false,  false, 20.0f, 100.0f, 9, 9  },
-  { "Air Quality Sensor", 32.0f, 1.0f, 0, 90, 95, false,  false, 50.0f, 600.0f, 9, 9  },
+  { "pH Sensor",          8.8f,  1.0f, 0, 60, 65, false,  false, 4.0f,  9.0f,   0, 0  },
+  { "Pressure Sensor",    5.09f, 1.0f, 0, 70, 75, false,  false, 0.5f,  3.0f,   0, 0  },
+  { "TDS Sensor",         313.0f,1.0f, 0, 80, 85, false,  false, 20.0f, 100.0f, 0, 0  },
+  { "Air Quality Sensor", 32.0f, 1.0f, 0, 90, 95, false,  false, 50.0f, 600.0f, 0, 0  },
 };
 ///////////////////// SPI ////////////////////////
 class ESPMaster {
@@ -264,9 +264,6 @@ void PinConfiguration(){
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT);
   pinMode(5, OUTPUT);
-  pinMode(6, OUTPUT);
-  pinMode(7, OUTPUT);
-  pinMode(9, OUTPUT);
 }
 
 void setup() {
@@ -280,10 +277,12 @@ void setup() {
   //if(!bmp.begin()){
   //  Serial.println("BMP180 not found!");
   //}
-  pinMode(MOTOR_DATA, OUTPUT);
-  pinMode(MOTOR_CLK, OUTPUT);
-  digitalWrite(MOTOR_DATA, LOW);
-  digitalWrite(MOTOR_CLK, LOW);
+  
+  // Manuel Motor Adjustment
+  //pinMode(MOTOR_DATA, OUTPUT);
+  //pinMode(MOTOR_CLK, OUTPUT);
+  //digitalWrite(MOTOR_DATA, LOW);
+  //digitalWrite(MOTOR_CLK, LOW);
 
   while (aht10.begin() != true) //for ESP-01 use aht10.begin(0, 2);
   {
@@ -298,12 +297,9 @@ void setup() {
 
 void loop() {         // temperature.value/100, alt/100
   // put your main code here, to run repeatedly:
-  
 
-  //AdjustMotors(0b00000001);
-  //AdjustMotors(0b00010110);
-  //AdjustMotors(0);
-
+  // Manuel Motor Adjustment
+  /*
   if((o_mtrID != mtrID) || (o_mtrData != mtrData)){
     uint8_t mtrData_L = mtrData & 0b11111111;
     uint8_t mtrdData_H = mtrData >> 8;
@@ -313,8 +309,8 @@ void loop() {         // temperature.value/100, alt/100
     o_mtrID = mtrID;
     o_mtrData = mtrData;
   }
-  //AdjustMotors(mtrData);
-  //mtrData++;
+  */
+
   ReadSensors();
   processMotors();
   SendStatesToESP();
@@ -386,27 +382,29 @@ void processMotors(){
     int p_increase = sensors[i].increasePin;
     int p_decrease = sensors[i].decreasePin;
 
-    if((curValue < (refValue - marginValue)) && !increase){
-      AdjustMotors(up_ID);         // Open upMotor
-      AdjustMotors(123);          // Low bits
-      AdjustMotors(0);            // High bits
+    if(p_increase < 2) continue;          // Pass unused sensors (for debug)
 
-      AdjustMotors(down_ID);         // Close downMotor
-      AdjustMotors(5);          // Low bits
-      AdjustMotors(0);            // High bits
+    if((curValue < (refValue - marginValue)) && !increase){
+      //AdjustMotors(up_ID);         // Open upMotor
+      //AdjustMotors(123);          // Low bits
+      //AdjustMotors(0);            // High bits
+
+      //AdjustMotors(down_ID);         // Close downMotor
+      //AdjustMotors(5);          // Low bits
+      //AdjustMotors(0);            // High bits
 
       digitalWrite(p_increase, HIGH);
       digitalWrite(p_decrease, LOW);
       sensors[i].increaseEnabled = true;
       sensors[i].decreaseEnabled = false;
     }else if((curValue > (refValue + marginValue)) && !decrease){
-      AdjustMotors(down_ID);           // Open downMotor
-      AdjustMotors(123);            // Low bits
-      AdjustMotors(0);            // High bits
+      //AdjustMotors(down_ID);           // Open downMotor
+      //AdjustMotors(123);            // Low bits
+      //AdjustMotors(0);            // High bits
 
-      AdjustMotors(up_ID);           // Open downMotor
-      AdjustMotors(5);            // Low bits
-      AdjustMotors(0);            // High bits
+      //AdjustMotors(up_ID);           // Open downMotor
+      //AdjustMotors(5);            // Low bits
+      //AdjustMotors(0);            // High bits
 
       digitalWrite(p_increase, LOW);
       digitalWrite(p_decrease, HIGH);
@@ -415,16 +413,16 @@ void processMotors(){
     }else{
       if(increase && (curValue >= (refValue - marginValue))){
         uint8_t m_ID = sensors[i].upMotorID;
-        AdjustMotors(m_ID);
-        AdjustMotors(5);          // Low bits
-        AdjustMotors(0);            // High bits
+        //AdjustMotors(m_ID);
+        //AdjustMotors(5);          // Low bits
+        //AdjustMotors(0);            // High bits
         sensors[i].increaseEnabled = false;
         digitalWrite(p_increase, LOW);
       }else if(decrease && (curValue <= (refValue + marginValue))){
         uint8_t m_ID = sensors[i].downMotorID;
-        AdjustMotors(m_ID);
-        AdjustMotors(5);          // Low bits
-        AdjustMotors(0);            // High bits
+        //AdjustMotors(m_ID);
+        //AdjustMotors(5);          // Low bits
+        //AdjustMotors(0);            // High bits
         sensors[i].decreaseEnabled = false;
         digitalWrite(p_decrease, LOW);
       }
