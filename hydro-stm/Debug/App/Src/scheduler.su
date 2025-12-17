@@ -1,0 +1,2 @@
+../App/Src/scheduler.c:21:6:Scheduler_Init	16	static
+../App/Src/scheduler.c:29:6:Scheduler_Run	16	static

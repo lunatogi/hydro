@@ -5,8 +5,10 @@
  *      Author: Murat Utku KETI
  */
 
+
 #include "stm32f4xx_hal.h"
 #include "scheduler.h"
+#include "sensor_manager.h"
 
 static uint32_t lastSensorTick = 0;
 static uint32_t lastESPTick = 0;
@@ -27,8 +29,11 @@ void Scheduler_Init(void){
 void Scheduler_Run(void){
 	uint32_t nowTick = HAL_GetTick();
 
+
+
 	if(nowTick - lastSensorTick >= delaySensorTick){
 		// Check Sensors Values
+		Sensor_Update();
 		lastSensorTick = nowTick;
 	}
 
