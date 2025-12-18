@@ -372,7 +372,7 @@ Disassembly of section .text:
 08000504 <Port_From_ID>:
  */
 
-#include <actuator_manager.h>
+#include "actuator_manager.h"
 
 static GPIO_TypeDef* Port_From_ID(uint8_t id)
 {
@@ -507,7 +507,7 @@ flag_t Actuator_Set(uint8_t portId, uint8_t pinNum, flag_t state)
 
 080005cc <ControlLoop_Run>:
 
-#include <actuator_manager.h>
+#include "actuator_manager.h"
 #include "control_loop.h"
 #include "sensor_manager.h"
 

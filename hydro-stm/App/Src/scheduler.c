@@ -6,7 +6,7 @@
  */
 
 
-#include "stm32f4xx_hal.h"
+#include <stm32f4xx_hal.h>
 #include "scheduler.h"
 #include "sensor_manager.h"
 #include "control_loop.h"
