@@ -5,6 +5,7 @@
  *      Author: Murat Utku KETI
  */
 
+
 #include "sensor_manager.h"
 
 static const SensorConfig_t sensorConfigDefault[SENSOR_COUNT] =
@@ -15,7 +16,9 @@ static const SensorConfig_t sensorConfigDefault[SENSOR_COUNT] =
 		.margin = 1.0f,
 		.minValue = 25.0f,
 		.maxValue = 45.0f,
+		.increasePort = 2,
 		.increasePin = 2,
+		.decreasePort = 2,
 		.decreasePin = 3
 	},
 
@@ -25,7 +28,9 @@ static const SensorConfig_t sensorConfigDefault[SENSOR_COUNT] =
 		.margin = 3.0f,
 		.minValue = 30.0f,
 		.maxValue = 90.0f,
+		.increasePort = 2,
 		.increasePin = 4,
+		.decreasePort = 2,
 		.decreasePin = 5
 	}
 };
@@ -84,8 +89,38 @@ float Sensor_GetMargin(SensorIndex_t idx){
 	return sensorConfigRuntime[idx].margin;
 }
 
-#define SENSOR_PIN_INC   (1U << 1)
-#define SENSOR_PIN_DEC   (1U << 0)
+uint8_t Sensor_GetPortIncrease(SensorIndex_t idx){
+    if (idx >= SENSOR_COUNT){
+        return 0.0f;
+    }
+
+	return sensorConfigRuntime[idx].increasePort;
+}
+
+uint8_t Sensor_GetPortDecrease(SensorIndex_t idx){
+    if (idx >= SENSOR_COUNT){
+        return 0.0f;
+    }
+
+	return sensorConfigRuntime[idx].decreasePort;
+}
+
+uint8_t Sensor_GetPinIncrease(SensorIndex_t idx){
+    if (idx >= SENSOR_COUNT){
+        return 0.0f;
+    }
+
+	return sensorConfigRuntime[idx].increasePin;
+}
+
+uint8_t Sensor_GetPinDecrease(SensorIndex_t idx){
+    if (idx >= SENSOR_COUNT){
+        return 0.0f;
+    }
+
+	return sensorConfigRuntime[idx].decreasePin;
+}
+
 flag_t Sensor_GetPinActivity(SensorIndex_t idx)
 {
     if (idx >= SENSOR_COUNT)
@@ -137,5 +172,39 @@ flag_t Sensor_SetMargin(SensorIndex_t idx, float margin){
 	}
 
 	sensorConfigRuntime[idx].margin = margin;
+	return 1;
+}
+
+flag_t Sensor_SetPinIncrease(SensorIndex_t idx, flag_t state){
+	if(idx >= SENSOR_COUNT){
+		return 0;
+	}
+
+	if(state != 0 && state != 1){
+		return 0;
+	}
+
+	if(sensorState[idx].increaseEnabled == state){
+		return 0;
+	}
+
+	sensorState[idx].increaseEnabled = state;
+	return 1;
+}
+
+flag_t Sensor_SetPinDecrease(SensorIndex_t idx, flag_t state){
+	if(idx >= SENSOR_COUNT){
+		return 0;
+	}
+
+	if(state != 0 && state != 1){
+		return 0;
+	}
+
+	if(sensorState[idx].decreaseEnabled == state){
+		return 0;
+	}
+
+	sensorState[idx].decreaseEnabled = state;
 	return 1;
 }

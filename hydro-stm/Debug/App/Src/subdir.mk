@@ -5,14 +5,20 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../App/Src/actuator_manager.c \
+../App/Src/control_loop.c \
 ../App/Src/scheduler.c \
 ../App/Src/sensor_manager.c 
 
 OBJS += \
+./App/Src/actuator_manager.o \
+./App/Src/control_loop.o \
 ./App/Src/scheduler.o \
 ./App/Src/sensor_manager.o 
 
 C_DEPS += \
+./App/Src/actuator_manager.d \
+./App/Src/control_loop.d \
 ./App/Src/scheduler.d \
 ./App/Src/sensor_manager.d 
 
@@ -24,7 +30,7 @@ App/Src/%.o App/Src/%.su App/Src/%.cyclo: ../App/Src/%.c App/Src/subdir.mk
 clean: clean-App-2f-Src
 
 clean-App-2f-Src:
-	-$(RM) ./App/Src/scheduler.cyclo ./App/Src/scheduler.d ./App/Src/scheduler.o ./App/Src/scheduler.su ./App/Src/sensor_manager.cyclo ./App/Src/sensor_manager.d ./App/Src/sensor_manager.o ./App/Src/sensor_manager.su
+	-$(RM) ./App/Src/actuator_manager.cyclo ./App/Src/actuator_manager.d ./App/Src/actuator_manager.o ./App/Src/actuator_manager.su ./App/Src/control_loop.cyclo ./App/Src/control_loop.d ./App/Src/control_loop.o ./App/Src/control_loop.su ./App/Src/scheduler.cyclo ./App/Src/scheduler.d ./App/Src/scheduler.o ./App/Src/scheduler.su ./App/Src/sensor_manager.cyclo ./App/Src/sensor_manager.d ./App/Src/sensor_manager.o ./App/Src/sensor_manager.su
 
 .PHONY: clean-App-2f-Src
 

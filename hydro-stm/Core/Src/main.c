@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "scheduler.h"
+#include "sensor_manager.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -96,6 +97,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   Scheduler_Init();
+  Sensor_Init();
 
   while (1)
   {

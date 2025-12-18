@@ -1,3 +1,5 @@
+"./App/Src/actuator_manager.o"
+"./App/Src/control_loop.o"
 "./App/Src/scheduler.o"
 "./App/Src/sensor_manager.o"
 "./Core/Src/main.o"
