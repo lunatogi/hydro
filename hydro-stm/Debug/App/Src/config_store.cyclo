@@ -1,0 +1,4 @@
+../App/Src/config_store.c:18:17:Config_CalcCRC	4
+../App/Src/config_store.c:43:5:Config_IsValid	2
+../App/Src/config_store.c:55:6:Config_Load	1
+../App/Src/config_store.c:63:6:Config_Save	2

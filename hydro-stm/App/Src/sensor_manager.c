@@ -5,14 +5,14 @@
  *      Author: Murat Utku KETI
  */
 
-
 #include "sensor_manager.h"
+#include "config_store.h"
 
 static const SensorConfig_t sensorConfigDefault[SENSOR_COUNT] =
 {
 	[IDX_TEMP] = {
 		.name = "Temperature Sensor",
-		.ref = 30.0f,
+		.ref = 27.0f,
 		.margin = 1.0f,
 		.minValue = 25.0f,
 		.maxValue = 45.0f,
@@ -24,7 +24,7 @@ static const SensorConfig_t sensorConfigDefault[SENSOR_COUNT] =
 
 	[IDX_HUM] = {
 		.name = "Humidity Sensor",
-		.ref = 70.0f,
+		.ref = 75.0f,
 		.margin = 3.0f,
 		.minValue = 30.0f,
 		.maxValue = 90.0f,
@@ -39,29 +39,46 @@ static SensorConfig_t sensorConfigRuntime[SENSOR_COUNT];
 
 static SensorState_t sensorState[SENSOR_COUNT] = {0};
 
+SystemConfig_t systemConfig;		//
+
+static volatile uint8_t configDirty = 0;
+
+static void Config_BuildDefault(SystemConfig_t *cfg){
+	cfg->version = CONFIG_VERSION;
+
+	for(SensorIndex_t i = 0; i < SENSOR_COUNT; i++){
+		cfg->sensor[i].ref = sensorConfigDefault[i].ref;
+		cfg->sensor[i].margin = sensorConfigDefault[i].margin;
+	}
+}
+
 void Sensor_Init(void){
-	for(uint8_t i = 0; i < SENSOR_COUNT; i++){				// Fill Runtime array with default values
+	for(SensorIndex_t i = 0; i < SENSOR_COUNT; i++){				// Fill Runtime array with default values
 		sensorConfigRuntime[i] = sensorConfigDefault[i];
 	}
 
+	Config_Load(&systemConfig);
 
-	// Override Runtime values according to EEPROM values
-	/*
-    if (EEPROM_LoadSensorConfig(sensorEeprom))
-    {
-        for (uint8_t i = 0; i < SENSOR_COUNT; i++)
-        {
-            if (IsValidRef(i, sensorEeprom[i].ref))
-                sensorConfigRuntime[i].ref = sensorEeprom[i].ref;
+	if(!Config_IsValid(&systemConfig)){
+		Config_BuildDefault(&systemConfig);
+		Config_Save(&systemConfig);
+	}
 
-            if (IsValidMargin(i, sensorEeprom[i].margin))
-                sensorConfigRuntime[i].margin = sensorEeprom[i].margin;
-        }
-    }*/
+	for(SensorIndex_t i = 0; i < SENSOR_COUNT; i++){
+		sensorConfigRuntime[i].ref = systemConfig.sensor[i].ref;
+		sensorConfigRuntime[i].margin = systemConfig.sensor[i].margin;
+	}
 }
 
 void Sensor_Update(void){
 	// Get new sensor values from Sensor Lib
+}
+
+void Sensor_CommitConfig(void){
+	if(configDirty){
+		Config_Save(&systemConfig);
+		configDirty = 0;
+	}
 }
 
 // GET FUNCTIONS
@@ -91,7 +108,7 @@ float Sensor_GetMargin(SensorIndex_t idx){
 
 uint8_t Sensor_GetPortIncrease(SensorIndex_t idx){
     if (idx >= SENSOR_COUNT){
-        return 0.0f;
+        return 0;
     }
 
 	return sensorConfigRuntime[idx].increasePort;
@@ -99,7 +116,7 @@ uint8_t Sensor_GetPortIncrease(SensorIndex_t idx){
 
 uint8_t Sensor_GetPortDecrease(SensorIndex_t idx){
     if (idx >= SENSOR_COUNT){
-        return 0.0f;
+        return 0;
     }
 
 	return sensorConfigRuntime[idx].decreasePort;
@@ -107,7 +124,7 @@ uint8_t Sensor_GetPortDecrease(SensorIndex_t idx){
 
 uint8_t Sensor_GetPinIncrease(SensorIndex_t idx){
     if (idx >= SENSOR_COUNT){
-        return 0.0f;
+        return 0;
     }
 
 	return sensorConfigRuntime[idx].increasePin;
@@ -115,7 +132,7 @@ uint8_t Sensor_GetPinIncrease(SensorIndex_t idx){
 
 uint8_t Sensor_GetPinDecrease(SensorIndex_t idx){
     if (idx >= SENSOR_COUNT){
-        return 0.0f;
+        return 0;
     }
 
 	return sensorConfigRuntime[idx].decreasePin;
@@ -153,10 +170,12 @@ flag_t Sensor_SetRef(SensorIndex_t idx, float ref){
     }
 
 	sensorConfigRuntime[idx].ref = ref;
+	systemConfig.sensor[idx].ref = ref;
+	configDirty = 1;
 	return 1;
 }
 
-static const float MARGIN_LIMIT = 10.0f;
+static const float MARGIN_LIMIT = 10.0f;			// It would be better to put it in sensorConfigDefault
 flag_t Sensor_SetMargin(SensorIndex_t idx, float margin){
 
     if (idx >= SENSOR_COUNT){
@@ -172,6 +191,8 @@ flag_t Sensor_SetMargin(SensorIndex_t idx, float margin){
 	}
 
 	sensorConfigRuntime[idx].margin = margin;
+	systemConfig.sensor[idx].margin = margin;
+	configDirty = 1;
 	return 1;
 }
 

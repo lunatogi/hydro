@@ -27,17 +27,17 @@ void ControlLoop_Run(void){
 		float minValue = referenceValue - marginValue;
 
 		if((currentValue < minValue) && !increaseEn){
-			if(Actuator_Set(incPort, incPin, 1))
+			if(Set_Pin(incPort, incPin, 1))
 				Sensor_SetPinIncrease(i, 1);
 		}else if((currentValue > maxValue) && !decreaseEn){
-			if(Actuator_Set(decPort, decPin, 1))
+			if(Set_Pin(decPort, decPin, 1))
 				Sensor_SetPinDecrease(i, 1);
 		}else{
 			if(increaseEn && (currentValue >= minValue)){
-				if(Actuator_Set(incPort, incPin, 0))
+				if(Set_Pin(incPort, incPin, 0))
 					Sensor_SetPinIncrease(i, 0);
 			}else if(decreaseEn && (currentValue <= maxValue)){
-				if(Actuator_Set(decPort, decPin, 0))
+				if(Set_Pin(decPort, decPin, 0))
 					Sensor_SetPinDecrease(i, 0);
 			}
 		}

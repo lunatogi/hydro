@@ -26,7 +26,7 @@ static inline uint16_t PinMask_From_Number(uint8_t pin)
     return (uint16_t)(1U << pin);
 }
 
-flag_t Actuator_Set(uint8_t portId, uint8_t pinNum, flag_t state)
+flag_t Set_Pin(uint8_t portId, uint8_t pinNum, flag_t state)
 {
     GPIO_TypeDef *port = Port_From_ID(portId);
     uint16_t pinMask   = PinMask_From_Number(pinNum);

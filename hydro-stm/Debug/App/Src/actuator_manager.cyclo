@@ -1,3 +1,3 @@
 ../App/Src/actuator_manager.c:10:22:Port_From_ID	5
 ../App/Src/actuator_manager.c:21:24:PinMask_From_Number	2
-../App/Src/actuator_manager.c:29:8:Actuator_Set	3
+../App/Src/actuator_manager.c:29:8:Set_Pin	3
