@@ -276,10 +276,10 @@ void RTCSetup(){
   Rtc.Begin();
 
   //Taking inital time from PC
-  //RtcDateTime cdt = RtcDateTime(__DATE__, __TIME__);
+  RtcDateTime cdt = RtcDateTime(__DATE__, __TIME__);
 
   //Taking initial time manually
-  RtcDateTime cdt = RtcDateTime("Dec 10 2025", "16:55:00");
+  //RtcDateTime cdt = RtcDateTime("Dec 11 2025", "14:40:00");
 
   Rtc.SetDateTime(cdt);
 
@@ -351,7 +351,7 @@ void CheckRealTime(){
   Serial.println("---DateTime---");
   printDateTime(pdt);
   Serial.println("--------------");
-  if(pdt.Hour() >= 6 && pdt.Hour() < 21){
+  if(pdt.Hour() >= 6 && pdt.Hour() < 20){
     digitalWrite(5, HIGH);
   }else{
     digitalWrite(5, LOW);

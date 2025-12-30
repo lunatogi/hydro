@@ -12,6 +12,7 @@ RM := rm -rf
 -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
+-include BSP/Src/subdir.mk
 -include App/Src/subdir.mk
 -include objects.mk
 
@@ -61,8 +62,8 @@ all: main-build
 main-build: hydro-stm.elf secondary-outputs
 
 # Tool invocations
-hydro-stm.elf hydro-stm.map: $(OBJS) $(USER_OBJS) C:\Users\Administrator\Desktop\Main\HydroGeneral\hydro\hydro-stm\STM32F411RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "hydro-stm.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Administrator\Desktop\Main\HydroGeneral\hydro\hydro-stm\STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="hydro-stm.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+hydro-stm.elf hydro-stm.map: $(OBJS) $(USER_OBJS) C:\Users\nasah\OneDrive\Desktop\Hydro\hydro\hydro-stm\STM32F411RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "hydro-stm.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\nasah\OneDrive\Desktop\Hydro\hydro\hydro-stm\STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="hydro-stm.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
