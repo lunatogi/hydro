@@ -23,15 +23,14 @@
 /* USER CODE BEGIN Includes */
 #include "scheduler.h"
 #include "sensor_manager.h"
+
+//Sensors
 #include "bmp180.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef struct			// SensorHW Init parameters
-{
-    I2C_HandleTypeDef *i2c2;
-} SensorHW_Context_t;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -50,10 +49,7 @@ I2C_HandleTypeDef hi2c2;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-SensorHW_Context_t sensorHwCtx =
-{
-    .i2c2 = &hi2c2
-};
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -67,7 +63,16 @@ static void MX_I2C2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+//Sensor initializations
+void BMP_Init(I2C_HandleTypeDef *i2c_loc){
+	  BMP180_Init(i2c_loc);
+	  BMP180_SetOversampling(BMP180_STANDARD);
+	  BMP180_UpdateCalibrationData();
+}
 
+void AllSensor_Init(void){
+	BMP_Init(&hi2c2);
+}
 /* USER CODE END 0 */
 
 /**
@@ -107,15 +112,15 @@ int main(void)
   int32_t rawTemperature = 0;
   int32_t pressure = 0;
   float temperature = 0.0f;
-  BMP180_Init(&hi2c2);
-  BMP180_SetOversampling(BMP180_STANDARD);
-  BMP180_UpdateCalibrationData();
+  //BMP180_Init(&hi2c2);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   Scheduler_Init();
   Sensor_Init();
+  AllSensor_Init();
 
   if (HAL_I2C_IsDeviceReady(&hi2c2, 0x77<<1, 3, 100) != HAL_OK) {
       lel = 0;
@@ -123,9 +128,9 @@ int main(void)
 
   while (1)
   {
-	rawTemperature = BMP180_GetRawTemperature();
-	temperature = rawTemperature / 10.0f;
-	pressure = BMP180_GetPressure();
+	//rawTemperature = BMP180_GetRawTemperature();
+	//temperature = rawTemperature / 10.0f;
+	//pressure = BMP180_GetPressure();
 
 	Scheduler_Run();
 

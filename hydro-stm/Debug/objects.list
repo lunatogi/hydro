@@ -4,6 +4,7 @@
 "./App/Src/scheduler.o"
 "./App/Src/sensor_manager.o"
 "./BSP/Src/bmp180.o"
+"./BSP/Src/sensor_hw.o"
 "./Core/Src/main.o"
 "./Core/Src/stm32f4xx_hal_msp.o"
 "./Core/Src/stm32f4xx_it.o"

@@ -5,13 +5,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../BSP/Src/bmp180.c 
+../BSP/Src/bmp180.c \
+../BSP/Src/sensor_hw.c 
 
 OBJS += \
-./BSP/Src/bmp180.o 
+./BSP/Src/bmp180.o \
+./BSP/Src/sensor_hw.o 
 
 C_DEPS += \
-./BSP/Src/bmp180.d 
+./BSP/Src/bmp180.d \
+./BSP/Src/sensor_hw.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -21,7 +24,7 @@ BSP/Src/%.o BSP/Src/%.su BSP/Src/%.cyclo: ../BSP/Src/%.c BSP/Src/subdir.mk
 clean: clean-BSP-2f-Src
 
 clean-BSP-2f-Src:
-	-$(RM) ./BSP/Src/bmp180.cyclo ./BSP/Src/bmp180.d ./BSP/Src/bmp180.o ./BSP/Src/bmp180.su
+	-$(RM) ./BSP/Src/bmp180.cyclo ./BSP/Src/bmp180.d ./BSP/Src/bmp180.o ./BSP/Src/bmp180.su ./BSP/Src/sensor_hw.cyclo ./BSP/Src/sensor_hw.d ./BSP/Src/sensor_hw.o ./BSP/Src/sensor_hw.su
 
 .PHONY: clean-BSP-2f-Src
 

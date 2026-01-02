@@ -9,20 +9,12 @@
 #define INC_SENSOR_MANAGER_H_
 
 #include <stdint.h>
+#include "common_types.h"
 
 #define SENSOR_PIN_INC   (1U << 1)
 #define SENSOR_PIN_DEC   (1U << 0)
 
 typedef uint8_t flag_t;
-
-typedef enum
-{
-    IDX_TEMP = 0,
-    IDX_HUM,
-
-    SENSOR_COUNT
-} SensorIndex_t;
-
 
 typedef struct
 {

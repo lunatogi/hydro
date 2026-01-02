@@ -7,6 +7,7 @@
 
 #include "sensor_manager.h"
 #include "config_store.h"
+#include "sensor_hw.h"
 
 static const SensorConfig_t sensorConfigDefault[SENSOR_COUNT] =
 {
@@ -71,7 +72,9 @@ void Sensor_Init(void){
 }
 
 void Sensor_Update(void){
-	// Get new sensor values from Sensor Lib
+	for(SensorIndex_t i = 0; i < SENSOR_COUNT; i++){
+		sensorState[i].value = Read_Sensor(i);
+	}
 }
 
 void Sensor_CommitConfig(void){
@@ -121,7 +124,7 @@ uint8_t Sensor_GetPortDecrease(SensorIndex_t idx){
 
 	return sensorConfigRuntime[idx].decreasePort;
 }
-
+// WARNING There might be a problem of return location for these functions (uint16_t)
 uint8_t Sensor_GetPinIncrease(SensorIndex_t idx){
     if (idx >= SENSOR_COUNT){
         return 0;
@@ -129,7 +132,7 @@ uint8_t Sensor_GetPinIncrease(SensorIndex_t idx){
 
 	return sensorConfigRuntime[idx].increasePin;
 }
-
+// WARNING There might be a problem of return location for these functions (uint16_t)
 uint8_t Sensor_GetPinDecrease(SensorIndex_t idx){
     if (idx >= SENSOR_COUNT){
         return 0;

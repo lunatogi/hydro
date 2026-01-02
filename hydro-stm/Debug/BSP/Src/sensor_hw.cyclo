@@ -1,0 +1,3 @@
+../BSP/Src/sensor_hw.c:11:14:Read_Temperature	1
+../BSP/Src/sensor_hw.c:15:14:Read_Pressure	1
+../BSP/Src/sensor_hw.c:19:7:Read_Sensor	3
