@@ -1678,7 +1678,6 @@ void Scheduler_Run(void){
 	uint32_t nowTick = HAL_GetTick();
  800114e:	f001 f891 	bl	8002274 <HAL_GetTick>
  8001152:	6078      	str	r0, [r7, #4]
-
 	if(nowTick - lastSensorTick >= delaySensorTick){
  8001154:	4b19      	ldr	r3, [pc, #100]	@ (80011bc <Scheduler_Run+0x74>)
  8001156:	681b      	ldr	r3, [r3, #0]
@@ -1707,8 +1706,8 @@ void Scheduler_Run(void){
 		// Adjust according to sensor values
 		ControlLoop_Run();
  800117e:	f7ff ff01 	bl	8000f84 <ControlLoop_Run>
-		lastSensorTick = nowTick;
- 8001182:	4a0e      	ldr	r2, [pc, #56]	@ (80011bc <Scheduler_Run+0x74>)
+		lastControlTick = nowTick;
+ 8001182:	4a0f      	ldr	r2, [pc, #60]	@ (80011c0 <Scheduler_Run+0x78>)
  8001184:	687b      	ldr	r3, [r7, #4]
  8001186:	6013      	str	r3, [r2, #0]
 	}

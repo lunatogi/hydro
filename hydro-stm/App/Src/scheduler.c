@@ -30,7 +30,6 @@ void Scheduler_Init(void){
 
 void Scheduler_Run(void){
 	uint32_t nowTick = HAL_GetTick();
-
 	if(nowTick - lastSensorTick >= delaySensorTick){
 		// Check Sensors Values
 		Sensor_Update();
@@ -40,7 +39,7 @@ void Scheduler_Run(void){
 	if(nowTick - lastControlTick >= delayControlTick){
 		// Adjust according to sensor values
 		ControlLoop_Run();
-		lastSensorTick = nowTick;
+		lastControlTick = nowTick;
 	}
 
 	if(nowTick - lastESPTick >= delayESPTick){

@@ -19,7 +19,7 @@ static float Read_Pressure(void){
 float Read_Sensor(SensorIndex_t idx){
 	switch(idx){
 		case IDX_TEMP: return Read_Temperature(); break;
-		case IDX_HUM: return Read_Pressure(); break;
+		case IDX_HUM: return Read_Pressure(); break;	// WARNING!! It's connected to pressure for debug
 		default: return 0.0f;
 	}
 }

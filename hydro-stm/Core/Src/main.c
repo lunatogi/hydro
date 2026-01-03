@@ -63,6 +63,7 @@ static void MX_I2C2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 //Sensor initializations
 void BMP_Init(I2C_HandleTypeDef *i2c_loc){
 	  BMP180_Init(i2c_loc);
@@ -108,12 +109,6 @@ int main(void)
   MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
   int lel = 2;
-
-  int32_t rawTemperature = 0;
-  int32_t pressure = 0;
-  float temperature = 0.0f;
-  //BMP180_Init(&hi2c2);
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -128,10 +123,6 @@ int main(void)
 
   while (1)
   {
-	//rawTemperature = BMP180_GetRawTemperature();
-	//temperature = rawTemperature / 10.0f;
-	//pressure = BMP180_GetPressure();
-
 	Scheduler_Run();
 
 	lel++;
