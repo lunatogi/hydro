@@ -64,7 +64,7 @@ static void MX_I2C2_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-//Sensor initializations
+//Sensor wiring
 void BMP_Init(I2C_HandleTypeDef *i2c_loc){
 	  BMP180_Init(i2c_loc);
 	  BMP180_SetOversampling(BMP180_STANDARD);

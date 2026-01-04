@@ -27,25 +27,25 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  0000702c  2**0
                   CONTENTS, READONLY
- 12 .debug_info   0000c606  00000000  00000000  0000705c  2**0
+ 12 .debug_info   0000c5bd  00000000  00000000  0000705c  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 00002467  00000000  00000000  00013662  2**0
+ 13 .debug_abbrev 00002467  00000000  00000000  00013619  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_aranges 00000c40  00000000  00000000  00015ad0  2**3
+ 14 .debug_aranges 00000c40  00000000  00000000  00015a80  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_rnglists 0000096b  00000000  00000000  00016710  2**0
+ 15 .debug_rnglists 0000096b  00000000  00000000  000166c0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  00016830  00000000  00000000  0001707b  2**0
+ 16 .debug_macro  000166c0  00000000  00000000  0001702b  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   00010645  00000000  00000000  0002d8ab  2**0
+ 17 .debug_line   0001031f  00000000  00000000  0002d6eb  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    0008882a  00000000  00000000  0003def0  2**0
+ 18 .debug_str    00088805  00000000  00000000  0003da0a  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000043  00000000  00000000  000c671a  2**0
+ 19 .comment      00000043  00000000  00000000  000c620f  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00003280  00000000  00000000  000c6760  2**2
+ 20 .debug_frame  00003280  00000000  00000000  000c6254  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .debug_line_str 00000064  00000000  00000000  000c99e0  2**0
+ 21 .debug_line_str 00000064  00000000  00000000  000c94d4  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1046,9 +1046,9 @@ Disassembly of section .text:
  8000d3e:	bf00      	nop
 
 08000d40 <Port_From_ID>:
- */
 
 #include "actuator_manager.h"
+#include "stm32f4xx_hal.h"
 
 static GPIO_TypeDef* Port_From_ID(uint8_t id)
 {
@@ -1753,13 +1753,13 @@ void Scheduler_Run(void){
  80011c4:	2000004c 	.word	0x2000004c
  80011c8:	20000050 	.word	0x20000050
 
-080011cc <Config_BuildDefault>:
+080011cc <BuildDefaultConfig>:
 
 SystemConfig_t systemConfig;		//
 
 static volatile uint8_t configDirty = 0;
 
-static void Config_BuildDefault(SystemConfig_t *cfg){
+static void BuildDefaultConfig(SystemConfig_t *cfg){
  80011cc:	b480      	push	{r7}
  80011ce:	b085      	sub	sp, #20
  80011d0:	af00      	add	r7, sp, #0
@@ -1772,11 +1772,11 @@ static void Config_BuildDefault(SystemConfig_t *cfg){
 	for(SensorIndex_t i = 0; i < SENSOR_COUNT; i++){
  80011da:	2300      	movs	r3, #0
  80011dc:	73fb      	strb	r3, [r7, #15]
- 80011de:	e020      	b.n	8001222 <Config_BuildDefault+0x56>
+ 80011de:	e020      	b.n	8001222 <BuildDefaultConfig+0x56>
 		cfg->sensor[i].ref = sensorConfigDefault[i].ref;
  80011e0:	7bfa      	ldrb	r2, [r7, #15]
  80011e2:	7bf8      	ldrb	r0, [r7, #15]
- 80011e4:	4914      	ldr	r1, [pc, #80]	@ (8001238 <Config_BuildDefault+0x6c>)
+ 80011e4:	4914      	ldr	r1, [pc, #80]	@ (8001238 <BuildDefaultConfig+0x6c>)
  80011e6:	4613      	mov	r3, r2
  80011e8:	00db      	lsls	r3, r3, #3
  80011ea:	1a9b      	subs	r3, r3, r2
@@ -1792,7 +1792,7 @@ static void Config_BuildDefault(SystemConfig_t *cfg){
 		cfg->sensor[i].margin = sensorConfigDefault[i].margin;
  80011fe:	7bfa      	ldrb	r2, [r7, #15]
  8001200:	7bf8      	ldrb	r0, [r7, #15]
- 8001202:	490d      	ldr	r1, [pc, #52]	@ (8001238 <Config_BuildDefault+0x6c>)
+ 8001202:	490d      	ldr	r1, [pc, #52]	@ (8001238 <BuildDefaultConfig+0x6c>)
  8001204:	4613      	mov	r3, r2
  8001206:	00db      	lsls	r3, r3, #3
  8001208:	1a9b      	subs	r3, r3, r2
@@ -1811,7 +1811,7 @@ static void Config_BuildDefault(SystemConfig_t *cfg){
  8001220:	73fb      	strb	r3, [r7, #15]
  8001222:	7bfb      	ldrb	r3, [r7, #15]
  8001224:	2b01      	cmp	r3, #1
- 8001226:	d9db      	bls.n	80011e0 <Config_BuildDefault+0x14>
+ 8001226:	d9db      	bls.n	80011e0 <BuildDefaultConfig+0x14>
 	}
 }
  8001228:	bf00      	nop
@@ -1873,9 +1873,9 @@ void Sensor_Init(void){
  800128c:	4603      	mov	r3, r0
  800128e:	2b00      	cmp	r3, #0
  8001290:	d105      	bne.n	800129e <Sensor_Init+0x62>
-		Config_BuildDefault(&systemConfig);
+		BuildDefaultConfig(&systemConfig);
  8001292:	481b      	ldr	r0, [pc, #108]	@ (8001300 <Sensor_Init+0xc4>)
- 8001294:	f7ff ff9a 	bl	80011cc <Config_BuildDefault>
+ 8001294:	f7ff ff9a 	bl	80011cc <BuildDefaultConfig>
 		Config_Save(&systemConfig);
  8001298:	4819      	ldr	r0, [pc, #100]	@ (8001300 <Sensor_Init+0xc4>)
  800129a:	f7ff fe1d 	bl	8000ed8 <Config_Save>
@@ -2157,7 +2157,7 @@ uint8_t Sensor_GetPortDecrease(SensorIndex_t idx){
  8001468:	20000058 	.word	0x20000058
 
 0800146c <Sensor_GetPinIncrease>:
-// WARNING There might be a problem of return location for these functions (uint16_t)
+
 uint8_t Sensor_GetPinIncrease(SensorIndex_t idx){
  800146c:	b480      	push	{r7}
  800146e:	b083      	sub	sp, #12
@@ -2193,7 +2193,7 @@ uint8_t Sensor_GetPinIncrease(SensorIndex_t idx){
  80014a0:	20000058 	.word	0x20000058
 
 080014a4 <Sensor_GetPinDecrease>:
-// WARNING There might be a problem of return location for these functions (uint16_t)
+
 uint8_t Sensor_GetPinDecrease(SensorIndex_t idx){
  80014a4:	b480      	push	{r7}
  80014a6:	b083      	sub	sp, #12
@@ -3201,175 +3201,180 @@ float Read_Sensor(SensorIndex_t idx){
  8001bb4:	af00      	add	r7, sp, #0
  8001bb6:	4603      	mov	r3, r0
  8001bb8:	71fb      	strb	r3, [r7, #7]
-	switch(idx){
+	return 0.0f;
+	*/
+
+	// This part would be better like the top but this way it will always be a warning, below is warning free
+
+    if (idx >= SENSOR_COUNT)
  8001bba:	79fb      	ldrb	r3, [r7, #7]
- 8001bbc:	2b00      	cmp	r3, #0
- 8001bbe:	d002      	beq.n	8001bc6 <Read_Sensor+0x16>
- 8001bc0:	2b01      	cmp	r3, #1
- 8001bc2:	d005      	beq.n	8001bd0 <Read_Sensor+0x20>
- 8001bc4:	e009      	b.n	8001bda <Read_Sensor+0x2a>
-		case IDX_TEMP: return Read_Temperature(); break;
- 8001bc6:	f7ff ffdf 	bl	8001b88 <Read_Temperature>
- 8001bca:	eef0 7a40 	vmov.f32	s15, s0
- 8001bce:	e006      	b.n	8001bde <Read_Sensor+0x2e>
-		case IDX_HUM: return Read_Pressure(); break;
- 8001bd0:	f7ff ffe3 	bl	8001b9a <Read_Pressure>
- 8001bd4:	eef0 7a40 	vmov.f32	s15, s0
- 8001bd8:	e001      	b.n	8001bde <Read_Sensor+0x2e>
+ 8001bbc:	2b01      	cmp	r3, #1
+ 8001bbe:	d902      	bls.n	8001bc6 <Read_Sensor+0x16>
+    {
+        // Invalid sensor index
+        return 0.0f;
+ 8001bc0:	eddf 7a0c 	vldr	s15, [pc, #48]	@ 8001bf4 <Read_Sensor+0x44>
+ 8001bc4:	e011      	b.n	8001bea <Read_Sensor+0x3a>
+    }
+
+	switch(idx){
+ 8001bc6:	79fb      	ldrb	r3, [r7, #7]
+ 8001bc8:	2b00      	cmp	r3, #0
+ 8001bca:	d002      	beq.n	8001bd2 <Read_Sensor+0x22>
+ 8001bcc:	2b01      	cmp	r3, #1
+ 8001bce:	d005      	beq.n	8001bdc <Read_Sensor+0x2c>
+ 8001bd0:	e009      	b.n	8001be6 <Read_Sensor+0x36>
+		case IDX_TEMP: return Read_Temperature();
+ 8001bd2:	f7ff ffd9 	bl	8001b88 <Read_Temperature>
+ 8001bd6:	eef0 7a40 	vmov.f32	s15, s0
+ 8001bda:	e006      	b.n	8001bea <Read_Sensor+0x3a>
+		case IDX_HUM: return Read_Pressure();	// WARNING!! It's connected to pressure for debug
+ 8001bdc:	f7ff ffdd 	bl	8001b9a <Read_Pressure>
+ 8001be0:	eef0 7a40 	vmov.f32	s15, s0
+ 8001be4:	e001      	b.n	8001bea <Read_Sensor+0x3a>
 		default: return 0.0f;
- 8001bda:	eddf 7a03 	vldr	s15, [pc, #12]	@ 8001be8 <Read_Sensor+0x38>
+ 8001be6:	eddf 7a03 	vldr	s15, [pc, #12]	@ 8001bf4 <Read_Sensor+0x44>
 	}
 }
- 8001bde:	eeb0 0a67 	vmov.f32	s0, s15
- 8001be2:	3708      	adds	r7, #8
- 8001be4:	46bd      	mov	sp, r7
- 8001be6:	bd80      	pop	{r7, pc}
- 8001be8:	00000000 	.word	0x00000000
+ 8001bea:	eeb0 0a67 	vmov.f32	s0, s15
+ 8001bee:	3708      	adds	r7, #8
+ 8001bf0:	46bd      	mov	sp, r7
+ 8001bf2:	bd80      	pop	{r7, pc}
+ 8001bf4:	00000000 	.word	0x00000000
 
-08001bec <BMP_Init>:
-/* USER CODE END PFP */
+08001bf8 <BMP_Init>:
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-//Sensor initializations
-void BMP_Init(I2C_HandleTypeDef *i2c_loc){
- 8001bec:	b580      	push	{r7, lr}
- 8001bee:	b082      	sub	sp, #8
- 8001bf0:	af00      	add	r7, sp, #0
- 8001bf2:	6078      	str	r0, [r7, #4]
-	  BMP180_Init(i2c_loc);
- 8001bf4:	6878      	ldr	r0, [r7, #4]
- 8001bf6:	f7ff fcf9 	bl	80015ec <BMP180_Init>
-	  BMP180_SetOversampling(BMP180_STANDARD);
- 8001bfa:	2001      	movs	r0, #1
- 8001bfc:	f7ff fd06 	bl	800160c <BMP180_SetOversampling>
-	  BMP180_UpdateCalibrationData();
- 8001c00:	f7ff fd14 	bl	800162c <BMP180_UpdateCalibrationData>
-}
- 8001c04:	bf00      	nop
- 8001c06:	3708      	adds	r7, #8
- 8001c08:	46bd      	mov	sp, r7
- 8001c0a:	bd80      	pop	{r7, pc}
 
-08001c0c <AllSensor_Init>:
+//Sensor wiring
+void BMP_Init(I2C_HandleTypeDef *i2c_loc){
+ 8001bf8:	b580      	push	{r7, lr}
+ 8001bfa:	b082      	sub	sp, #8
+ 8001bfc:	af00      	add	r7, sp, #0
+ 8001bfe:	6078      	str	r0, [r7, #4]
+	  BMP180_Init(i2c_loc);
+ 8001c00:	6878      	ldr	r0, [r7, #4]
+ 8001c02:	f7ff fcf3 	bl	80015ec <BMP180_Init>
+	  BMP180_SetOversampling(BMP180_STANDARD);
+ 8001c06:	2001      	movs	r0, #1
+ 8001c08:	f7ff fd00 	bl	800160c <BMP180_SetOversampling>
+	  BMP180_UpdateCalibrationData();
+ 8001c0c:	f7ff fd0e 	bl	800162c <BMP180_UpdateCalibrationData>
+}
+ 8001c10:	bf00      	nop
+ 8001c12:	3708      	adds	r7, #8
+ 8001c14:	46bd      	mov	sp, r7
+ 8001c16:	bd80      	pop	{r7, pc}
+
+08001c18 <AllSensor_Init>:
 
 void AllSensor_Init(void){
- 8001c0c:	b580      	push	{r7, lr}
- 8001c0e:	af00      	add	r7, sp, #0
+ 8001c18:	b580      	push	{r7, lr}
+ 8001c1a:	af00      	add	r7, sp, #0
 	BMP_Init(&hi2c2);
- 8001c10:	4802      	ldr	r0, [pc, #8]	@ (8001c1c <AllSensor_Init+0x10>)
- 8001c12:	f7ff ffeb 	bl	8001bec <BMP_Init>
+ 8001c1c:	4802      	ldr	r0, [pc, #8]	@ (8001c28 <AllSensor_Init+0x10>)
+ 8001c1e:	f7ff ffeb 	bl	8001bf8 <BMP_Init>
 }
- 8001c16:	bf00      	nop
- 8001c18:	bd80      	pop	{r7, pc}
- 8001c1a:	bf00      	nop
- 8001c1c:	200000d4 	.word	0x200000d4
+ 8001c22:	bf00      	nop
+ 8001c24:	bd80      	pop	{r7, pc}
+ 8001c26:	bf00      	nop
+ 8001c28:	200000d4 	.word	0x200000d4
 
-08001c20 <main>:
+08001c2c <main>:
 /**
   * @brief  The application entry point.
   * @retval int
   */
 int main(void)
 {
- 8001c20:	b580      	push	{r7, lr}
- 8001c22:	b084      	sub	sp, #16
- 8001c24:	af00      	add	r7, sp, #0
+ 8001c2c:	b580      	push	{r7, lr}
+ 8001c2e:	b082      	sub	sp, #8
+ 8001c30:	af00      	add	r7, sp, #0
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
- 8001c26:	f000 fabf 	bl	80021a8 <HAL_Init>
+ 8001c32:	f000 fab9 	bl	80021a8 <HAL_Init>
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
- 8001c2a:	f000 f83f 	bl	8001cac <SystemClock_Config>
+ 8001c36:	f000 f839 	bl	8001cac <SystemClock_Config>
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
- 8001c2e:	f000 f8ff 	bl	8001e30 <MX_GPIO_Init>
+ 8001c3a:	f000 f8f9 	bl	8001e30 <MX_GPIO_Init>
   MX_USART2_UART_Init();
- 8001c32:	f000 f8d3 	bl	8001ddc <MX_USART2_UART_Init>
+ 8001c3e:	f000 f8cd 	bl	8001ddc <MX_USART2_UART_Init>
   MX_I2C2_Init();
- 8001c36:	f000 f8a3 	bl	8001d80 <MX_I2C2_Init>
+ 8001c42:	f000 f89d 	bl	8001d80 <MX_I2C2_Init>
   /* USER CODE BEGIN 2 */
   int lel = 2;
- 8001c3a:	2302      	movs	r3, #2
- 8001c3c:	60fb      	str	r3, [r7, #12]
-
-  int32_t rawTemperature = 0;
- 8001c3e:	2300      	movs	r3, #0
- 8001c40:	60bb      	str	r3, [r7, #8]
-  int32_t pressure = 0;
- 8001c42:	2300      	movs	r3, #0
- 8001c44:	607b      	str	r3, [r7, #4]
-  float temperature = 0.0f;
- 8001c46:	f04f 0300 	mov.w	r3, #0
- 8001c4a:	603b      	str	r3, [r7, #0]
-
+ 8001c46:	2302      	movs	r3, #2
+ 8001c48:	607b      	str	r3, [r7, #4]
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   Scheduler_Init();
- 8001c4c:	f7ff fa62 	bl	8001114 <Scheduler_Init>
+ 8001c4a:	f7ff fa63 	bl	8001114 <Scheduler_Init>
   Sensor_Init();
- 8001c50:	f7ff faf4 	bl	800123c <Sensor_Init>
+ 8001c4e:	f7ff faf5 	bl	800123c <Sensor_Init>
   AllSensor_Init();
- 8001c54:	f7ff ffda 	bl	8001c0c <AllSensor_Init>
+ 8001c52:	f7ff ffe1 	bl	8001c18 <AllSensor_Init>
 
   if (HAL_I2C_IsDeviceReady(&hi2c2, 0x77<<1, 3, 100) != HAL_OK) {
- 8001c58:	2364      	movs	r3, #100	@ 0x64
- 8001c5a:	2203      	movs	r2, #3
- 8001c5c:	21ee      	movs	r1, #238	@ 0xee
- 8001c5e:	4810      	ldr	r0, [pc, #64]	@ (8001ca0 <main+0x80>)
- 8001c60:	f001 fd46 	bl	80036f0 <HAL_I2C_IsDeviceReady>
- 8001c64:	4603      	mov	r3, r0
- 8001c66:	2b00      	cmp	r3, #0
- 8001c68:	d001      	beq.n	8001c6e <main+0x4e>
+ 8001c56:	2364      	movs	r3, #100	@ 0x64
+ 8001c58:	2203      	movs	r2, #3
+ 8001c5a:	21ee      	movs	r1, #238	@ 0xee
+ 8001c5c:	4810      	ldr	r0, [pc, #64]	@ (8001ca0 <main+0x74>)
+ 8001c5e:	f001 fd47 	bl	80036f0 <HAL_I2C_IsDeviceReady>
+ 8001c62:	4603      	mov	r3, r0
+ 8001c64:	2b00      	cmp	r3, #0
+ 8001c66:	d001      	beq.n	8001c6c <main+0x40>
       lel = 0;
- 8001c6a:	2300      	movs	r3, #0
- 8001c6c:	60fb      	str	r3, [r7, #12]
-  {
-	//rawTemperature = BMP180_GetRawTemperature();
-	//temperature = rawTemperature / 10.0f;
-	//pressure = BMP180_GetPressure();
+ 8001c68:	2300      	movs	r3, #0
+ 8001c6a:	607b      	str	r3, [r7, #4]
+  }
 
+  while (1)
+  {
 	Scheduler_Run();
- 8001c6e:	f7ff fa6b 	bl	8001148 <Scheduler_Run>
+ 8001c6c:	f7ff fa6c 	bl	8001148 <Scheduler_Run>
 
 	lel++;
- 8001c72:	68fb      	ldr	r3, [r7, #12]
- 8001c74:	3301      	adds	r3, #1
- 8001c76:	60fb      	str	r3, [r7, #12]
+ 8001c70:	687b      	ldr	r3, [r7, #4]
+ 8001c72:	3301      	adds	r3, #1
+ 8001c74:	607b      	str	r3, [r7, #4]
 	if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_RESET){
- 8001c78:	f44f 5100 	mov.w	r1, #8192	@ 0x2000
- 8001c7c:	4809      	ldr	r0, [pc, #36]	@ (8001ca4 <main+0x84>)
- 8001c7e:	f001 f877 	bl	8002d70 <HAL_GPIO_ReadPin>
- 8001c82:	4603      	mov	r3, r0
- 8001c84:	2b00      	cmp	r3, #0
- 8001c86:	d107      	bne.n	8001c98 <main+0x78>
+ 8001c76:	f44f 5100 	mov.w	r1, #8192	@ 0x2000
+ 8001c7a:	480a      	ldr	r0, [pc, #40]	@ (8001ca4 <main+0x78>)
+ 8001c7c:	f001 f878 	bl	8002d70 <HAL_GPIO_ReadPin>
+ 8001c80:	4603      	mov	r3, r0
+ 8001c82:	2b00      	cmp	r3, #0
+ 8001c84:	d107      	bne.n	8001c96 <main+0x6a>
 		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
- 8001c88:	2120      	movs	r1, #32
- 8001c8a:	4807      	ldr	r0, [pc, #28]	@ (8001ca8 <main+0x88>)
- 8001c8c:	f001 f8a1 	bl	8002dd2 <HAL_GPIO_TogglePin>
+ 8001c86:	2120      	movs	r1, #32
+ 8001c88:	4807      	ldr	r0, [pc, #28]	@ (8001ca8 <main+0x7c>)
+ 8001c8a:	f001 f8a2 	bl	8002dd2 <HAL_GPIO_TogglePin>
 		HAL_Delay(300);
- 8001c90:	f44f 7096 	mov.w	r0, #300	@ 0x12c
- 8001c94:	f000 fafa 	bl	800228c <HAL_Delay>
+ 8001c8e:	f44f 7096 	mov.w	r0, #300	@ 0x12c
+ 8001c92:	f000 fafb 	bl	800228c <HAL_Delay>
 	}
 	HAL_Delay(1);
- 8001c98:	2001      	movs	r0, #1
- 8001c9a:	f000 faf7 	bl	800228c <HAL_Delay>
+ 8001c96:	2001      	movs	r0, #1
+ 8001c98:	f000 faf8 	bl	800228c <HAL_Delay>
 	Scheduler_Run();
- 8001c9e:	e7e6      	b.n	8001c6e <main+0x4e>
+ 8001c9c:	e7e6      	b.n	8001c6c <main+0x40>
+ 8001c9e:	bf00      	nop
  8001ca0:	200000d4 	.word	0x200000d4
  8001ca4:	40020800 	.word	0x40020800
  8001ca8:	40020000 	.word	0x40020000
@@ -4366,7 +4371,7 @@ LoopFillZerobss:
  8002182:	f002 fecd 	bl	8004f20 <__libc_init_array>
 /* Call the application's entry point.*/
   bl  main
- 8002186:	f7ff fd4b 	bl	8001c20 <main>
+ 8002186:	f7ff fd51 	bl	8001c2c <main>
   bx  lr    
  800218a:	4770      	bx	lr
   ldr   sp, =_estack    		 /* set stack pointer */

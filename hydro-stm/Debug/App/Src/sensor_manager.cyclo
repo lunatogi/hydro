@@ -1,4 +1,4 @@
-../App/Src/sensor_manager.c:47:13:Config_BuildDefault	2
+../App/Src/sensor_manager.c:47:13:BuildDefaultConfig	2
 ../App/Src/sensor_manager.c:56:6:Sensor_Init	4
 ../App/Src/sensor_manager.c:74:6:Sensor_Update	2
 ../App/Src/sensor_manager.c:80:6:Sensor_CommitConfig	2

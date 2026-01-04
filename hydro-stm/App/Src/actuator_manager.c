@@ -6,6 +6,7 @@
  */
 
 #include "actuator_manager.h"
+#include "stm32f4xx_hal.h"
 
 static GPIO_TypeDef* Port_From_ID(uint8_t id)
 {

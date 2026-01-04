@@ -9,7 +9,6 @@
 #define INC_ACTUATOR_MANAGER_H_
 
 #include <stdint.h>
-#include "stm32f4xx_hal.h"
 
 typedef uint8_t flag_t;
 

@@ -44,7 +44,7 @@ SystemConfig_t systemConfig;		//
 
 static volatile uint8_t configDirty = 0;
 
-static void Config_BuildDefault(SystemConfig_t *cfg){
+static void BuildDefaultConfig(SystemConfig_t *cfg){
 	cfg->version = CONFIG_VERSION;
 
 	for(SensorIndex_t i = 0; i < SENSOR_COUNT; i++){
@@ -61,7 +61,7 @@ void Sensor_Init(void){
 	Config_Load(&systemConfig);
 
 	if(!Config_IsValid(&systemConfig)){
-		Config_BuildDefault(&systemConfig);
+		BuildDefaultConfig(&systemConfig);
 		Config_Save(&systemConfig);
 	}
 
@@ -124,7 +124,7 @@ uint8_t Sensor_GetPortDecrease(SensorIndex_t idx){
 
 	return sensorConfigRuntime[idx].decreasePort;
 }
-// WARNING There might be a problem of return location for these functions (uint16_t)
+
 uint8_t Sensor_GetPinIncrease(SensorIndex_t idx){
     if (idx >= SENSOR_COUNT){
         return 0;
@@ -132,7 +132,7 @@ uint8_t Sensor_GetPinIncrease(SensorIndex_t idx){
 
 	return sensorConfigRuntime[idx].increasePin;
 }
-// WARNING There might be a problem of return location for these functions (uint16_t)
+
 uint8_t Sensor_GetPinDecrease(SensorIndex_t idx){
     if (idx >= SENSOR_COUNT){
         return 0;
