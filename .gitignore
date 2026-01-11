@@ -1,0 +1,53 @@
+# ================================
+# STM32CubeIDE / Eclipse
+# ================================
+./hydro-stm/settings/
+./hydro-stm/project
+./hydro-stm/cproject
+./hydro-stm/metadata/
+./hydro-stm/recommenders/
+
+# ================================
+# Build outputs
+# ================================
+/hydro-stm/Debug/
+/hydro-stm/Release/
+/hydro-stm/build/
+/hydro-stm/out/
+
+# ================================
+# Compiled binaries
+# ================================
+*.o
+*.d
+*.elf
+*.map
+*.list
+*.bin
+*.hex
+*.axf
+
+# ================================
+# Temporary & backup files
+# ================================
+*~
+*.swp
+*.bak
+*.tmp
+
+# ================================
+# Logs
+# ================================
+*.log
+
+# ================================
+# OS generated
+# ================================
+.DS_Store
+Thumbs.db
+
+# ================================
+# Python (if any scripts)
+# ================================
+__pycache__/
+*.pyc
