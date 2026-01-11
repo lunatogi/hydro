@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ESP IOT DASHBOARD</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- <link rel="icon" type="image/png" href="favicon.png"> -->
+        <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <body>
+        <div class="topnav">
+            <h1>SENSOR READINGS</h1>
+        </div>
+        <div class="content">
+            <div class="card-grid">
+                <div class="card">
+                    <p class="card-title">Temperature</p>
+                    <p class="reading"><span id="temperature"></span> &deg;C</p>
+                    <p class="ref">Reference value: <span id="refTemperature"></span> &deg;C</p>
+                </div>
+                <div class="card">
+                    <p class="card-title">Humidity</p>
+                    <p class="reading"><span id="humidity"></span> %</p>
+                    <p class="ref">Reference value: <span id="refHum"></span> %</p>
+                </div>
+                <div class="card">
+                    <p class="card-title">pH</p>
+                    <p class="reading"><span id="ph"></span></p>
+                    <p class="ref">Reference value: <span id="refpH"></span></p>
+                </div>
+                <div class="card">
+                    <p class="card-title">Pressure</p>
+                    <p class="reading"><span id="pressure"></span> hpa</p>
+                    <p class="ref">Reference value: <span id="refPressure"></span> hpa</p>
+                </div>
+                <div class="card">
+                    <p class="card-title">TDS</p>
+                    <p class="reading"><span id="tds"></span> ppm</p>
+                    <p class="ref">Reference value: <span id="refTDS"></span> ppm</p>
+                </div>
+                <div class="card">
+                    <p class="card-title">Flying Fish</p>
+                    <p class="reading"><span id="ff"></span></p>
+                    <p class="ref">Reference value: <span id="refFF"></span></p>
+                </div>
+
+                <div class="cardButton">
+                    <p><button id="buttonAdmin" class="buttonAdmin">Admin Panel</button></p>
+                </div>
+            </div>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>
