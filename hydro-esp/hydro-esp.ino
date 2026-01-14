@@ -46,6 +46,14 @@ uint8_t motorID = 1;
 uint16_t motorValue = 1;
 String motorMsg = "1:1";
 
+// SPI
+ESP32SPISlave slave;
+
+static constexpr size_t BUFFER_SIZE = 4;
+static constexpr size_t QUEUE_SIZE = 1;
+uint8_t tx_buffer[BUFFER_SIZE] {1, 2, 3, 4};
+uint8_t rx_buffer[BUFFER_SIZE] {0, 0, 0, 0};
+
 ////////////////////// SENSORS /////////////////////////
 struct Sensor {
   const char* name;
@@ -254,84 +262,12 @@ void WebSocketSetup(){
   // Start server
   server.begin();
 }
-/////////////////////////////////////////////////////////////////////
-/*
+///////////////////////// SPI /////////////////////////
 void SPISlaveSetup(){
-  SPISlave.onData([](uint8_t *data, size_t len) {
-    char * cData = (char *)data;
-    char * rawData = cData + 1;     //Drop the first letter which says the value type
-    char index = cData[0];
-    Serial.print("Mesaj: ");
-    String sValue = "";
-    switch(index){                  //  t-> temperature, p-> pH, r -> pressure, d-> dissolved solids (tds), f-> particle (ff), h-> humidity, m-> margin of error temperature, n-> margin of error humidity, i-> last motor id, k-> last motor value, s-> motor off on switches
-      case 't':
-        sensors[IDX_TEMP].value = atof(rawData);
-        Serial.println(sensors[IDX_TEMP].value);
-        //Send ref value of the data
-        sValue = String(sensors[IDX_TEMP].ref);
-        SPISlave.setData(sValue.c_str());
-        break;
-      case 'p':
-        sensors[IDX_PH].value = atof(rawData);
-        Serial.println(sensors[IDX_PH].value);
-        //Send ref value of the data
-        sValue = String(sensors[IDX_PH].ref);
-        SPISlave.setData(sValue.c_str());
-        break;
-      case 'r':
-        sensors[IDX_PRESS].value = atof(rawData);
-        Serial.println(sensors[IDX_PRESS].value);
-        //Send ref value of the data
-        sValue = String(sensors[IDX_PRESS].ref);
-        SPISlave.setData(sValue.c_str());
-        break;
-      case 'd':
-        sensors[IDX_TDS].value = atoi(rawData);
-        Serial.println(sensors[IDX_TDS].value);
-        //Send ref value of the data
-        sValue = String(sensors[IDX_TDS].ref);
-        SPISlave.setData(sValue.c_str());
-        break;
-      case 'f':
-        sensors[IDX_FF].value = atof(rawData);
-        Serial.println(sensors[IDX_FF].value);
-        //Send ref value of the data
-        sValue = String(sensors[IDX_FF].ref);
-        SPISlave.setData(sValue.c_str());
-        break;
-      case 'h':
-        sensors[IDX_HUM].value = atof(rawData);
-        Serial.println(sensors[IDX_HUM].value);
-        //Send ref value of the data
-        sValue = String(sensors[IDX_HUM].ref);
-        SPISlave.setData(sValue.c_str());
-        break;
-      case 'm':
-        sensors[IDX_TEMP].margin = atof(rawData);
-        Serial.println(sensors[IDX_TEMP].margin);
-        break;
-      case 'n':
-        sensors[IDX_HUM].margin = atof(rawData);
-        Serial.println(sensors[IDX_HUM].margin);
-        break;
-      case 's':
-        switchMatrixStr = rawData;
-        Serial.println(rawData);
-        break;
-      default:
-        SPISlave.setData(motorMsg.c_str());         // Send motor adjustment values
-        Serial.println(motorMsg);
-    }
-    
-  });
-
-  SPISlave.onDataSent([]() {
-    //Serial.println("Answer Sent");
-  });
-
-  SPISlave.begin();
+  slave.setDataMode(SPI_MODE0);
+  slave.setQueueSize(QUEUE_SIZE);
+  slave.begin();
 }
-*/
 ///////////////////////// EEPROM //////////////////////
 void UpdateEEPROM(int startAddress, float value){
   union{
@@ -378,7 +314,7 @@ void setup() {
 
   EEPROMSetup();
   WebSocketSetup();
-  //SPISlaveSetup();
+  SPISlaveSetup();
 }
 
 void loop() {
@@ -388,6 +324,22 @@ void loop() {
     notifyClients(sensorReadings);
     lastTime = millis();
   }
+  
+  size_t received_bytes = slave.transfer(tx_buffer, rx_buffer, BUFFER_SIZE);
+  if (received_bytes > 0) {
+    Serial.print("RX: ");
+    for (int i=0;i<received_bytes;i++){ Serial.printf("%02X ", rx_buffer[i]); }
+    Serial.println();
+
+    Serial.print("TX: ");
+    for (int i=0;i<received_bytes;i++){ Serial.printf("%02X ", tx_buffer[i]); }
+    Serial.println();
+  }
+  //Serial.print("TX: ");
+  //Serial.println(tx_buffer);
+  //Serial.print("RX: ");
+  //Serial.println(rx_buffer);
+  //delay(5);
 
   ws.cleanupClients();
 }
