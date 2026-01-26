@@ -51,7 +51,7 @@ ESP32SPISlave slave;
 
 static constexpr size_t BUFFER_SIZE = 4;
 static constexpr size_t QUEUE_SIZE = 1;
-uint8_t tx_buffer[BUFFER_SIZE] {1, 2, 3, 4};
+static uint8_t tx_buffer[BUFFER_SIZE] {0xBB, 0x44, 0xCC, 0x33};
 uint8_t rx_buffer[BUFFER_SIZE] {0, 0, 0, 0};
 
 ////////////////////// SENSORS /////////////////////////
@@ -324,8 +324,23 @@ void loop() {
     notifyClients(sensorReadings);
     lastTime = millis();
   }
+
+  /*
+  // Queue next transaction FIRST (so slave is armed before master clocks)
+  slave.queue(tx_buffer, rx_buffer, BUFFER_SIZE);
+
+  // Wait until master actually performs it
+  auto results = slave.wait(300);   // or slave.wait();
+  if (!results.empty() && results.back() > 0) {
+    size_t received_bytes = results.back();
+    Serial.print("RX: ");
+    for (size_t i=0;i<received_bytes;i++) Serial.printf("%02X ", rx_buffer[i]);
+    Serial.println();
+  }
+  */
   
-  size_t received_bytes = slave.transfer(tx_buffer, rx_buffer, BUFFER_SIZE);
+  size_t received_bytes = slave.transfer(tx_buffer, rx_buffer, 4);
+  
   if (received_bytes > 0) {
     Serial.print("RX: ");
     for (int i=0;i<received_bytes;i++){ Serial.printf("%02X ", rx_buffer[i]); }
@@ -335,6 +350,10 @@ void loop() {
     for (int i=0;i<received_bytes;i++){ Serial.printf("%02X ", tx_buffer[i]); }
     Serial.println();
   }
+  
+
+
+
   //Serial.print("TX: ");
   //Serial.println(tx_buffer);
   //Serial.print("RX: ");
