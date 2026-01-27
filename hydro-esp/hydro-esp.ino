@@ -1,4 +1,3 @@
-#include <ESP32SPISlave.h>
 #include <Arduino.h>
 #include <WiFi.h>
 #include <AsyncTCP.h>
@@ -45,15 +44,6 @@ String switchMatrixStr = "";
 uint8_t motorID = 1;
 uint16_t motorValue = 1;
 String motorMsg = "1:1";
-
-// SPI
-ESP32SPISlave slave;
-
-static constexpr size_t BUFFER_SIZE = 4;
-static constexpr size_t QUEUE_SIZE = 1;
-static uint8_t tx_buffer[BUFFER_SIZE] {0xBB, 0x44, 0xCC, 0x33};
-uint8_t rx_buffer[BUFFER_SIZE] {0, 0, 0, 0};
-
 ////////////////////// SENSORS /////////////////////////
 struct Sensor {
   const char* name;
@@ -81,6 +71,42 @@ Sensor sensors[] = {
   { "TDS Sensor",        300.0f, 1.0f, 0 },
   { "Air Quality Sensor",  50.0f, 1.0f, 0 }
 };
+
+////////////////////// COMMUNICATION //////////////////////
+uint8_t intrPin = 4;
+uint8_t clkPin = 14;
+uint8_t mosiPin = 13;
+uint8_t misoPin = 12;
+bool commEnabled = false;
+uint8_t lastState = 0;
+uint8_t currState = 0;
+
+uint8_t tx_buffer = 0xCC;
+uint8_t rx_buffer = 0;
+
+void CommSetup(){
+  pinMode(intrPin, INPUT_PULLUP);
+  pinMode(clkPin, INPUT);
+  pinMode(mosiPin, INPUT);
+  pinMode(misoPin, OUTPUT);
+  attachInterrupt(clkPin, commISR, RISING);
+}
+
+
+uint8_t bitCounter = 0;
+uint8_t maxBits = 8;
+
+uint8_t matrix[256] = {0};
+
+// Interrupt Service Routine
+void ARDUINO_ISR_ATTR commISR(){
+  matrix[bitCounter] = digitalRead(mosiPin);
+  digitalWrite(misoPin, (tx_buffer >> (7 - bitCounter)) & 1);
+  if(matrix[bitCounter] == 1) matrix[bitCounter] = 1;
+  if(matrix[bitCounter] == 0) matrix[bitCounter] = 0;
+  bitCounter++;
+}
+
 
 ////////////////////// WEB SOCKET /////////////////////////
 void initWebSocket() {
@@ -262,12 +288,7 @@ void WebSocketSetup(){
   // Start server
   server.begin();
 }
-///////////////////////// SPI /////////////////////////
-void SPISlaveSetup(){
-  slave.setDataMode(SPI_MODE0);
-  slave.setQueueSize(QUEUE_SIZE);
-  slave.begin();
-}
+
 ///////////////////////// EEPROM //////////////////////
 void UpdateEEPROM(int startAddress, float value){
   union{
@@ -314,44 +335,51 @@ void setup() {
 
   EEPROMSetup();
   WebSocketSetup();
-  SPISlaveSetup();
+  CommSetup();
 }
-
+uint8_t message = 0;
 void loop() {
+
+  currState = digitalRead(clkPin);
+  
+  //Serial.print("Clk: ");
+  //Serial.println(currState);
+  if(currState == 1 && lastState == 0){     // Rising Edge
+
+  }
+  lastState = currState;
+
+  if(bitCounter == 8){
+
+    Serial.print("Message: ");
+    //Serial.println(bitCounter);
+    /*
+    for(int i = 0; i < 8; i++){
+      Serial.print(matrix[i]);
+    }
+    Serial.println("");
+    */
+    Serial.print(matrix[0]);
+    Serial.print(matrix[1]);
+    Serial.print(matrix[2]);
+    Serial.print(matrix[3]);
+    Serial.print(matrix[4]);
+    Serial.print(matrix[5]);
+    Serial.print(matrix[6]);
+    Serial.print(matrix[7]);
+    Serial.println("");
+
+    bitCounter = 0;
+  }
+
+  if(commEnabled) return;
+
   if ((millis() - lastTime) > timerDelay) {
     String sensorReadings = getSensorReadings();
     Serial.println(sensorReadings);
     notifyClients(sensorReadings);
     lastTime = millis();
   }
-
-  /*
-  // Queue next transaction FIRST (so slave is armed before master clocks)
-  slave.queue(tx_buffer, rx_buffer, BUFFER_SIZE);
-
-  // Wait until master actually performs it
-  auto results = slave.wait(300);   // or slave.wait();
-  if (!results.empty() && results.back() > 0) {
-    size_t received_bytes = results.back();
-    Serial.print("RX: ");
-    for (size_t i=0;i<received_bytes;i++) Serial.printf("%02X ", rx_buffer[i]);
-    Serial.println();
-  }
-  */
-  
-  size_t received_bytes = slave.transfer(tx_buffer, rx_buffer, 4);
-  
-  if (received_bytes > 0) {
-    Serial.print("RX: ");
-    for (int i=0;i<received_bytes;i++){ Serial.printf("%02X ", rx_buffer[i]); }
-    Serial.println();
-
-    Serial.print("TX: ");
-    for (int i=0;i<received_bytes;i++){ Serial.printf("%02X ", tx_buffer[i]); }
-    Serial.println();
-  }
-  
-
 
 
   //Serial.print("TX: ");

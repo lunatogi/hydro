@@ -51,9 +51,9 @@ SPI_HandleTypeDef hspi2;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-size_t BUFFER_SIZE = 4;
-uint8_t spi2tx_buffer[4] = {0xAA, 0x55, 0xAA, 0x55};
-uint8_t spi2rx_buffer[4] = {0};
+size_t BUFFER_SIZE = 1;
+uint8_t spi2tx_buffer = 0xCC;
+uint8_t spi2rx_buffer = 0;
 uint8_t buffer_log[100] = {0};
 uint8_t bufCounter = 0;
 /* USER CODE END PV */
@@ -116,6 +116,9 @@ int main(void)
   MX_I2C2_Init();
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
+  HAL_Delay(15000);				// DEBUG DELAY
+
+
   int lel = 2;
 
   Scheduler_Init();
@@ -125,11 +128,6 @@ int main(void)
   if (HAL_I2C_IsDeviceReady(&hi2c2, 0x77<<1, 3, 100) != HAL_OK) {
       lel = 0;
   }
-
-  // SS pin is PB_14
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
-  HAL_SPI_TransmitReceive(&hspi2, spi2tx_buffer, spi2rx_buffer, 4, HAL_MAX_DELAY);
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -143,20 +141,14 @@ int main(void)
 		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 		HAL_Delay(300);
 	}
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
-    for(volatile int i = 0; i < 1000; i++); // Micro Delay
-    //HAL_SPI_TransmitReceive(&hspi2, dummy, spi2rx_buffer, 4, 100);
-    HAL_SPI_TransmitReceive(&hspi2, spi2tx_buffer, spi2rx_buffer, 4, HAL_MAX_DELAY);
-    HAL_Delay(10);
-    if(bufCounter < 30){
-        for(int k = 0; k < 4; k++){
-        	buffer_log[k+bufCounter] = spi2rx_buffer[k];
-        }
-        bufCounter += 4;
-    }
+
 
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
-	HAL_Delay(500);
+    //HAL_Delay(10);
+    HAL_SPI_TransmitReceive(&hspi2, &spi2tx_buffer, &spi2rx_buffer, 1, HAL_MAX_DELAY);
+    HAL_Delay(100);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
+	HAL_Delay(3000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
