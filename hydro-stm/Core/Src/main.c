@@ -52,8 +52,8 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 size_t BUFFER_SIZE = 1;
-uint8_t spi2tx_buffer = 0xCC;
-uint8_t spi2rx_buffer = 0;
+uint8_t spi2tx_buffer[4] = {0xAA, 0xAA, 0xAA, 0xAA};
+uint8_t spi2rx_buffer[4] = {0};
 uint8_t buffer_log[100] = {0};
 uint8_t bufCounter = 0;
 /* USER CODE END PV */
@@ -116,9 +116,7 @@ int main(void)
   MX_I2C2_Init();
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
-  HAL_Delay(15000);				// DEBUG DELAY
-
-
+  //HAL_Delay(15000);				// DEBUG DELAY
   int lel = 2;
 
   Scheduler_Init();
@@ -145,10 +143,10 @@ int main(void)
 
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
     //HAL_Delay(10);
-    HAL_SPI_TransmitReceive(&hspi2, &spi2tx_buffer, &spi2rx_buffer, 1, HAL_MAX_DELAY);
+    HAL_SPI_TransmitReceive(&hspi2, spi2tx_buffer, spi2rx_buffer, 4, HAL_MAX_DELAY);
     HAL_Delay(100);
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
-	HAL_Delay(3000);
+	HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -192,11 +190,11 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
     Error_Handler();
   }

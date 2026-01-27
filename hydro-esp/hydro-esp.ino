@@ -83,7 +83,7 @@ uint8_t currState = 0;
 
 uint8_t tx_buffer = 0xCC;
 uint8_t rx_buffer = 0;
-uint8_t matrix2[8] = {1, 1, 0, 0, 1, 1, 0, 0};
+uint8_t matrix2[32] = {0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1};
 void CommSetup(){
   pinMode(intrPin, INPUT_PULLUP);
   pinMode(clkPin, INPUT);
@@ -96,7 +96,7 @@ void CommSetup(){
 
 
 uint8_t bitCounter = 0;
-uint8_t maxBits = 8;
+uint8_t maxBits = 32;
 
 uint8_t matrix[256] = {0};
 
@@ -353,25 +353,18 @@ void loop() {
   }
   lastState = currState;
 
-  if(bitCounter == 8){
-
+  if(bitCounter >= maxBits){
+    Serial.println(bitCounter);
     Serial.print("Message: ");
+    
     //Serial.println(bitCounter);
-    /*
-    for(int i = 0; i < 8; i++){
+    
+    for(int i = 0; i < maxBits; i++){
       Serial.print(matrix[i]);
     }
     Serial.println("");
-    */
-    Serial.print(matrix[0]);
-    Serial.print(matrix[1]);
-    Serial.print(matrix[2]);
-    Serial.print(matrix[3]);
-    Serial.print(matrix[4]);
-    Serial.print(matrix[5]);
-    Serial.print(matrix[6]);
-    Serial.print(matrix[7]);
-    Serial.println("");
+    
+
     //digitalWrite(misoPin, (tx_buffer >> 7) & 1);
     digitalWrite(misoPin, matrix2[0]);
     bitCounter = 0;
