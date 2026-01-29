@@ -73,33 +73,24 @@ Sensor sensors[] = {
 };
 
 ////////////////////// COMMUNICATION //////////////////////
-uint8_t intrPin = 4;
+uint8_t csPin = 4;
 uint8_t clkPin = 14;
 uint8_t mosiPin = 13;
 uint8_t misoPin = 12;
-bool commEnabled = false;
-uint8_t lastState = 0;
-uint8_t currState = 0;
-
 
 uint8_t tx_buffer[32] = {0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1};
 uint8_t rx_buffer[256] = {0};
 void CommSetup(){
-  pinMode(intrPin, INPUT_PULLUP);
+  pinMode(csPin, INPUT_PULLUP);
   pinMode(clkPin, INPUT);
   pinMode(mosiPin, INPUT);
   pinMode(misoPin, OUTPUT);
   attachInterrupt(clkPin, commISR, RISING);
-  //digitalWrite(misoPin, (tx_buffer >> 7) & 1);
   digitalWrite(misoPin, tx_buffer[0]);
 }
 
-
 uint8_t bitCounter = 0;
 uint8_t maxBits = 32;
-
-
-
 
 // Interrupt Service Routine
 void ARDUINO_ISR_ATTR commISR(){
@@ -344,33 +335,22 @@ void setup() {
 uint8_t message = 0;
 void loop() {
 
-  currState = digitalRead(clkPin);
-  
-  //Serial.print("Clk: ");
-  //Serial.println(currState);
-  if(currState == 1 && lastState == 0){     // Rising Edge
-
-  }
-  lastState = currState;
-
   if(bitCounter >= maxBits){
     Serial.println(bitCounter);
     Serial.print("Message: ");
-    
-    //Serial.println(bitCounter);
     
     for(int i = 0; i < maxBits; i++){
       Serial.print(rx_buffer[i]);
     }
     Serial.println("");
     
-
-    //digitalWrite(misoPin, (tx_buffer >> 7) & 1);
     digitalWrite(misoPin, tx_buffer[0]);
     bitCounter = 0;
   }
 
-  if(commEnabled) return;
+  ws.cleanupClients();
+
+  if(digitalRead(csPin) == LOW) return;
 
   if ((millis() - lastTime) > timerDelay) {
     String sensorReadings = getSensorReadings();
@@ -378,13 +358,4 @@ void loop() {
     notifyClients(sensorReadings);
     lastTime = millis();
   }
-
-
-  //Serial.print("TX: ");
-  //Serial.println(tx_buffer);
-  //Serial.print("RX: ");
-  //Serial.println(rx_buffer);
-  //delay(5);
-
-  ws.cleanupClients();
 }
