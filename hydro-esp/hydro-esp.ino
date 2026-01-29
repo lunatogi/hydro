@@ -81,9 +81,9 @@ bool commEnabled = false;
 uint8_t lastState = 0;
 uint8_t currState = 0;
 
-uint8_t tx_buffer = 0xCC;
-uint8_t rx_buffer = 0;
-uint8_t matrix2[32] = {0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1};
+
+uint8_t tx_buffer[32] = {0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1};
+uint8_t rx_buffer[256] = {0};
 void CommSetup(){
   pinMode(intrPin, INPUT_PULLUP);
   pinMode(clkPin, INPUT);
@@ -91,23 +91,23 @@ void CommSetup(){
   pinMode(misoPin, OUTPUT);
   attachInterrupt(clkPin, commISR, RISING);
   //digitalWrite(misoPin, (tx_buffer >> 7) & 1);
-  digitalWrite(misoPin, matrix2[0]);
+  digitalWrite(misoPin, tx_buffer[0]);
 }
 
 
 uint8_t bitCounter = 0;
 uint8_t maxBits = 32;
 
-uint8_t matrix[256] = {0};
+
 
 
 // Interrupt Service Routine
 void ARDUINO_ISR_ATTR commISR(){
-  matrix[bitCounter] = digitalRead(mosiPin);
+  rx_buffer[bitCounter] = digitalRead(mosiPin);
   //digitalWrite(misoPin, (tx_buffer >> (7 - bitCounter+1)) & 1);
-  digitalWrite(misoPin, matrix2[bitCounter+1]);
-  //if(matrix[bitCounter] == 1) matrix[bitCounter] = 1;
-  //if(matrix[bitCounter] == 0) matrix[bitCounter] = 0;
+  digitalWrite(misoPin, tx_buffer[bitCounter+1]);
+  //if(rx_buffer[bitCounter] == 1) rx_buffer[bitCounter] = 1;
+  //if(rx_buffer[bitCounter] == 0) rx_buffer[bitCounter] = 0;
   bitCounter++;
 }
 
@@ -360,13 +360,13 @@ void loop() {
     //Serial.println(bitCounter);
     
     for(int i = 0; i < maxBits; i++){
-      Serial.print(matrix[i]);
+      Serial.print(rx_buffer[i]);
     }
     Serial.println("");
     
 
     //digitalWrite(misoPin, (tx_buffer >> 7) & 1);
-    digitalWrite(misoPin, matrix2[0]);
+    digitalWrite(misoPin, tx_buffer[0]);
     bitCounter = 0;
   }
 

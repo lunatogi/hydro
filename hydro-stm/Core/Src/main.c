@@ -23,6 +23,8 @@
 /* USER CODE BEGIN Includes */
 #include "scheduler.h"
 #include "sensor_manager.h"
+#include "comm_protocol.h"
+#include "comm_manager.h"
 
 //Sensors
 #include "bmp180.h"
@@ -51,11 +53,9 @@ SPI_HandleTypeDef hspi2;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-size_t BUFFER_SIZE = 1;
-uint8_t spi2tx_buffer[4] = {0xAA, 0xAA, 0xAA, 0xAA};
-uint8_t spi2rx_buffer[4] = {0};
-uint8_t buffer_log[100] = {0};
-uint8_t bufCounter = 0;
+//size_t BUFFER_SIZE = 4;
+//uint8_t spi2tx_buffer[4] = {0xAA, 0xAA, 0xAA, 0xAA};
+//uint8_t spi2rx_buffer[4] = {0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -116,13 +116,13 @@ int main(void)
   MX_I2C2_Init();
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
-  //HAL_Delay(15000);				// DEBUG DELAY
-  int lel = 2;
-
   Scheduler_Init();
   Sensor_Init();
   AllSensor_Init();
+  CommProtocol_Init(&hspi2);
+  CommManager_Init(Comm_GetInterface());
 
+  int lel = 2;
   if (HAL_I2C_IsDeviceReady(&hi2c2, 0x77<<1, 3, 100) != HAL_OK) {
       lel = 0;
   }
@@ -140,13 +140,8 @@ int main(void)
 		HAL_Delay(300);
 	}
 
-
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
-    //HAL_Delay(10);
-    HAL_SPI_TransmitReceive(&hspi2, spi2tx_buffer, spi2rx_buffer, 4, HAL_MAX_DELAY);
-    HAL_Delay(100);
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
-	HAL_Delay(1000);
+    //HAL_SPI_TransmitReceive(&hspi2, spi2tx_buffer, spi2rx_buffer, 4, HAL_MAX_DELAY);
+	//HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

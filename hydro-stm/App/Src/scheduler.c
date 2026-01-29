@@ -9,6 +9,7 @@
 #include "scheduler.h"
 #include "sensor_manager.h"
 #include "control_loop.h"
+#include "comm_manager.h"
 
 static uint32_t lastSensorTick = 0;
 static uint32_t lastESPTick = 0;
@@ -44,6 +45,7 @@ void Scheduler_Run(void){
 
 	if(nowTick - lastESPTick >= delayESPTick){
 		// Communicate with ESP
+		CommManager_SendRecv();
 		lastESPTick = nowTick;
 	}
 
