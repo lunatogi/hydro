@@ -45,7 +45,7 @@ void Scheduler_Run(void){
 
 	if(nowTick - lastESPTick >= delayESPTick){
 		// Communicate with ESP
-		CommManager_SendRecv();
+		Comm_SendCurrentValues();
 		lastESPTick = nowTick;
 	}
 

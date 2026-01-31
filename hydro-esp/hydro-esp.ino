@@ -80,6 +80,24 @@ uint8_t misoPin = 12;
 
 uint8_t tx_buffer[32] = {0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1};
 uint8_t rx_buffer[256] = {0};
+uint32_t denemeTX_buffer = 0xCCCCCCCC;
+uint8_t maxDataCount = 0;
+uint8_t firstDataTaken = 0;
+uint8_t dataCounter = 0;
+uint8_t spiDataLength = 6;
+
+typedef union
+{
+    struct __attribute__((packed))
+    {
+        uint8_t id;
+        uint8_t type;
+        float   payload;
+    } frame;
+
+    uint8_t raw[6];       // Be carefull about this ize
+} SingleSPIData_t;
+
 void CommSetup(){
   pinMode(csPin, INPUT_PULLUP);
   pinMode(clkPin, INPUT);
@@ -90,16 +108,86 @@ void CommSetup(){
 }
 
 uint8_t bitCounter = 0;
-uint8_t maxBits = 32;
+uint8_t maxBits = 48;
 
 // Interrupt Service Routine
 void ARDUINO_ISR_ATTR commISR(){
   rx_buffer[bitCounter] = digitalRead(mosiPin);
   //digitalWrite(misoPin, (tx_buffer >> (7 - bitCounter+1)) & 1);
-  digitalWrite(misoPin, tx_buffer[bitCounter+1]);
+  digitalWrite(misoPin, (denemeTX_buffer >> bitCounter+1) & 1);
   //if(rx_buffer[bitCounter] == 1) rx_buffer[bitCounter] = 1;
   //if(rx_buffer[bitCounter] == 0) rx_buffer[bitCounter] = 0;
   bitCounter++;
+}
+
+void CleanRxBuffer(){
+  for(int i = 0; i < 8; i++){     // clean RX Buffer
+    rx_buffer[i] = 0;
+  }
+}
+
+void CommManager(){
+  if(firstDataTaken == 0 && bitCounter == 8){
+    BitsToBytes(rx_buffer, &maxDataCount, 1);
+    Serial.print("MaxDataCounter: ");
+    Serial.println(maxDataCount);
+    firstDataTaken = 1;
+    bitCounter = 0;
+    CleanRxBuffer();
+  }
+
+  if(bitCounter >= maxBits && firstDataTaken == 1){
+    dataCounter++;
+    Serial.println(bitCounter);
+    Serial.print("Message: ");
+
+    SingleSPIData_t spiData = {0};
+    BitsToBytes(rx_buffer, spiData.raw, spiDataLength);
+    //Serial.print("Raw: ");
+    //for(int k = 0; k < spiDataLength; k++){
+    //  Serial.print(spiData.raw[k]);
+    //  Serial.print(" ");
+    //}
+    //Serial.println("");
+    //Serial.print("ID: ");
+    //Serial.println(spiData.frame.id);
+    //Serial.print("Type: ");
+    //Serial.println(spiData.frame.type);
+    sensors[spiData.frame.id].value = spiData.frame.payload;
+    Serial.print("Inside Sensor Value: ");
+    Serial.println(sensors[spiData.frame.id].value);
+    //Serial.println(spiData.frame.payload);
+    
+    for(int i = 0; i < maxBits; i++){
+      Serial.print(rx_buffer[i]);
+    }
+    Serial.println("");
+    
+    digitalWrite(misoPin, tx_buffer[0]);
+
+    if(dataCounter == maxDataCount){
+      Serial.println("All data is taken");
+      firstDataTaken = 0;
+      dataCounter = 0;
+    }
+    CleanRxBuffer();
+    bitCounter = 0;
+  }
+}
+
+void BitsToBytes(const uint8_t *bits, uint8_t *bytes, uint8_t byteSize)
+{
+    for (int byte = 0; byte < byteSize; byte++)
+    {
+        uint8_t value = 0;
+
+        for (int bit = 0; bit < 8; bit++)
+        {
+            value <<= 1;
+            value |= bits[byte * 8 + bit] & 0x01;
+        }
+        bytes[byte] = value;
+    }
 }
 
 
@@ -332,25 +420,14 @@ void setup() {
   WebSocketSetup();
   CommSetup();
 }
-uint8_t message = 0;
+
 void loop() {
 
-  if(bitCounter >= maxBits){
-    Serial.println(bitCounter);
-    Serial.print("Message: ");
-    
-    for(int i = 0; i < maxBits; i++){
-      Serial.print(rx_buffer[i]);
-    }
-    Serial.println("");
-    
-    digitalWrite(misoPin, tx_buffer[0]);
-    bitCounter = 0;
-  }
+  CommManager();
 
   ws.cleanupClients();
 
-  if(digitalRead(csPin) == LOW) return;
+  //if(digitalRead(csPin) == LOW) return;
 
   if ((millis() - lastTime) > timerDelay) {
     String sensorReadings = getSensorReadings();
