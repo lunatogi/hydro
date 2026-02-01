@@ -23,8 +23,8 @@ static const SensorConfig_t sensorConfigDefault[SENSOR_COUNT] =
 		.decreasePin = 3
 	},
 
-	[IDX_HUM] = {
-		.name = "Humidity Sensor",
+	[IDX_ALT] = {
+		.name = "Altitude Sensor",
 		.ref = 75.0f,
 		.margin = 3.0f,
 		.minValue = 30.0f,

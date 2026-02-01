@@ -12,7 +12,7 @@ function getReadings(){
     websocket.send("getReadings");
 }
 
-function updateSensorValue(sensor){        // 0 -> temperature, 1 -> pH, 2 -> pressure, 3 -> TDS, 4 -> Flying Fish, 5 -> humidity
+function updateSensorValue(sensor){        // 0 -> temperature, 1 -> pH, 2 -> altitude, 3 -> TDS, 4 -> Flying Fish, 5 -> humidity
     //websocket.send("updateSensorValue");
     if(sensor === 0) {
         let element = document.getElementById('inputTemp');
@@ -25,10 +25,10 @@ function updateSensorValue(sensor){        // 0 -> temperature, 1 -> pH, 2 -> pr
         element.value = '';
         if(value >= 4.0 && value <= 9.0) websocket.send(`refpH:${value}`);
     } else if(sensor === 2) {
-        let element = document.getElementById('inputPres');
+        let element = document.getElementById('inputAlt');
         let value = element.value;
         element.value = '';
-        if(value >= 0.5 && value <= 3.0) websocket.send(`refPres:${value}`);
+        if(value >= 0.5 && value <= 3.0) websocket.send(`refAlt:${value}`);
     }else if(sensor === 3) {
         let element = document.getElementById('inputTDS');
         let value = element.value;
@@ -88,7 +88,7 @@ function initButton() {
         document.getElementById('buttonpHRef').addEventListener('click', function() {
             updateSensorValue(1);
         });
-        document.getElementById('buttonPresRef').addEventListener('click', function() {
+        document.getElementById('buttonAltRef').addEventListener('click', function() {
             updateSensorValue(2);
         });
         document.getElementById('buttonTDSRef').addEventListener('click', function() {

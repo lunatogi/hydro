@@ -56,18 +56,18 @@ struct Sensor {
 
 enum {
   IDX_TEMP = 0,
+  IDX_ALT,
   IDX_HUM,
   IDX_PH,
-  IDX_PRESS,
   IDX_TDS,
   IDX_FF
 };
 
 Sensor sensors[] = {
   { "Temperature Sensor", 25.0f, 1.0f, 0 },
+  { "Altitude Sensor",   160.0f, 10.0f, 0 },
   { "Humidity Sensor",    73.0f, 3.0f, 0 },
   { "pH Sensor",           7.0f, 1.0f, 0 },
-  { "Pressure Sensor",     1.5f, 1.0f, 0 },
   { "TDS Sensor",        300.0f, 1.0f, 0 },
   { "Air Quality Sensor",  50.0f, 1.0f, 0 }
 };
@@ -232,10 +232,10 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
         valStr = msg.substring(msg.indexOf(':') + 1);
         sensors[IDX_PH].ref = valStr.toFloat();
         UpdateEEPROM(8, sensors[IDX_PH].ref);
-      } else if(msg.startsWith("refPres")){
+      } else if(msg.startsWith("refAlt")){
         valStr = msg.substring(msg.indexOf(':') + 1);
-        sensors[IDX_PRESS].ref = valStr.toFloat();
-        UpdateEEPROM(12, sensors[IDX_PRESS].ref);
+        sensors[IDX_ALT].ref = valStr.toFloat();
+        UpdateEEPROM(12, sensors[IDX_ALT].ref);
       } else if(msg.startsWith("refTDS")){
         valStr = msg.substring(msg.indexOf(':') + 1);
         sensors[IDX_TDS].ref = valStr.toInt();
@@ -315,14 +315,14 @@ void listFS(){
 String getSensorReadings(){
   readings["temperature"] = sensors[IDX_TEMP].value;
   readings["ph"] = sensors[IDX_PH].value;
-  readings["pressure"] = sensors[IDX_PRESS].value;
+  readings["altitude"] = sensors[IDX_ALT].value;
   readings["tds"] = sensors[IDX_TDS].value;
   readings["ff"] = sensors[IDX_FF].value;
   readings["humidity"] = sensors[IDX_HUM].value;
 
   readings["refTemperature"] = sensors[IDX_TEMP].ref;
   readings["refpH"] = sensors[IDX_PH].ref;
-  readings["refPressure"] = sensors[IDX_PRESS].ref;
+  readings["refAlt"] = sensors[IDX_ALT].ref;
   readings["refTDS"] = sensors[IDX_TDS].ref;
   readings["refFF"] = sensors[IDX_FF].ref;
   readings["refHum"] = sensors[IDX_HUM].ref;
