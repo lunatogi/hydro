@@ -1856,7 +1856,7 @@ void ControlLoop_Run(void){
 08001274 <Scheduler_Init>:
 static const uint32_t delaySensorTick = 500;
 static const uint32_t delayControlTick = delaySensorTick;	// Tied by design
-static const uint32_t delayESPTick = 1000;
+static const uint32_t delayESPTick = 2000;
 static const uint32_t delaySaveTick = 10000;
 
 void Scheduler_Init(void){
@@ -1937,7 +1937,7 @@ void Scheduler_Run(void){
  80012ea:	681b      	ldr	r3, [r3, #0]
  80012ec:	687a      	ldr	r2, [r7, #4]
  80012ee:	1ad3      	subs	r3, r2, r3
- 80012f0:	f44f 727a 	mov.w	r2, #1000	@ 0x3e8
+ 80012f0:	f44f 62fa 	mov.w	r2, #2000	@ 0x7d0
  80012f4:	4293      	cmp	r3, r2
  80012f6:	d304      	bcc.n	8001302 <Scheduler_Run+0x5a>
 		// Communicate with ESP

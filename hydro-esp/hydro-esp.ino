@@ -6,6 +6,7 @@
 #include <Arduino_JSON.h>
 #include <EEPROM.h>
 #include <FS.h>
+#include <math.h>
 //#include <Adafruit_BME280.h>
 //#include <Adafruit_Sensor.h>
 
@@ -404,7 +405,8 @@ void EEPROMSetup(){
         uint8_t eByte = EEPROM.read(eepromAddress++);
         conv.u = (conv.u << 8) | eByte;
     }
-    sensors[i].ref = conv.f;
+
+    if(!isnan(conv.f)) sensors[i].ref = conv.f; 
   }
 
 }
