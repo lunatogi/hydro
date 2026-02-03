@@ -31,7 +31,7 @@ const void Comm_ClearTxBuffer(){		// UNSUED CURRENTLY
 void Comm_SendCurrentValues(void){
 
 	spi2tx_buffer[0] = SENSOR_COUNT;
-	CommManager_SendRecv(spi2tx_buffer, spi2rx_buffer, 1);
+	CommManager_SendRecv(spi2tx_buffer, spi2rx_buffer, 1);		// THIS FUNCTION HAS A RETURN VALUE, NOT HANDLING IT CAN CAUSE PROBLEM!! WARNING
 
 	for(SensorIndex_t i = 0; i < SENSOR_COUNT; i++){
 		spi2tx_buffer[0] = i;

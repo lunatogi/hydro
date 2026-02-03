@@ -179,6 +179,14 @@ void BitsToBytes(const uint8_t *bits, uint8_t *bytes, uint8_t byteSize)
     }
 }
 
+void PrintRxBuffer(){
+  Serial.print("Rx Buffer: ");
+  for(int i = 0; i < maxBits; i++){
+    Serial.print(rx_buffer[i]);
+  }
+  Serial.println("");
+}
+
 void CommManager(){
   if(firstDataTaken == 0 && bitCounter == 8){
     BitsToBytes(rx_buffer, &maxDataCount, 1);
@@ -212,10 +220,7 @@ void CommManager(){
     Serial.println(sensors[spiData.frame.id].value);
     //Serial.println(spiData.frame.payload);
     
-    for(int i = 0; i < maxBits; i++){
-      Serial.print(rx_buffer[i]);
-    }
-    Serial.println("");
+    PrintRxBuffer();
     
     digitalWrite(misoPin, tx_buffer[0]);
 
@@ -255,6 +260,19 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
   }
 }
 
+void UpdateRefValue(uint8_t _idx, uint8_t _memoryLoc, float _newValue){
+  if(queueCounter < 6){         // Change this hard coded format
+    queueCounter++;             // Communication can be corrupted if some data comes from web while communicating
+    Serial.print("QueueCounter: ");
+    Serial.println(queueCounter);
+    BytesToBits(&queueCounter, tx_buffer, 1);
+    digitalWrite(misoPin, tx_buffer[0] & 1);
+    sensors[_idx].ref = _newValue;
+    QueueMessage(_idx, 1, sensors[_idx].ref);
+    UpdateEEPROM(_memoryLoc, sensors[_idx].ref);
+  }
+}
+
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   AwsFrameInfo *info = (AwsFrameInfo*)arg;
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
@@ -267,28 +285,28 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       String valStr = "";
       if(msg.startsWith("refTemp")) {
         valStr = msg.substring(msg.indexOf(':') + 1);
-        sensors[IDX_TEMP].ref = valStr.toFloat();
-        UpdateEEPROM(0, sensors[IDX_TEMP].ref);
+        float newValue = valStr.toFloat();
+        UpdateRefValue(IDX_TEMP, 0, newValue);
       } else if(msg.startsWith("refpH")){
         valStr = msg.substring(msg.indexOf(':') + 1);
-        sensors[IDX_PH].ref = valStr.toFloat();
-        UpdateEEPROM(8, sensors[IDX_PH].ref);
+        float newValue = valStr.toFloat();
+        UpdateRefValue(IDX_PH, 12, newValue);
       } else if(msg.startsWith("refAlt")){
         valStr = msg.substring(msg.indexOf(':') + 1);
-        sensors[IDX_ALT].ref = valStr.toFloat();
-        UpdateEEPROM(12, sensors[IDX_ALT].ref);
+        float newValue = valStr.toFloat();
+        UpdateRefValue(IDX_ALT, 4, newValue);
       } else if(msg.startsWith("refTDS")){
         valStr = msg.substring(msg.indexOf(':') + 1);
-        sensors[IDX_TDS].ref = valStr.toInt();
-        UpdateEEPROM(16, sensors[IDX_TDS].ref);
+        float newValue = valStr.toFloat();
+        UpdateRefValue(IDX_TDS, 16, newValue);
       } else if(msg.startsWith("refFF")){
         valStr = msg.substring(msg.indexOf(':') + 1);
-        sensors[IDX_FF].ref = valStr.toFloat();
-        UpdateEEPROM(20, sensors[IDX_FF].ref);
+        float newValue = valStr.toFloat();
+        UpdateRefValue(IDX_FF, 20, newValue);
       } else if(msg.startsWith("refHum")){
         valStr = msg.substring(msg.indexOf(':') + 1);
-        sensors[IDX_HUM].ref = valStr.toFloat();
-        UpdateEEPROM(4, sensors[IDX_HUM].ref);
+        float newValue = valStr.toFloat();
+        UpdateRefValue(IDX_HUM, 8, newValue);
       }else if (msg[0] >= '0' && msg[0] <= '9'){
         motorMsg = msg;
         String motorIDStr = msg.substring(0, msg.indexOf(':'));
@@ -304,7 +322,6 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       String sensorReadings = getSensorReadings();
       //Serial.println(sensorReadings);
       notifyClients(sensorReadings);
-    //}
   }
 }
 
@@ -465,9 +482,7 @@ void setup() {
 
 void loop() {
 
-  CommManager();
-
-  ws.cleanupClients();
+  if(digitalRead(csPin) == LOW) CommManager();
 
   //if(digitalRead(csPin) == LOW) return;
 
@@ -477,4 +492,6 @@ void loop() {
     notifyClients(sensorReadings);
     lastTime = millis();
   }
+
+  ws.cleanupClients();
 }

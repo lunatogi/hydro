@@ -18,7 +18,7 @@ static uint32_t lastControlTick = 0;
 
 static const uint32_t delaySensorTick = 500;
 static const uint32_t delayControlTick = delaySensorTick;	// Tied by design
-static const uint32_t delayESPTick = 2000;
+static const uint32_t delayESPTick = 10000;
 static const uint32_t delaySaveTick = 10000;
 
 void Scheduler_Init(void){
