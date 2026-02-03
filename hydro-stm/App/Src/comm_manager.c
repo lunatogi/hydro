@@ -22,6 +22,12 @@ void CommManager_SendRecv(const uint8_t *tx_buffer, uint8_t *rx_buffer, uint8_t 
 	comm_if->send_recv(tx_buffer, rx_buffer, BUFFER_SIZE);
 }
 
+const void Comm_ClearTxBuffer(){		// UNSUED CURRENTLY
+	for(int i = 0; i < sizeof(spi2tx_buffer); i++){
+		spi2tx_buffer[i] = 0;
+	}
+}
+
 void Comm_SendCurrentValues(void){
 
 	spi2tx_buffer[0] = SENSOR_COUNT;

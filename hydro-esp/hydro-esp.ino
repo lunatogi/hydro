@@ -102,6 +102,52 @@ typedef union
     uint8_t raw[6];       // Be carefull about this ize
 } SingleSPIData_t;
 
+SingleSPIData_t messageQueue[6] = {0};
+uint8_t queueCounter = 0;
+
+void QueueMessage(uint8_t _idx, uint8_t _type, float _payload){     // _idx'in type'ı SensorIndex_t yapılabilir sonrasında
+  messageQueue[queueCounter].frame.id = _idx;
+  messageQueue[queueCounter].frame.type = _type;
+  messageQueue[queueCounter].frame.payload = _payload;
+}
+
+void BytesToBits(const uint8_t *bytes, uint8_t *bits, uint8_t byteSize)
+{
+    for (int byte = 0; byte < byteSize; byte++)
+    {
+        uint8_t value = bytes[byte];
+
+        for (int bit = 0; bit < 8; bit++)
+        {
+            bits[byte * 8 + bit] = (value >> (7 - bit)) & 0x01;
+        }
+    }
+}
+
+void FillTxBufferFromQueue(){      // Check this functions functionality
+    if(queueCounter > 0){
+      BytesToBits(messageQueue[queueCounter-1].raw, tx_buffer, spiDataLength);
+      queueCounter--;
+    }
+    digitalWrite(misoPin, tx_buffer[0] & 1);
+}
+
+void ClearQueue(){
+  for(int i = 0; i < 6; i++)      // Bunu hard coded halinden değiştir
+  {
+    for(int k = 0; k < 8; k++){
+      messageQueue[i].raw[k] = 0;
+    }
+  }
+  queueCounter = 0;
+}
+
+void ClearRxBuffer(){
+  for(int i = 0; i < maxBits; i++){     // Clear RX Buffer
+    rx_buffer[i] = 0;
+  }
+}
+
 void CommSetup(){
   pinMode(csPin, INPUT_PULLUP);
   pinMode(clkPin, INPUT);
@@ -118,10 +164,19 @@ void ARDUINO_ISR_ATTR commISR(){
   bitCounter++;
 }
 
-void ClearRxBuffer(){
-  for(int i = 0; i < maxBits; i++){     // Clear RX Buffer
-    rx_buffer[i] = 0;
-  }
+void BitsToBytes(const uint8_t *bits, uint8_t *bytes, uint8_t byteSize)
+{
+    for (int byte = 0; byte < byteSize; byte++)
+    {
+        uint8_t value = 0;
+
+        for (int bit = 0; bit < 8; bit++)
+        {
+            value <<= 1;
+            value |= bits[byte * 8 + bit] & 0x01;
+        }
+        bytes[byte] = value;
+    }
 }
 
 void CommManager(){
@@ -131,7 +186,8 @@ void CommManager(){
     Serial.println(maxDataCount);
     firstDataTaken = 1;
     bitCounter = 0;
-    CleanRxBuffer();
+    FillTxBufferFromQueue();
+    ClearRxBuffer();
   }
 
   if(bitCounter >= maxBits && firstDataTaken == 1){
@@ -167,27 +223,14 @@ void CommManager(){
       Serial.println("All data is taken");
       firstDataTaken = 0;
       dataCounter = 0;
+      ClearQueue();
+    }else{
+      FillTxBufferFromQueue();
     }
-    CleanRxBuffer();
+    ClearRxBuffer();
     bitCounter = 0;
   }
 }
-
-void BitsToBytes(const uint8_t *bits, uint8_t *bytes, uint8_t byteSize)
-{
-    for (int byte = 0; byte < byteSize; byte++)
-    {
-        uint8_t value = 0;
-
-        for (int bit = 0; bit < 8; bit++)
-        {
-            value <<= 1;
-            value |= bits[byte * 8 + bit] & 0x01;
-        }
-        bytes[byte] = value;
-    }
-}
-
 
 ////////////////////// WEB SOCKET /////////////////////////
 void initWebSocket() {
