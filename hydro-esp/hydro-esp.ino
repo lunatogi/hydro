@@ -79,13 +79,16 @@ uint8_t clkPin = 14;
 uint8_t mosiPin = 13;
 uint8_t misoPin = 12;
 
-uint8_t tx_buffer[32] = {0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1};
-uint8_t rx_buffer[256] = {0};
-uint32_t denemeTX_buffer = 0xCCCCCCCC;
+uint8_t tx_buffer[48] = {0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1};
+uint8_t rx_buffer[48] = {0};
+
 uint8_t maxDataCount = 0;
 uint8_t firstDataTaken = 0;
 uint8_t dataCounter = 0;
 uint8_t spiDataLength = 6;
+
+uint8_t bitCounter = 0;
+uint8_t maxBits = 48;
 
 typedef union
 {
@@ -108,21 +111,15 @@ void CommSetup(){
   digitalWrite(misoPin, tx_buffer[0]);
 }
 
-uint8_t bitCounter = 0;
-uint8_t maxBits = 48;
-
 // Interrupt Service Routine
 void ARDUINO_ISR_ATTR commISR(){
   rx_buffer[bitCounter] = digitalRead(mosiPin);
-  //digitalWrite(misoPin, (tx_buffer >> (7 - bitCounter+1)) & 1);
-  digitalWrite(misoPin, (denemeTX_buffer >> bitCounter+1) & 1);
-  //if(rx_buffer[bitCounter] == 1) rx_buffer[bitCounter] = 1;
-  //if(rx_buffer[bitCounter] == 0) rx_buffer[bitCounter] = 0;
+  digitalWrite(misoPin, tx_buffer[bitCounter+1] & 1);
   bitCounter++;
 }
 
-void CleanRxBuffer(){
-  for(int i = 0; i < 8; i++){     // clean RX Buffer
+void ClearRxBuffer(){
+  for(int i = 0; i < maxBits; i++){     // Clear RX Buffer
     rx_buffer[i] = 0;
   }
 }
