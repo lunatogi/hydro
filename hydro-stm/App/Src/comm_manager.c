@@ -13,6 +13,7 @@ static const CommInterface_t *comm_if;
 //uint8_t BUFFER_SIZE = 4;
 uint8_t spi2tx_buffer[6] = {0xAA, 0xAA, 0xAA, 0xAA};
 uint8_t spi2rx_buffer[6] = {0};
+float payloadd = 0;
 
 void CommManager_Init(const CommInterface_t *comm){
 	comm_if = comm;
@@ -30,6 +31,8 @@ const void Comm_ClearTxBuffer(){		// UNSUED CURRENTLY
 
 void Comm_SendCurrentValues(void){
 
+	SingleSPIData_t spiData;
+
 	spi2tx_buffer[0] = SENSOR_COUNT;
 	CommManager_SendRecv(spi2tx_buffer, spi2rx_buffer, 1);		// THIS FUNCTION HAS A RETURN VALUE, NOT HANDLING IT CAN CAUSE PROBLEM!! WARNING
 
@@ -39,8 +42,9 @@ void Comm_SendCurrentValues(void){
 		float value = Sensor_GetValue(i);
 		memcpy(&spi2tx_buffer[2], &value, sizeof(float));
 		CommManager_SendRecv(spi2tx_buffer, spi2rx_buffer, 6);
-		HAL_Delay(10);
+		memcpy(spiData.raw, spi2rx_buffer, 6);
+		//spiData.raw = spi2rx_buffer;
+		if(spiData.frame.payload != 0 && spiData.frame.id == 0) payloadd = spiData.frame.payload;
+		//HAL_Delay(10);
 	}
-
-
 }

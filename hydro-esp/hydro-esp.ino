@@ -99,7 +99,7 @@ typedef union
         float   payload;
     } frame;
 
-    uint8_t raw[6];       // Be carefull about this ize
+    uint8_t raw[6];       // Be carefull about this size
 } SingleSPIData_t;
 
 SingleSPIData_t messageQueue[6] = {0};
@@ -109,6 +109,7 @@ void QueueMessage(uint8_t _idx, uint8_t _type, float _payload){     // _idx'in t
   messageQueue[queueCounter].frame.id = _idx;
   messageQueue[queueCounter].frame.type = _type;
   messageQueue[queueCounter].frame.payload = _payload;
+  queueCounter++;
 }
 
 void BytesToBits(const uint8_t *bytes, uint8_t *bits, uint8_t byteSize)
@@ -135,7 +136,7 @@ void FillTxBufferFromQueue(){      // Check this functions functionality
 void ClearQueue(){
   for(int i = 0; i < 6; i++)      // Bunu hard coded halinden değiştir
   {
-    for(int k = 0; k < 8; k++){
+    for(int k = 0; k < 6; k++){
       messageQueue[i].raw[k] = 0;
     }
   }
@@ -159,9 +160,11 @@ void CommSetup(){
 
 // Interrupt Service Routine
 void ARDUINO_ISR_ATTR commISR(){
-  rx_buffer[bitCounter] = digitalRead(mosiPin);
-  digitalWrite(misoPin, tx_buffer[bitCounter+1] & 1);
-  bitCounter++;
+  if (bitCounter < maxBits) {
+    rx_buffer[bitCounter] = digitalRead(mosiPin);
+    if (bitCounter + 1 < maxBits) digitalWrite(misoPin, tx_buffer[bitCounter+1] & 1);
+    bitCounter++;
+  }
 }
 
 void BitsToBytes(const uint8_t *bits, uint8_t *bytes, uint8_t byteSize)
@@ -262,13 +265,12 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 
 void UpdateRefValue(uint8_t _idx, uint8_t _memoryLoc, float _newValue){
   if(queueCounter < 6){         // Change this hard coded format
-    queueCounter++;             // Communication can be corrupted if some data comes from web while communicating
+    QueueMessage(_idx, 1, _newValue);             // Communication can be corrupted if some data comes from web while communicating
     Serial.print("QueueCounter: ");
     Serial.println(queueCounter);
     BytesToBits(&queueCounter, tx_buffer, 1);
     digitalWrite(misoPin, tx_buffer[0] & 1);
     sensors[_idx].ref = _newValue;
-    QueueMessage(_idx, 1, sensors[_idx].ref);
     UpdateEEPROM(_memoryLoc, sensors[_idx].ref);
   }
 }

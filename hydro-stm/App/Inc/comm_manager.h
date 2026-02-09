@@ -11,6 +11,18 @@
 #include <string.h>
 #include "comm_if.h"
 
+typedef union
+{
+    struct __attribute__((packed))
+    {
+        uint8_t id;
+        uint8_t type;
+        float   payload;
+    } frame;
+
+    uint8_t raw[6];       // Be carefull about this size
+} SingleSPIData_t;
+
 void CommManager_Init(const CommInterface_t *comm);
 void CommManager_SendRecv(const uint8_t *tx_buffer, uint8_t *rx_buffer, uint8_t BUFFER_SIZE);
 void Comm_SendCurrentValues(void);
