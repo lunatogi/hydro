@@ -149,6 +149,36 @@ void ClearRxBuffer(){
   }
 }
 
+
+// Interrupt Service Routine
+volatile bool inFrame = false;
+
+/*
+void IRAM_ATTR csISR() {
+  if (digitalRead(csPin) == LOW) {
+    // start of frame
+    bitCounter = 0;
+    inFrame = true;
+    digitalWrite(misoPin, tx_buffer[0] & 1);
+  } else {
+    // end of frame
+    inFrame = false;
+  }
+}
+
+
+void ARDUINO_ISR_ATTR commISR() {
+  if (!inFrame) return;
+  if (bitCounter < maxBits) {
+    rx_buffer[bitCounter] = digitalRead(mosiPin);
+    if (bitCounter + 1 < maxBits) {
+      digitalWrite(misoPin, tx_buffer[bitCounter + 1] & 1);
+    }
+    bitCounter++;
+  }
+}
+*/
+
 void CommSetup(){
   pinMode(csPin, INPUT_PULLUP);
   pinMode(clkPin, INPUT);
@@ -158,9 +188,8 @@ void CommSetup(){
   digitalWrite(misoPin, tx_buffer[0]);
 }
 
-// Interrupt Service Routine
 void ARDUINO_ISR_ATTR commISR(){
-  if (bitCounter < maxBits) {
+  if (bitCounter < maxBits && digitalRead(csPin) == LOW) {
     rx_buffer[bitCounter] = digitalRead(mosiPin);
     if (bitCounter + 1 < maxBits) digitalWrite(misoPin, tx_buffer[bitCounter+1] & 1);
     bitCounter++;
@@ -484,7 +513,7 @@ void setup() {
 
 void loop() {
 
-  if(digitalRead(csPin) == LOW) CommManager();
+  
 
   //if(digitalRead(csPin) == LOW) return;
 
@@ -495,5 +524,10 @@ void loop() {
     lastTime = millis();
   }
 
-  ws.cleanupClients();
+  if(digitalRead(csPin) == LOW){
+    CommManager();
+    return;
+  } 
+
+  //ws.cleanupClients();
 }

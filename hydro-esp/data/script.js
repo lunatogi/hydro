@@ -28,7 +28,7 @@ function updateSensorValue(sensor){        // 0 -> temperature, 1 -> pH, 2 -> al
         let element = document.getElementById('inputAlt');
         let value = element.value;
         element.value = '';
-        if(value >= 0.5 && value <= 3.0) websocket.send(`refAlt:${value}`);
+        if(value >= 0.0 && value <= 2000.0) websocket.send(`refAlt:${value}`);
     }else if(sensor === 3) {
         let element = document.getElementById('inputTDS');
         let value = element.value;
