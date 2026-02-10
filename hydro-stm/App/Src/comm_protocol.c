@@ -15,9 +15,8 @@ void CommProtocol_Init(void *comm_ctx){		// It's currently SPI only
 	hspi = (SPI_HandleTypeDef*)comm_ctx;
 }
 
-static CommStatus_t Send_Receive(const uint8_t *tx_buffer, uint8_t *rx_buffer, size_t buffer_size){
+static CommStatus_t Send_Receive(const uint8_t *tx_buffer, uint8_t *rx_buffer, uint8_t buffer_size){
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
-	HAL_Delay(10);
 	HAL_StatusTypeDef st = HAL_SPI_TransmitReceive(hspi, tx_buffer, rx_buffer, buffer_size, HAL_MAX_DELAY);
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
 	HAL_Delay(10);
