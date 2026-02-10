@@ -82,6 +82,7 @@ uint8_t misoPin = 12;
 uint8_t tx_buffer[48] = {0};
 uint8_t rx_buffer[48] = {0};
 
+uint8_t STMDataCount = 0;
 uint8_t maxDataCount = 0;
 uint8_t firstDataTaken = 0;
 uint8_t dataCounter = 0;
@@ -127,7 +128,10 @@ void BytesToBits(const uint8_t *bytes, uint8_t *bits, uint8_t byteSize)
 
 void FillTxBufferFromQueue(){      // Check this functions functionality
     if(queueCounter > 0){
-      BytesToBits(messageQueue[queueCounter-1].raw, tx_buffer, spiDataLength);
+      BytesToBits(messageQueue[0].raw, tx_buffer, spiDataLength);
+      for(int i = 1; i < queueCounter; i++){
+        messageQueue[i-1] = messageQueue[i];
+      }
       queueCounter--;
     }
     digitalWrite(misoPin, tx_buffer[0] & 1);
@@ -221,7 +225,8 @@ void PrintRxBuffer(){
 
 void CommManager(){
   if(firstDataTaken == 0 && bitCounter == 8){
-    BitsToBytes(rx_buffer, &maxDataCount, 1);
+    BitsToBytes(rx_buffer, &STMDataCount, 1);
+    maxDataCount = max(STMDataCount, queueCounter);
     Serial.print("MaxDataCounter: ");
     Serial.println(maxDataCount);
     firstDataTaken = 1;
