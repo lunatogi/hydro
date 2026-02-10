@@ -10,6 +10,7 @@
 
 #include <string.h>
 #include "comm_if.h"
+#include "math.h"
 
 typedef union
 {

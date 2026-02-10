@@ -79,7 +79,7 @@ uint8_t clkPin = 14;
 uint8_t mosiPin = 13;
 uint8_t misoPin = 12;
 
-uint8_t tx_buffer[48] = {0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1};
+uint8_t tx_buffer[48] = {0};
 uint8_t rx_buffer[48] = {0};
 
 uint8_t maxDataCount = 0;
