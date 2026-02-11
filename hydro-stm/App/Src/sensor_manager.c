@@ -141,12 +141,12 @@ uint8_t Sensor_GetPinDecrease(SensorIndex_t idx){
 	return sensorConfigRuntime[idx].decreasePin;
 }
 
-flag_t Sensor_GetPinActivity(SensorIndex_t idx)
+uint8_t Sensor_GetPinActivity(SensorIndex_t idx)
 {
     if (idx >= SENSOR_COUNT)
         return 0;
 
-    flag_t state = 0;
+    uint8_t state = 0;
 
     if (sensorState[idx].increaseEnabled)
         state |= SENSOR_PIN_INC;

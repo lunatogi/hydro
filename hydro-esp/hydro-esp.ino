@@ -153,36 +153,6 @@ void ClearRxBuffer(){
   }
 }
 
-
-// Interrupt Service Routine
-volatile bool inFrame = false;
-
-/*
-void IRAM_ATTR csISR() {
-  if (digitalRead(csPin) == LOW) {
-    // start of frame
-    bitCounter = 0;
-    inFrame = true;
-    digitalWrite(misoPin, tx_buffer[0] & 1);
-  } else {
-    // end of frame
-    inFrame = false;
-  }
-}
-
-
-void ARDUINO_ISR_ATTR commISR() {
-  if (!inFrame) return;
-  if (bitCounter < maxBits) {
-    rx_buffer[bitCounter] = digitalRead(mosiPin);
-    if (bitCounter + 1 < maxBits) {
-      digitalWrite(misoPin, tx_buffer[bitCounter + 1] & 1);
-    }
-    bitCounter++;
-  }
-}
-*/
-
 void CommSetup(){
   pinMode(csPin, INPUT_PULLUP);
   pinMode(clkPin, INPUT);
@@ -192,6 +162,7 @@ void CommSetup(){
   digitalWrite(misoPin, tx_buffer[0]);
 }
 
+// Interrupt Service Routine
 void ARDUINO_ISR_ATTR commISR(){
   if (bitCounter < maxBits && digitalRead(csPin) == LOW) {
     rx_buffer[bitCounter] = digitalRead(mosiPin);
@@ -223,6 +194,17 @@ void PrintRxBuffer(){
   Serial.println("");
 }
 
+String uint8ToBinaryString(uint8_t value) {
+  String out;
+  out.reserve(8);
+
+  for (int i = 7; i >= 0; --i) {
+    out += ((value >> i) & 0x01) ? '1' : '0';
+  }
+
+  return out;
+}
+
 void CommManager(){
   if(firstDataTaken == 0 && bitCounter == 8){
     BitsToBytes(rx_buffer, &STMDataCount, 1);
@@ -252,9 +234,23 @@ void CommManager(){
     //Serial.println(spiData.frame.id);
     //Serial.print("Type: ");
     //Serial.println(spiData.frame.type);
-    sensors[spiData.frame.id].value = spiData.frame.payload;
-    Serial.print("Inside Sensor Value: ");
-    Serial.println(sensors[spiData.frame.id].value);
+    switch(spiData.frame.type){
+      case 0:
+        sensors[spiData.frame.id].value = spiData.frame.payload;
+        Serial.print("Inside Sensor Value: ");
+        Serial.println(sensors[spiData.frame.id].value);
+        break;
+      case 1:
+        Serial.println("Type 1: Reference value");
+        break;
+      case 2:
+        switchMatrixStr = uint8ToBinaryString(spiData.raw[2]);
+        break;
+      default:
+        Serial.println("Invalid data!");
+    }
+    
+
     //Serial.println(spiData.frame.payload);
     
     PrintRxBuffer();
@@ -421,10 +417,10 @@ String getSensorReadings(){
   readings["refFF"] = sensors[IDX_FF].ref;
   readings["refHum"] = sensors[IDX_HUM].ref;
 
-  readings["switch_temp_up"] = switchMatrixStr[0] - '0';      // Need this "-0" for javascript side
-  readings["switch_temp_down"] = switchMatrixStr[1] - '0';
-  readings["switch_hum_up"] = switchMatrixStr[2] - '0';
-  readings["switch_hum_down"] = switchMatrixStr[3] - '0';
+  readings["switch_temp_up"] = switchMatrixStr[4] - '0';      // Need this "-0" for javascript side
+  readings["switch_temp_down"] = switchMatrixStr[5] - '0';
+  readings["switch_alt_up"] = switchMatrixStr[6] - '0';
+  readings["switch_alt_down"] = switchMatrixStr[7] - '0';
 //  readings["switch_ph_up"] = 
 //  readings["switch_ph_down"] = 
 //  readings["switch_press_up"] = 

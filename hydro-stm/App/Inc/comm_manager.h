@@ -17,7 +17,7 @@ typedef union
     struct __attribute__((packed))
     {
         uint8_t id;
-        uint8_t type;
+        uint8_t type;		// 0 -> Sensor Reading, 1 -> Referemce Values, 2 -> IncDec Matrix
         float   payload;
     } frame;
 

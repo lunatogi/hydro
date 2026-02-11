@@ -41,7 +41,7 @@ flag_t Set_Pin(uint8_t portId, uint8_t pinNum, flag_t state)
         state ? GPIO_PIN_SET : GPIO_PIN_RESET
     );
 
-    return 1;		// When this doesnt work check if the pin as set to OUTPUT!
+    return 1;		// When this doesnt work check if the pin is set to OUTPUT!
 }
 
 

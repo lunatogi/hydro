@@ -14,6 +14,7 @@ static const CommInterface_t *comm_if;
 uint8_t spi2tx_buffer[6] = {0xAA, 0xAA, 0xAA, 0xAA};
 uint8_t spi2rx_buffer[6] = {0};
 uint8_t ESPMessageRequest = 0;
+uint8_t STMMessageRequest = 0;
 
 void CommManager_Init(const CommInterface_t *comm){
 	comm_if = comm;
@@ -38,8 +39,9 @@ const void Comm_HandleSPIData(SingleSPIData_t _spiData){
 	}
 }
 
-const void Comm_InitConnection(void){
-	spi2tx_buffer[0] = SENSOR_COUNT;
+const void Comm_InitConnection(uint8_t _STMRequest){
+	STMMessageRequest = _STMRequest;
+	spi2tx_buffer[0] = _STMRequest;
 	CommManager_SendRecv(spi2tx_buffer, spi2rx_buffer, 1);
 	ESPMessageRequest = spi2rx_buffer[0];
 }
@@ -53,12 +55,13 @@ const void Comm_RegularConnectionRoutine(void){
 }
 
 const void Comm_CheckForESPRequest(void){
-	if(ESPMessageRequest > SENSOR_COUNT){
+	if(ESPMessageRequest > STMMessageRequest){
 		for(int k = 0; k < ESPMessageRequest - SENSOR_COUNT; k++){
 			Comm_RegularConnectionRoutine();
 		}
 	}
 	ESPMessageRequest = 0;
+	STMMessageRequest = 0;
 }
 
 const void Comm_SendSensorReadings(void){
@@ -71,8 +74,21 @@ const void Comm_SendSensorReadings(void){
 	}
 }
 
+const void Comm_SendIncDecMatrix(void){
+	spi2tx_buffer[0] = 0;
+	spi2tx_buffer[1] = 2;
+	uint8_t IncDecMatrix = 0;
+	for(SensorIndex_t i = 0; i < SENSOR_COUNT; i++){
+		IncDecMatrix = IncDecMatrix << 2;
+		IncDecMatrix |= Sensor_GetPinActivity(i);
+	}
+	spi2tx_buffer[2] = IncDecMatrix;
+	Comm_RegularConnectionRoutine();
+}
+
 void Comm_SendCurrentValues(void){
-	Comm_InitConnection();
+	Comm_InitConnection(SENSOR_COUNT+1);	// +1 is increase-decrease matrix
 	Comm_SendSensorReadings();
+	Comm_SendIncDecMatrix();
 	Comm_CheckForESPRequest();
 }

@@ -2,7 +2,7 @@
  * sensor_manager.h
  *
  *  Created on: Dec 17, 2025
- *      Author: Administrator
+ *      Author: Murat Utku KETI
  */
 
 #ifndef INC_SENSOR_MANAGER_H_
@@ -53,7 +53,7 @@ uint8_t Sensor_GetPortIncrease(SensorIndex_t idx);
 uint8_t Sensor_GetPortDecrease(SensorIndex_t idx);
 uint8_t Sensor_GetPinIncrease(SensorIndex_t idx);
 uint8_t Sensor_GetPinDecrease(SensorIndex_t idx);
-flag_t Sensor_GetPinActivity(SensorIndex_t idx);
+uint8_t Sensor_GetPinActivity(SensorIndex_t idx);
 
 flag_t Sensor_SetRef(SensorIndex_t idx, float ref);
 flag_t Sensor_SetMargin(SensorIndex_t idx, float margin);
