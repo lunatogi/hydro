@@ -13,7 +13,7 @@ static const CommInterface_t *comm_if;
 //uint8_t BUFFER_SIZE = 4;
 uint8_t spi2tx_buffer[6] = {0xAA, 0xAA, 0xAA, 0xAA};
 uint8_t spi2rx_buffer[6] = {0};
-float payloadd = 0;
+uint8_t ESPMessageRequest = 0;
 
 void CommManager_Init(const CommInterface_t *comm){
 	comm_if = comm;
@@ -38,6 +38,12 @@ const void Comm_HandleSPIData(SingleSPIData_t _spiData){
 	}
 }
 
+const void Comm_InitConnection(void){
+	spi2tx_buffer[0] = SENSOR_COUNT;
+	CommManager_SendRecv(spi2tx_buffer, spi2rx_buffer, 1);
+	ESPMessageRequest = spi2rx_buffer[0];
+}
+
 const void Comm_RegularConnectionRoutine(void){
 	SingleSPIData_t spiData;
 	CommManager_SendRecv(spi2tx_buffer, spi2rx_buffer, 6);
@@ -46,12 +52,16 @@ const void Comm_RegularConnectionRoutine(void){
 	Comm_ClearBuffers();
 }
 
-void Comm_SendCurrentValues(void){
+const void Comm_CheckForESPRequest(void){
+	if(ESPMessageRequest > SENSOR_COUNT){
+		for(int k = 0; k < ESPMessageRequest - SENSOR_COUNT; k++){
+			Comm_RegularConnectionRoutine();
+		}
+	}
+	ESPMessageRequest = 0;
+}
 
-	spi2tx_buffer[0] = SENSOR_COUNT;
-	CommManager_SendRecv(spi2tx_buffer, spi2rx_buffer, 1);
-	uint8_t ESPMessageRequest = spi2rx_buffer[0];
-
+const void Comm_SendSensorReadings(void){
 	for(SensorIndex_t i = 0; i < SENSOR_COUNT; i++){
 		spi2tx_buffer[0] = i;
 		spi2tx_buffer[1] = 0;
@@ -59,10 +69,10 @@ void Comm_SendCurrentValues(void){
 		memcpy(&spi2tx_buffer[2], &value, sizeof(float));
 		Comm_RegularConnectionRoutine();
 	}
+}
 
-	if(ESPMessageRequest > SENSOR_COUNT){
-		for(int k = 0; k < ESPMessageRequest - SENSOR_COUNT; k++){
-			Comm_RegularConnectionRoutine();
-		}
-	}
+void Comm_SendCurrentValues(void){
+	Comm_InitConnection();
+	Comm_SendSensorReadings();
+	Comm_CheckForESPRequest();
 }
