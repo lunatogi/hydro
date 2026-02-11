@@ -37,15 +37,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_macro  0001737f  00000000  00000000  0001b36f  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   000131db  00000000  00000000  000326ee  2**0
+ 17 .debug_line   000131d9  00000000  00000000  000326ee  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    0008ae6e  00000000  00000000  000458c9  2**0
+ 18 .debug_str    0008ae6e  00000000  00000000  000458c7  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000043  00000000  00000000  000d0737  2**0
+ 19 .comment      00000043  00000000  00000000  000d0735  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00004018  00000000  00000000  000d077c  2**2
+ 20 .debug_frame  00004018  00000000  00000000  000d0778  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .debug_line_str 0000006f  00000000  00000000  000d4794  2**0
+ 21 .debug_line_str 0000006f  00000000  00000000  000d4790  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1173,7 +1173,7 @@ flag_t Set_Pin(uint8_t portId, uint8_t pinNum, flag_t state)
         state ? GPIO_PIN_SET : GPIO_PIN_RESET
     );
 
-    return 1;
+    return 1;		// When this doesnt work check if the pin as set to OUTPUT!
  8000dfe:	2301      	movs	r3, #1
 }
  8000e00:	4618      	mov	r0, r3
@@ -3811,12 +3811,12 @@ int main(void)
  8001fbc:	b580      	push	{r7, lr}
  8001fbe:	b082      	sub	sp, #8
  8001fc0:	af00      	add	r7, sp, #0
+  /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-
-	HAL_Init();
+  HAL_Init();
  8001fc2:	f000 fb75 	bl	80026b0 <HAL_Init>
   /* USER CODE BEGIN Init */
 
@@ -4336,16 +4336,17 @@ static void MX_GPIO_Init(void)
  80022c4:	687b      	ldr	r3, [r7, #4]
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5
  80022c6:	2200      	movs	r2, #0
- 80022c8:	2120      	movs	r1, #32
+ 80022c8:	2173      	movs	r1, #115	@ 0x73
  80022ca:	4824      	ldr	r0, [pc, #144]	@ (800235c <MX_GPIO_Init+0x11c>)
  80022cc:	f000 ffec 	bl	80032a8 <HAL_GPIO_WritePin>
+                          |GPIO_PIN_6, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
  80022d0:	2200      	movs	r2, #0
- 80022d2:	2140      	movs	r1, #64	@ 0x40
+ 80022d2:	2120      	movs	r1, #32
  80022d4:	4822      	ldr	r0, [pc, #136]	@ (8002360 <MX_GPIO_Init+0x120>)
  80022d6:	f000 ffe7 	bl	80032a8 <HAL_GPIO_WritePin>
 
@@ -4362,13 +4363,15 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
  80022ea:	f107 0314 	add.w	r3, r7, #20
  80022ee:	4619      	mov	r1, r3
- 80022f0:	481b      	ldr	r0, [pc, #108]	@ (8002360 <MX_GPIO_Init+0x120>)
+ 80022f0:	481a      	ldr	r0, [pc, #104]	@ (800235c <MX_GPIO_Init+0x11c>)
  80022f2:	f000 fe3d 	bl	8002f70 <HAL_GPIO_Init>
 
-  /*Configure GPIO pin : LD2_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin;
- 80022f6:	2320      	movs	r3, #32
+  /*Configure GPIO pins : PC0 PC1 PC4 PC5
+                           PC6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5
+ 80022f6:	2373      	movs	r3, #115	@ 0x73
  80022f8:	617b      	str	r3, [r7, #20]
+                          |GPIO_PIN_6;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
  80022fa:	2301      	movs	r3, #1
  80022fc:	61bb      	str	r3, [r7, #24]
@@ -4378,15 +4381,15 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
  8002302:	2300      	movs	r3, #0
  8002304:	623b      	str	r3, [r7, #32]
-  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
  8002306:	f107 0314 	add.w	r3, r7, #20
  800230a:	4619      	mov	r1, r3
  800230c:	4813      	ldr	r0, [pc, #76]	@ (800235c <MX_GPIO_Init+0x11c>)
  800230e:	f000 fe2f 	bl	8002f70 <HAL_GPIO_Init>
 
-  /*Configure GPIO pin : PC6 */
-  GPIO_InitStruct.Pin = GPIO_PIN_6;
- 8002312:	2340      	movs	r3, #64	@ 0x40
+  /*Configure GPIO pin : LD2_Pin */
+  GPIO_InitStruct.Pin = LD2_Pin;
+ 8002312:	2320      	movs	r3, #32
  8002314:	617b      	str	r3, [r7, #20]
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
  8002316:	2301      	movs	r3, #1
@@ -4397,7 +4400,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
  800231e:	2300      	movs	r3, #0
  8002320:	623b      	str	r3, [r7, #32]
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
  8002322:	f107 0314 	add.w	r3, r7, #20
  8002326:	4619      	mov	r1, r3
  8002328:	480d      	ldr	r0, [pc, #52]	@ (8002360 <MX_GPIO_Init+0x120>)
@@ -4435,8 +4438,8 @@ static void MX_GPIO_Init(void)
  8002354:	bd80      	pop	{r7, pc}
  8002356:	bf00      	nop
  8002358:	40023800 	.word	0x40023800
- 800235c:	40020000 	.word	0x40020000
- 8002360:	40020800 	.word	0x40020800
+ 800235c:	40020800 	.word	0x40020800
+ 8002360:	40020000 	.word	0x40020000
  8002364:	40020400 	.word	0x40020400
 
 08002368 <Error_Handler>:

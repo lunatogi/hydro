@@ -18,7 +18,7 @@ function updateSensorValue(sensor){        // 0 -> temperature, 1 -> pH, 2 -> al
         let element = document.getElementById('inputTemp');
         let value = element.value;
         element.value = ''; // Clear the input field after sending
-        if(value >= 25.0 && value <= 45.0) websocket.send(`refTemp:${value}`);
+        if(value >= 20.0 && value <= 45.0) websocket.send(`refTemp:${value}`);
     }else if(sensor === 1) {
         let element = document.getElementById('inputpH');
         let value = element.value;

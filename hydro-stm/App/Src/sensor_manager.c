@@ -15,12 +15,12 @@ static const SensorConfig_t sensorConfigDefault[SENSOR_COUNT] =
 		.name = "Temperature Sensor",
 		.ref = 27.0f,
 		.margin = 1.0f,
-		.minValue = 25.0f,
+		.minValue = 20.0f,
 		.maxValue = 45.0f,
 		.increasePort = 2,
-		.increasePin = 2,
+		.increasePin = 0,
 		.decreasePort = 2,
-		.decreasePin = 3
+		.decreasePin = 1
 	},
 
 	[IDX_ALT] = {
