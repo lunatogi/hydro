@@ -70,16 +70,24 @@ static void MX_SPI2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint8_t txBuff[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0x11, 0x22};
+uint8_t rxBuff[6] = {0};
 
 //Sensor wiring
 void BMP_Init(I2C_HandleTypeDef *i2c_loc){
-	  BMP180_Init(i2c_loc);
-	  BMP180_SetOversampling(BMP180_STANDARD);
-	  BMP180_UpdateCalibrationData();
+  BMP180_Init(i2c_loc);
+  BMP180_SetOversampling(BMP180_STANDARD);
+  BMP180_UpdateCalibrationData();
 }
 
 void AllSensor_Init(void){
-	BMP_Init(&hi2c2);
+  BMP_Init(&hi2c2);
+}
+
+uint8_t spiCounter = 0;
+void InitializeSPI(void){
+  Comm_FillTxBuffer(txBuff, spiCounter, 0);
+  HAL_SPI_TransmitReceive_IT(&hspi2, txBuff, rxBuff, 6);
 }
 /* USER CODE END 0 */
 
@@ -119,8 +127,6 @@ int main(void)
   Scheduler_Init();
   Sensor_Init();
   AllSensor_Init();
-  CommProtocol_Init(&hspi2);
-  CommManager_Init(Comm_GetInterface());
 
   int lel = 2;
   if (HAL_I2C_IsDeviceReady(&hi2c2, 0x77<<1, 3, 100) != HAL_OK) {
@@ -246,13 +252,12 @@ static void MX_SPI2_Init(void)
   /* USER CODE END SPI2_Init 1 */
   /* SPI2 parameter configuration*/
   hspi2.Instance = SPI2;
-  hspi2.Init.Mode = SPI_MODE_MASTER;
+  hspi2.Init.Mode = SPI_MODE_SLAVE;
   hspi2.Init.Direction = SPI_DIRECTION_2LINES;
   hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -361,7 +366,17 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi){
+	if(hspi->Instance == SPI2){
+		if(spiCounter < SENSOR_COUNT){		// If ESP's queue is more than SENSOR_COUNT they can desync!!
+			spiCounter++;
+		}else{
+			spiCounter = 0;
+		}
+		Comm_FillTxBuffer(txBuffer, spiCounter, 0);
+	}
+	HAL_SPI_TransmitReceive_IT(&hspi2, txBuff, rxBuff, 6);
+}
 /* USER CODE END 4 */
 
 /**

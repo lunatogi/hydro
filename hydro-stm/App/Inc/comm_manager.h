@@ -9,8 +9,9 @@
 #define INC_COMM_MANAGER_H_
 
 #include <string.h>
-#include "comm_if.h"
 #include "math.h"
+
+#define SPI_DATA_LENGTH 6
 
 typedef union
 {
@@ -21,11 +22,10 @@ typedef union
         float   payload;
     } frame;
 
-    uint8_t raw[6];       // Be carefull about this size
+    uint8_t raw[SPI_DATA_LENGTH];       // Be carefull about this size
 } SingleSPIData_t;
 
-void CommManager_Init(const CommInterface_t *comm);
-void CommManager_SendRecv(const uint8_t *tx_buffer, uint8_t *rx_buffer, uint8_t BUFFER_SIZE);
-void Comm_SendCurrentValues(void);
+void Comm_HandleSPIData(uint8_t *rxBuffer);
+void Comm_FillTxBuffer(uint8_t *txBuffer, uint8_t id, uint8_t type);
 
 #endif /* INC_COMM_MANAGER_H_ */

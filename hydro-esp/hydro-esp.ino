@@ -5,12 +5,15 @@
 #include <LittleFS.h>
 #include <Arduino_JSON.h>
 #include <EEPROM.h>
+#include <SPI.h>
 #include <FS.h>
 #include <math.h>
 //#include <Adafruit_BME280.h>
 //#include <Adafruit_Sensor.h>
 
-#define MAX_SENSOR 6
+//#define MAX_SENSOR 6
+#define SPI_DATA_LENGTH 6
+#define CS_PIN 5
 
 // Replace with your network credentials
 const char* ssid = "KET0";
@@ -61,7 +64,8 @@ enum {
   IDX_HUM,
   IDX_PH,
   IDX_TDS,
-  IDX_FF
+  IDX_FF,
+  MAX_SENSOR      // Not tested can cause bug !!!
 };
 
 Sensor sensors[] = {
@@ -74,6 +78,10 @@ Sensor sensors[] = {
 };
 
 ////////////////////// COMMUNICATION //////////////////////
+uint8_t txBuff[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
+uint8_t rxBuff[6] = {0};
+
+/*
 uint8_t csPin = 4;
 uint8_t clkPin = 14;
 uint8_t mosiPin = 13;
@@ -90,6 +98,7 @@ uint8_t spiDataLength = 6;
 
 uint8_t bitCounter = 0;
 uint8_t maxBits = 48;
+*/
 
 typedef union
 {
@@ -113,6 +122,7 @@ void QueueMessage(uint8_t _idx, uint8_t _type, float _payload){     // _idx'in t
   queueCounter++;
 }
 
+/*
 void BytesToBits(const uint8_t *bytes, uint8_t *bits, uint8_t byteSize)
 {
     for (int byte = 0; byte < byteSize; byte++)
@@ -125,43 +135,34 @@ void BytesToBits(const uint8_t *bytes, uint8_t *bits, uint8_t byteSize)
         }
     }
 }
-
+*/
 void FillTxBufferFromQueue(){      // Check this functions functionality
     if(queueCounter > 0){
-      BytesToBits(messageQueue[0].raw, tx_buffer, spiDataLength);
+      memcpy(txBuff, messageQueue[0].raw, 6);
       for(int i = 1; i < queueCounter; i++){
         messageQueue[i-1] = messageQueue[i];
       }
       queueCounter--;
+    }else{
+      ClearTxBuffer();
     }
-    digitalWrite(misoPin, tx_buffer[0] & 1);
-}
-
-void ClearQueue(){
-  for(int i = 0; i < 6; i++)      // Bunu hard coded halinden değiştir
-  {
-    for(int k = 0; k < 6; k++){
-      messageQueue[i].raw[k] = 0;
-    }
-  }
-  queueCounter = 0;
-}
-
-void ClearRxBuffer(){
-  for(int i = 0; i < maxBits; i++){     // Clear RX Buffer
-    rx_buffer[i] = 0;
-  }
 }
 
 void CommSetup(){
+  SPI.begin(14, 12, 13, CS_PIN);   // SCK, MISO, MOSI, SS
+  pinMode(CS_PIN, OUTPUT);         // SS is not currently active on STM side
+  digitalWrite(CS_PIN, HIGH);
+  /*
   pinMode(csPin, INPUT_PULLUP);
   pinMode(clkPin, INPUT);
   pinMode(mosiPin, INPUT);
   pinMode(misoPin, OUTPUT);
   attachInterrupt(clkPin, commISR, RISING);
   digitalWrite(misoPin, tx_buffer[0]);
+  */
 }
 
+/*
 // Interrupt Service Routine
 void ARDUINO_ISR_ATTR commISR(){
   if (bitCounter < maxBits && digitalRead(csPin) == LOW) {
@@ -170,7 +171,9 @@ void ARDUINO_ISR_ATTR commISR(){
     bitCounter++;
   }
 }
+*/
 
+/*
 void BitsToBytes(const uint8_t *bits, uint8_t *bytes, uint8_t byteSize)
 {
     for (int byte = 0; byte < byteSize; byte++)
@@ -185,11 +188,13 @@ void BitsToBytes(const uint8_t *bits, uint8_t *bytes, uint8_t byteSize)
         bytes[byte] = value;
     }
 }
-
+*/
 void PrintRxBuffer(){
   Serial.print("Rx Buffer: ");
-  for(int i = 0; i < maxBits; i++){
-    Serial.print(rx_buffer[i]);
+  for(int i = 0; i < SPI_DATA_LENGTH; i++){
+    Serial.print("0x");
+    Serial.print(rxBuff[i], HEX);
+    Serial.print(" ");
   }
   Serial.println("");
 }
@@ -205,7 +210,60 @@ String uint8ToBinaryString(uint8_t value) {
   return out;
 }
 
+void ClearRxBuffer(){
+  for(int i = 0; i < SPI_DATA_LENGTH; i++){     // Clear RX Buffer
+    rxBuff[i] = 0;
+  }
+}
+
+void ClearTxBuffer(){
+  for(int i = 0; i < SPI_DATA_LENGTH; i++){     // Clear RX Buffer
+    txBuff[i] = 0;
+  }
+}
+
+void ProcessSPIData(){
+  SingleSPIData_t spiData = {0};
+  memcpy(spiData.raw, rxBuff, SPI_DATA_LENGTH);
+  switch(spiData.frame.type){
+    case 0:
+      sensors[spiData.frame.id].value = spiData.frame.payload;
+      Serial.print("Inside Sensor Value: ");
+      Serial.println(sensors[spiData.frame.id].value);
+      break;
+    case 1:
+      Serial.println("Type 1: Reference value");
+      break;
+    case 2:
+      switchMatrixStr = uint8ToBinaryString(spiData.raw[2]);
+      break;
+    default:
+      Serial.println("Invalid data!");
+  }
+  ClearRxBuffer();
+}
+
+void SingleComm(){
+  SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+  digitalWrite(CS_PIN, LOW);
+  for (int i = 0; i < SPI_DATA_LENGTH; i++) {
+    rxBuff[i] = SPI.transfer(txBuff[i]);
+  }
+  digitalWrite(CS_PIN, HIGH);
+  SPI.endTransaction();
+  PrintRxBuffer();
+  ProcessSPIData();
+}
+
 void CommManager(){
+  int current_sensor_count = 2;     // Make it global later (i.e. MAX_SENSOR)
+  int spiCounter = current_sensor_count+1;
+  if(queueCounter > spiCounter) spiCounter = queueCounter;
+  for(int i = 0; i < spiCounter; i++){
+    FillTxBufferFromQueue();
+    SingleComm();
+  }
+  /*
   if(firstDataTaken == 0 && bitCounter == 8){
     BitsToBytes(rx_buffer, &STMDataCount, 1);
     maxDataCount = max(STMDataCount, queueCounter);
@@ -268,6 +326,7 @@ void CommManager(){
     ClearRxBuffer();
     bitCounter = 0;
   }
+  */
 }
 
 ////////////////////// WEB SOCKET /////////////////////////
@@ -298,8 +357,6 @@ void UpdateRefValue(uint8_t _idx, uint8_t _memoryLoc, float _newValue){
     QueueMessage(_idx, 1, _newValue);             // Communication can be corrupted if some data comes from web while communicating
     Serial.print("QueueCounter: ");
     Serial.println(queueCounter);
-    BytesToBits(&queueCounter, tx_buffer, 1);
-    digitalWrite(misoPin, tx_buffer[0] & 1);
     sensors[_idx].ref = _newValue;
     UpdateEEPROM(_memoryLoc, sensors[_idx].ref);
   }
@@ -513,22 +570,13 @@ void setup() {
 }
 
 void loop() {
-
-  
-
-  //if(digitalRead(csPin) == LOW) return;
-
   if ((millis() - lastTime) > timerDelay) {
+    CommManager();
     String sensorReadings = getSensorReadings();
     Serial.println(sensorReadings);
     notifyClients(sensorReadings);
     lastTime = millis();
   }
 
-  if(digitalRead(csPin) == LOW){
-    CommManager();
-    return;
-  } 
-
-  //ws.cleanupClients();
+  ws.cleanupClients();
 }
