@@ -9,6 +9,7 @@
 #define INC_COMM_MANAGER_H_
 
 #include <string.h>
+#include <stdint.h>
 #include "math.h"
 
 #define SPI_DATA_LENGTH 6

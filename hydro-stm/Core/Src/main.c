@@ -23,7 +23,6 @@
 /* USER CODE BEGIN Includes */
 #include "scheduler.h"
 #include "sensor_manager.h"
-#include "comm_protocol.h"
 #include "comm_manager.h"
 
 //Sensors
@@ -373,7 +372,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi){
 		}else{
 			spiCounter = 0;
 		}
-		Comm_FillTxBuffer(txBuffer, spiCounter, 0);
+		Comm_FillTxBuffer(txBuff, spiCounter, 0);
 	}
 	HAL_SPI_TransmitReceive_IT(&hspi2, txBuff, rxBuff, 6);
 }

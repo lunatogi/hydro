@@ -18,7 +18,7 @@ static uint32_t lastControlTick = 0;
 
 static const uint32_t delaySensorTick = 500;
 static const uint32_t delayControlTick = delaySensorTick;	// Tied by design
-static const uint32_t delayESPTick = 10000;
+//static const uint32_t delayESPTick = 10000;
 static const uint32_t delaySaveTick = 10000;
 
 void Scheduler_Init(void){
@@ -43,11 +43,11 @@ void Scheduler_Run(void){
 		lastControlTick = nowTick;
 	}
 
-	if(nowTick - lastESPTick >= delayESPTick){
-		// Communicate with ESP
-		Comm_SendCurrentValues();
-		lastESPTick = nowTick;
-	}
+	//if(nowTick - lastESPTick >= delayESPTick){
+	//	// Communicate with ESP
+	//	Comm_SendCurrentValues();
+	//	lastESPTick = nowTick;
+	//}
 
 	if(nowTick - lastSaveTick >= delaySaveTick){
 		// Save to EEPROM

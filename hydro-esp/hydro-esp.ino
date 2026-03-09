@@ -14,6 +14,7 @@
 //#define MAX_SENSOR 6
 #define SPI_DATA_LENGTH 6
 #define CS_PIN 5
+#define MAX_QUEUE_LENGTH 3
 
 // Replace with your network credentials
 const char* ssid = "KET0";
@@ -353,7 +354,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 }
 
 void UpdateRefValue(uint8_t _idx, uint8_t _memoryLoc, float _newValue){
-  if(queueCounter < 6){         // Change this hard coded format
+  if(queueCounter < MAX_QUEUE_LENGTH){         
     QueueMessage(_idx, 1, _newValue);             // Communication can be corrupted if some data comes from web while communicating
     Serial.print("QueueCounter: ");
     Serial.println(queueCounter);
@@ -504,7 +505,6 @@ void WebSocketSetup(){
   // Web Server Root URL
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(LittleFS, "/index.html", "text/html");
-    //request->send(200, "text/html", "<h1>ESP8266 is alive ✅</h1>");
   });
 
   server.onNotFound([](AsyncWebServerRequest *req){
@@ -576,6 +576,8 @@ void loop() {
     Serial.println(sensorReadings);
     notifyClients(sensorReadings);
     lastTime = millis();
+  }else if(queueCounter > 0){
+    CommManager();
   }
 
   ws.cleanupClients();
