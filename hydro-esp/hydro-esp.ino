@@ -48,7 +48,7 @@ unsigned long timerDelay = 10000;
 // Create a sensor object
 //Adafruit_BME280 bme;         // BME280 connect to ESP32 I2C (GPIO 21 = SDA, GPIO 22 = SCL)
 
-String switchMatrixStr = "";
+String switchMatrixStr = "00000000";
 
 //Motor Values
 uint8_t motorID = 1;
@@ -88,25 +88,6 @@ uint8_t txBuff[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
 uint8_t txBuff1[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
 uint8_t rxBuff[6] = {0};
 
-/*
-uint8_t csPin = 4;
-uint8_t clkPin = 14;
-uint8_t mosiPin = 13;
-uint8_t misoPin = 12;
-
-uint8_t tx_buffer[48] = {0};
-uint8_t rx_buffer[48] = {0};
-
-uint8_t STMDataCount = 0;
-uint8_t maxDataCount = 0;
-uint8_t firstDataTaken = 0;
-uint8_t dataCounter = 0;
-uint8_t spiDataLength = 6;
-
-uint8_t bitCounter = 0;
-uint8_t maxBits = 48;
-*/
-
 typedef union
 {
     struct __attribute__((packed))
@@ -129,20 +110,6 @@ void QueueMessage(uint8_t _idx, uint8_t _type, float _payload){     // _idx'in t
   queueCounter++;
 }
 
-/*
-void BytesToBits(const uint8_t *bytes, uint8_t *bits, uint8_t byteSize)
-{
-    for (int byte = 0; byte < byteSize; byte++)
-    {
-        uint8_t value = bytes[byte];
-
-        for (int bit = 0; bit < 8; bit++)
-        {
-            bits[byte * 8 + bit] = (value >> (7 - bit)) & 0x01;
-        }
-    }
-}
-*/
 void FillTxBufferFromQueue(){      // Check this functions functionality
     if(queueCounter > 0){
       memcpy(txBuff, messageQueue[0].raw, 6);
@@ -159,43 +126,8 @@ void CommSetup(){
   SPI.begin(14, 12, 13, CS_PIN);   // SCK, MISO, MOSI, SS
   pinMode(CS_PIN, OUTPUT);         // SS is not currently active on STM side
   digitalWrite(CS_PIN, HIGH);
-  /*
-  pinMode(csPin, INPUT_PULLUP);
-  pinMode(clkPin, INPUT);
-  pinMode(mosiPin, INPUT);
-  pinMode(misoPin, OUTPUT);
-  attachInterrupt(clkPin, commISR, RISING);
-  digitalWrite(misoPin, tx_buffer[0]);
-  */
 }
 
-/*
-// Interrupt Service Routine
-void ARDUINO_ISR_ATTR commISR(){
-  if (bitCounter < maxBits && digitalRead(csPin) == LOW) {
-    rx_buffer[bitCounter] = digitalRead(mosiPin);
-    if (bitCounter + 1 < maxBits) digitalWrite(misoPin, tx_buffer[bitCounter+1] & 1);
-    bitCounter++;
-  }
-}
-*/
-
-/*
-void BitsToBytes(const uint8_t *bits, uint8_t *bytes, uint8_t byteSize)
-{
-    for (int byte = 0; byte < byteSize; byte++)
-    {
-        uint8_t value = 0;
-
-        for (int bit = 0; bit < 8; bit++)
-        {
-            value <<= 1;
-            value |= bits[byte * 8 + bit] & 0x01;
-        }
-        bytes[byte] = value;
-    }
-}
-*/
 void PrintRxBuffer(){
   Serial.print("Rx Buffer: ");
   for(int i = 0; i < SPI_DATA_LENGTH; i++){
@@ -239,7 +171,9 @@ void ProcessSPIData(){
   switch(spiData.frame.type){
     case 0:
       sensors[spiData.frame.id].value = spiData.frame.payload;
-      Serial.print("Inside Sensor Value: ");
+      Serial.print("Inside Sensor Value of ID ");
+      Serial.print(spiData.frame.id);
+      Serial.print(": ");
       Serial.println(sensors[spiData.frame.id].value);
       break;
     case 1:
@@ -247,6 +181,8 @@ void ProcessSPIData(){
       break;
     case 2:
       switchMatrixStr = uint8ToBinaryString(spiData.raw[2]);
+      Serial.print("Switch Matrix: ");
+      Serial.println(switchMatrixStr);
       break;
     default:
       Serial.println("Invalid data!");
@@ -264,81 +200,19 @@ void SingleComm(){
   SPI.endTransaction();
   PrintRxBuffer();
   ProcessSPIData();
-  // Maybe a delay here
+  delayMicroseconds(5);
 }
 
 void CommManager(){
   int current_sensor_count = 2;     // Make it global later (i.e. MAX_SENSOR)
   int spiCounter = current_sensor_count+1;
   if(queueCounter > spiCounter) spiCounter = queueCounter;
+  Serial.println("--- SPI Communication ---");
   for(int i = 0; i < spiCounter; i++){
     FillTxBufferFromQueue();
     SingleComm();
   }
-  /*
-  if(firstDataTaken == 0 && bitCounter == 8){
-    BitsToBytes(rx_buffer, &STMDataCount, 1);
-    maxDataCount = max(STMDataCount, queueCounter);
-    Serial.print("MaxDataCounter: ");
-    Serial.println(maxDataCount);
-    firstDataTaken = 1;
-    bitCounter = 0;
-    FillTxBufferFromQueue();
-    ClearRxBuffer();
-  }
-
-  if(bitCounter >= maxBits && firstDataTaken == 1){
-    dataCounter++;
-    Serial.println(bitCounter);
-    Serial.print("Message: ");
-
-    SingleSPIData_t spiData = {0};
-    BitsToBytes(rx_buffer, spiData.raw, spiDataLength);
-    //Serial.print("Raw: ");
-    //for(int k = 0; k < spiDataLength; k++){
-    //  Serial.print(spiData.raw[k]);
-    //  Serial.print(" ");
-    //}
-    //Serial.println("");
-    //Serial.print("ID: ");
-    //Serial.println(spiData.frame.id);
-    //Serial.print("Type: ");
-    //Serial.println(spiData.frame.type);
-    switch(spiData.frame.type){
-      case 0:
-        sensors[spiData.frame.id].value = spiData.frame.payload;
-        Serial.print("Inside Sensor Value: ");
-        Serial.println(sensors[spiData.frame.id].value);
-        break;
-      case 1:
-        Serial.println("Type 1: Reference value");
-        break;
-      case 2:
-        switchMatrixStr = uint8ToBinaryString(spiData.raw[2]);
-        break;
-      default:
-        Serial.println("Invalid data!");
-    }
-    
-
-    //Serial.println(spiData.frame.payload);
-    
-    PrintRxBuffer();
-    
-    digitalWrite(misoPin, tx_buffer[0]);
-
-    if(dataCounter == maxDataCount){
-      Serial.println("All data is taken");
-      firstDataTaken = 0;
-      dataCounter = 0;
-      ClearQueue();
-    }else{
-      FillTxBufferFromQueue();
-    }
-    ClearRxBuffer();
-    bitCounter = 0;
-  }
-  */
+  Serial.println("---");
 }
 
 ////////////////////// WEB SOCKET /////////////////////////
@@ -377,9 +251,11 @@ void UpdateRefValue(uint8_t _idx, uint8_t _memoryLoc, float _newValue){
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   AwsFrameInfo *info = (AwsFrameInfo*)arg;
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
-      data[len] = 0;
-
-      String msg = (char*)data;
+      String msg;
+      msg.reserve(len);
+      for (size_t i = 0; i < len; i++) {
+        msg += (char)data[i];
+      }
 
       Serial.print("Message from web: ");
       Serial.println(msg);
@@ -495,10 +371,18 @@ String getSensorReadings(){
   readings["refFF"] = sensors[IDX_FF].ref;
   readings["refHum"] = sensors[IDX_HUM].ref;
 
-  readings["switch_temp_up"] = switchMatrixStr[4] - '0';      // Need this "-0" for javascript side
-  readings["switch_temp_down"] = switchMatrixStr[5] - '0';
-  readings["switch_alt_up"] = switchMatrixStr[6] - '0';
-  readings["switch_alt_down"] = switchMatrixStr[7] - '0';
+  if (switchMatrixStr.length() >= 8) {             // Inhibits getting error when switchMatrixStr is empty
+    readings["switch_temp_up"] = switchMatrixStr[4] - '0';    // Need this "-0" for javascript side
+    readings["switch_temp_down"] = switchMatrixStr[5] - '0';
+    readings["switch_alt_up"] = switchMatrixStr[6] - '0';
+    readings["switch_alt_down"] = switchMatrixStr[7] - '0';
+  } else {
+    readings["switch_temp_up"] = 0;
+    readings["switch_temp_down"] = 0;
+    readings["switch_alt_up"] = 0;
+    readings["switch_alt_down"] = 0;
+  }
+
 //  readings["switch_ph_up"] = 
 //  readings["switch_ph_down"] = 
 //  readings["switch_press_up"] = 
@@ -602,4 +486,6 @@ void loop() {
   }
 
   if(WiFiConnected) ws.cleanupClients();
+
+  delay(1);
 }
