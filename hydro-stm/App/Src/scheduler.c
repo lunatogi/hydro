@@ -16,7 +16,7 @@ static uint32_t lastESPTick = 0;
 static uint32_t lastSaveTick = 0;		// Maybe this one is not needed
 static uint32_t lastControlTick = 0;
 
-static const uint32_t delaySensorTick = 500;
+static const uint32_t delaySensorTick = 5000;
 static const uint32_t delayControlTick = delaySensorTick;	// Tied by design
 //static const uint32_t delayESPTick = 10000;
 static const uint32_t delaySaveTick = 10000;
@@ -27,6 +27,8 @@ void Scheduler_Init(void){
 	lastSensorTick = nowTick;
 	lastESPTick = nowTick;
 	lastSaveTick = nowTick;
+
+	Sensor_Update();		// Might need to call all functions here for proper initialization
 }
 
 void Scheduler_Run(void){

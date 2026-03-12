@@ -123,10 +123,11 @@ int main(void)
   MX_I2C2_Init();
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
-  Scheduler_Init();
   Sensor_Init();
   AllSensor_Init();
-
+  Scheduler_Init();
+  //HAL_SPI_TransmitReceive_IT(&hspi2, txBuff, rxBuff, 6);
+  InitializeSPI();
   int lel = 2;
   if (HAL_I2C_IsDeviceReady(&hi2c2, 0x77<<1, 3, 100) != HAL_OK) {
       lel = 0;
@@ -176,9 +177,9 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 16;
-  RCC_OscInitStruct.PLL.PLLN = 336;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
+  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLN = 100;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
@@ -190,11 +191,11 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
   {
     Error_Handler();
   }
@@ -367,6 +368,9 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi){
 	if(hspi->Instance == SPI2){
+
+		Comm_HandleSPIData(rxBuff);
+
 		if(spiCounter < SENSOR_COUNT){		// If ESP's queue is more than SENSOR_COUNT they can desync!!
 			spiCounter++;
 		}else{

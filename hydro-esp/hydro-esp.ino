@@ -15,10 +15,13 @@
 #define SPI_DATA_LENGTH 6
 #define CS_PIN 5
 #define MAX_QUEUE_LENGTH 3
+#define WIFI_WARNING_LED 21
 
 // Replace with your network credentials
-const char* ssid = "KET0";
+const char* ssid = "Keti-mini";
 const char* password = "keto4522";
+
+bool WiFiConnected = false;
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -29,6 +32,8 @@ IPAddress local_IP(192, 168, 68, 37);
 IPAddress gateway(192, 168, 68, 1);
 // Subnet IP address
 IPAddress subnet(255, 255, 252, 0);
+
+long WiFiTimeout = 10000;
 
 // Create a WebSocket object
 AsyncWebSocket ws("/ws");
@@ -80,6 +85,7 @@ Sensor sensors[] = {
 
 ////////////////////// COMMUNICATION //////////////////////
 uint8_t txBuff[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
+uint8_t txBuff1[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
 uint8_t rxBuff[6] = {0};
 
 /*
@@ -193,8 +199,12 @@ void BitsToBytes(const uint8_t *bits, uint8_t *bytes, uint8_t byteSize)
 void PrintRxBuffer(){
   Serial.print("Rx Buffer: ");
   for(int i = 0; i < SPI_DATA_LENGTH; i++){
-    Serial.print("0x");
+    //Serial.print("0x");
+    if(rxBuff[i] < 10) Serial.print("0");
     Serial.print(rxBuff[i], HEX);
+    //for(int bit = 7; bit >= 0; bit--){
+    //  Serial.print((rxBuff[i] >> bit) & 1);
+    //}
     Serial.print(" ");
   }
   Serial.println("");
@@ -248,12 +258,13 @@ void SingleComm(){
   SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
   digitalWrite(CS_PIN, LOW);
   for (int i = 0; i < SPI_DATA_LENGTH; i++) {
-    rxBuff[i] = SPI.transfer(txBuff[i]);
+    rxBuff[i] = SPI.transfer(txBuff1[i]);
   }
   digitalWrite(CS_PIN, HIGH);
   SPI.endTransaction();
   PrintRxBuffer();
   ProcessSPIData();
+  // Maybe a delay here
 }
 
 void CommManager(){
@@ -428,10 +439,19 @@ void initWiFi() {
   WiFi.begin(ssid, password);
   Serial.println("");
   Serial.print("Connecting to WiFi ..");
-  while (WiFi.status() != WL_CONNECTED) {
+  pinMode(WIFI_WARNING_LED, OUTPUT);
+  digitalWrite(WIFI_WARNING_LED, LOW);
+  long currentTime = millis();
+  while (WiFi.status() != WL_CONNECTED && (millis() - currentTime) <= WiFiTimeout) {
     Serial.print('.');
     delay(1000);
   }
+  if(WiFi.status() != WL_CONNECTED){
+    Serial.println("Failed to connect to WiFi!");
+    return;
+  }
+  WiFiConnected = true;
+  digitalWrite(WIFI_WARNING_LED, HIGH);
   Serial.println(WiFi.localIP());
 }
 
@@ -498,6 +518,7 @@ String getSensorReadings(){
 
 void WebSocketSetup(){
   initWiFi();
+  if(!WiFiConnected) return;
   initFS();
   listFS();
   initWebSocket();
@@ -574,11 +595,11 @@ void loop() {
     CommManager();
     String sensorReadings = getSensorReadings();
     Serial.println(sensorReadings);
-    notifyClients(sensorReadings);
+    if(WiFiConnected) notifyClients(sensorReadings);
     lastTime = millis();
   }else if(queueCounter > 0){
     CommManager();
   }
 
-  ws.cleanupClients();
+  if(WiFiConnected) ws.cleanupClients();
 }
