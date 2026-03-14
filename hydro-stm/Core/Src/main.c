@@ -85,7 +85,11 @@ void AllSensor_Init(void){
 
 uint8_t spiCounter = 0;
 void InitializeSPI(void){
-  Comm_FillTxBuffer(txBuff, spiCounter, 0);
+  //Comm_FillTxBuffer(txBuff, spiCounter, 0);
+  Comm_PassRxBufferPtr(rxBuff);
+  Comm_UpdateSPISnapshot();
+  const SystemSnapshot_t *snap = &snapActive;
+  memcpy(txBuff, snap, sizeof(SystemSnapshot_t));
   HAL_SPI_TransmitReceive_IT(&hspi2, txBuff, rxBuff, 6);
 }
 /* USER CODE END 0 */

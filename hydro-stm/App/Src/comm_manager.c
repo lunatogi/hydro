@@ -11,6 +11,11 @@
 
 SystemSnapshot_t snapPassive;
 SystemSnapshot_t snapActive;
+uint8_t *rxBuffer = NULL;
+
+void Comm_PassRxBufferPtr(uint8_t *rxBuff){
+	rxBuffer = rxBuff;
+}
 
 static uint8_t Comm_BuildSwitchMatrix(void){
 	uint8_t matrix = 0;
@@ -43,7 +48,7 @@ const void Comm_ClearRxBuffer(uint8_t *rxBuffer){		// CURRENTLY UNUSED
 	}
 }
 
-void Comm_HandleSPIData(uint8_t *rxBuffer){
+void Comm_HandleSPIData(void){
 	SingleSPIData_t _spiData;
 	memcpy(_spiData.raw, rxBuffer, SPI_DATA_LENGTH);
 	switch(_spiData.frame.type){

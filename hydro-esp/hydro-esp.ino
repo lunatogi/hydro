@@ -12,13 +12,14 @@
 //#include <Adafruit_Sensor.h>
 
 //#define MAX_SENSOR 6
-#define SPI_DATA_LENGTH 6
+#define SPI_DATA_LENGTH 9
 #define CS_PIN 5
 #define MAX_QUEUE_LENGTH 3
 #define WIFI_WARNING_LED 21
+#define MAX_SENSOR 2
 
 // Replace with your network credentials
-const char* ssid = "Keti-mini";
+const char* ssid = "KET0";
 const char* password = "keto4522";
 
 bool WiFiConnected = false;
@@ -71,8 +72,14 @@ enum {
   IDX_PH,
   IDX_TDS,
   IDX_FF,
-  MAX_SENSOR      // Not tested can cause bug !!!
+  SENSOR_COUNT      // Not tested can cause bug !!!
 };
+
+typedef struct __attribute__((packed))
+{
+	uint8_t switchMatrix;
+	float values[MAX_SENSOR];
+}SystemSnapshot_t;
 
 Sensor sensors[] = {
   { "Temperature Sensor", 25.0f, 1.0f, 0 },
@@ -84,9 +91,9 @@ Sensor sensors[] = {
 };
 
 ////////////////////// COMMUNICATION //////////////////////
-uint8_t txBuff[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-uint8_t txBuff1[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-uint8_t rxBuff[6] = {0};
+uint8_t txBuff[9] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
+uint8_t txBuff1[9] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
+uint8_t rxBuff[9] = {0};
 
 typedef union
 {
@@ -166,6 +173,7 @@ void ClearTxBuffer(){
 }
 
 void ProcessSPIData(){
+  /*
   SingleSPIData_t spiData = {0};
   memcpy(spiData.raw, rxBuff, SPI_DATA_LENGTH);
   switch(spiData.frame.type){
@@ -187,6 +195,19 @@ void ProcessSPIData(){
     default:
       Serial.println("Invalid data!");
   }
+  */
+
+  SystemSnapshot_t SPISnap;
+  memcpy(&SPISnap, rxBuff, SPI_DATA_LENGTH);
+  for(int i = 0; i < MAX_SENSOR; i++){
+    sensors[i].value = SPISnap.values[i];
+    Serial.print(sensors[i].name);
+    Serial.print(" new value: ");
+    Serial.println(sensors[i].value);
+  }
+  switchMatrixStr = uint8ToBinaryString(SPISnap.switchMatrix);
+  Serial.print("Switch Matrix: ");
+  Serial.println(switchMatrixStr);
   ClearRxBuffer();
 }
 
@@ -208,10 +229,8 @@ void CommManager(){
   int spiCounter = current_sensor_count+1;
   if(queueCounter > spiCounter) spiCounter = queueCounter;
   Serial.println("--- SPI Communication ---");
-  for(int i = 0; i < spiCounter; i++){
-    FillTxBufferFromQueue();
-    SingleComm();
-  }
+  FillTxBufferFromQueue();
+  SingleComm();
   Serial.println("---");
 }
 
