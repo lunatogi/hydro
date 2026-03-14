@@ -8,6 +8,10 @@
 #ifndef INC_SCHEDULER_H_
 #define INC_SCHEDULER_H_
 
+#include "common_types.h"
+
+extern flag_t SPI_Done_Flag;
+
 void Scheduler_Init(void);
 void Scheduler_Run(void);
 

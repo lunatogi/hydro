@@ -7,6 +7,35 @@
 
 #include "comm_manager.h"
 #include "sensor_manager.h"
+#include "stm32f4xx_hal.h"
+
+SystemSnapshot_t snapPassive;
+SystemSnapshot_t snapActive;
+
+static uint8_t Comm_BuildSwitchMatrix(void){
+	uint8_t matrix = 0;
+	for(SensorIndex_t i = 0; i < SENSOR_COUNT; i++){
+		matrix = matrix << 2;
+		matrix |= Sensor_GetPinActivity(i);
+	}
+	return matrix;
+}
+
+static void Comm_CopySensorValues(SystemSnapshot_t *snapPtr){
+	for(int i = 0; i < SENSOR_COUNT; i++){
+		snapPtr->values[i] = Sensor_GetValue(i);
+	}
+}
+
+void Comm_UpdateSPISnapshot(void){
+	snapPassive.switchMatrix = Comm_BuildSwitchMatrix();
+	Comm_CopySensorValues(&snapPassive);
+
+	__disable_irq();
+	snapActive = snapPassive;		// If struct becomes too big use pointer-swap
+	__enable_irq();
+
+}
 
 const void Comm_ClearRxBuffer(uint8_t *rxBuffer){		// CURRENTLY UNUSED
 	for(int i = 0; i < SPI_DATA_LENGTH; i++){

@@ -18,8 +18,9 @@ static uint32_t lastControlTick = 0;
 
 static const uint32_t delaySensorTick = 5000;
 static const uint32_t delayControlTick = delaySensorTick;	// Tied by design
-//static const uint32_t delayESPTick = 10000;
 static const uint32_t delaySaveTick = 10000;
+
+flag_t SPI_Done_Flag = 0;
 
 void Scheduler_Init(void){
 	uint32_t nowTick = HAL_GetTick();
@@ -45,16 +46,21 @@ void Scheduler_Run(void){
 		lastControlTick = nowTick;
 	}
 
+	if(SPI_Done_Flag){
+		Comm_UpdateSPISnapshot();
+		SPI_Done_Flag = 0;
+	}
+
 	//if(nowTick - lastESPTick >= delayESPTick){
 	//	// Communicate with ESP
 	//	Comm_SendCurrentValues();
 	//	lastESPTick = nowTick;
 	//}
 
-	if(nowTick - lastSaveTick >= delaySaveTick){
+	//if(nowTick - lastSaveTick >= delaySaveTick){
 		// Save to EEPROM
-		lastSaveTick = nowTick;
-	}
+	//	lastSaveTick = nowTick;
+	//}
 
 	// RTC (Real-time Clock) Update Here
 }

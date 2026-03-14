@@ -14,8 +14,6 @@
 #define SENSOR_PIN_INC   (1U << 1)
 #define SENSOR_PIN_DEC   (1U << 0)
 
-typedef uint8_t flag_t;
-
 typedef struct
 {
     const char *name;

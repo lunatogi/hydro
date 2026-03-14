@@ -69,8 +69,8 @@ static void MX_SPI2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t txBuff[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0x11, 0x22};
-uint8_t rxBuff[6] = {0};
+uint8_t txBuff[9] = {0xAA, 0xBB, 0xCC, 0xDD, 0x11, 0x22};
+uint8_t rxBuff[9] = {0};
 
 //Sensor wiring
 void BMP_Init(I2C_HandleTypeDef *i2c_loc){
@@ -369,16 +369,13 @@ static void MX_GPIO_Init(void)
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi){
 	if(hspi->Instance == SPI2){
 
-		Comm_HandleSPIData(rxBuff);
+		SPI_Done_Flag = 1;
 
-		if(spiCounter < SENSOR_COUNT){		// If ESP's queue is more than SENSOR_COUNT they can desync!!
-			spiCounter++;
-		}else{
-			spiCounter = 0;
-		}
-		Comm_FillTxBuffer(txBuff, spiCounter, 0);
+        const SystemSnapshot_t *snap = &snapActive;
+        memcpy(txBuff, snap, sizeof(SystemSnapshot_t));
+
+        HAL_SPI_TransmitReceive_IT(&hspi2, txBuff, rxBuff, sizeof(SystemSnapshot_t));
 	}
-	HAL_SPI_TransmitReceive_IT(&hspi2, txBuff, rxBuff, 6);
 }
 /* USER CODE END 4 */
 

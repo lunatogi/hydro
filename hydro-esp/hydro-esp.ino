@@ -132,7 +132,7 @@ void PrintRxBuffer(){
   Serial.print("Rx Buffer: ");
   for(int i = 0; i < SPI_DATA_LENGTH; i++){
     //Serial.print("0x");
-    if(rxBuff[i] < 10) Serial.print("0");
+    if(rxBuff[i] < 16) Serial.print("0");
     Serial.print(rxBuff[i], HEX);
     //for(int bit = 7; bit >= 0; bit--){
     //  Serial.print((rxBuff[i] >> bit) & 1);
@@ -487,5 +487,5 @@ void loop() {
 
   if(WiFiConnected) ws.cleanupClients();
 
-  delay(1);
+  //delay(1);
 }

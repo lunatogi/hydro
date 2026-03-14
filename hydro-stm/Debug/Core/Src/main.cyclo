@@ -7,5 +7,5 @@
 ../Core/Src/main.c:243:13:MX_SPI2_Init	2
 ../Core/Src/main.c:280:13:MX_USART2_UART_Init	2
 ../Core/Src/main.c:313:13:MX_GPIO_Init	1
-../Core/Src/main.c:369:6:HAL_SPI_TxRxCpltCallback	3
-../Core/Src/main.c:389:6:Error_Handler	1
+../Core/Src/main.c:369:6:HAL_SPI_TxRxCpltCallback	2
+../Core/Src/main.c:386:6:Error_Handler	1
