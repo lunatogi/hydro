@@ -36,9 +36,9 @@ void Comm_UpdateSPISnapshot(void){
 	snapPassive.switchMatrix = Comm_BuildSwitchMatrix();
 	Comm_CopySensorValues(&snapPassive);
 
-	__disable_irq();
+	HAL_NVIC_DisableIRQ(SPI2_IRQn);
 	snapActive = snapPassive;		// If struct becomes too big use pointer-swap
-	__enable_irq();
+	HAL_NVIC_EnableIRQ(SPI2_IRQn);
 
 }
 

@@ -22,6 +22,12 @@ static const uint32_t delayControlTick = delaySensorTick;	// Tied by design
 
 flag_t SPI_Done_Flag = 0;
 
+void SensorUpdateRoutine(void){
+	HAL_NVIC_DisableIRQ(SPI2_IRQn);
+	Sensor_Update();
+	HAL_NVIC_EnableIRQ(SPI2_IRQn);
+}
+
 void Scheduler_Init(void){
 	uint32_t nowTick = HAL_GetTick();
 
@@ -29,14 +35,14 @@ void Scheduler_Init(void){
 	lastESPTick = nowTick;
 	lastSaveTick = nowTick;
 
-	Sensor_Update();		// Might need to call all functions here for proper initialization
+	SensorUpdateRoutine();		// Might need to call all functions here for proper initialization
 }
 
 void Scheduler_Run(void){
 	uint32_t nowTick = HAL_GetTick();
 	if(nowTick - lastSensorTick >= delaySensorTick){
 		// Check Sensors Values
-		Sensor_Update();
+		SensorUpdateRoutine();
 		lastSensorTick = nowTick;
 	}
 

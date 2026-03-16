@@ -173,30 +173,6 @@ void ClearTxBuffer(){
 }
 
 void ProcessSPIData(){
-  /*
-  SingleSPIData_t spiData = {0};
-  memcpy(spiData.raw, rxBuff, SPI_DATA_LENGTH);
-  switch(spiData.frame.type){
-    case 0:
-      sensors[spiData.frame.id].value = spiData.frame.payload;
-      Serial.print("Inside Sensor Value of ID ");
-      Serial.print(spiData.frame.id);
-      Serial.print(": ");
-      Serial.println(sensors[spiData.frame.id].value);
-      break;
-    case 1:
-      Serial.println("Type 1: Reference value");
-      break;
-    case 2:
-      switchMatrixStr = uint8ToBinaryString(spiData.raw[2]);
-      Serial.print("Switch Matrix: ");
-      Serial.println(switchMatrixStr);
-      break;
-    default:
-      Serial.println("Invalid data!");
-  }
-  */
-
   SystemSnapshot_t SPISnap;
   memcpy(&SPISnap, rxBuff, SPI_DATA_LENGTH);
   for(int i = 0; i < MAX_SENSOR; i++){

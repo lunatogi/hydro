@@ -45,9 +45,9 @@ float Read_Sensor(SensorIndex_t idx){
     }
 
 	switch(idx){
-		case IDX_TEMP: return Read_Temperature();
-		case IDX_ALT: return Read_Altitude();
-		default: return 0.0f;
+		case IDX_TEMP: 	return Read_Temperature();
+		case IDX_ALT: 	return Read_Altitude();
+		default: 		return 0.0f;
 	}
 }
 
