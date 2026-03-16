@@ -32,9 +32,37 @@ static void Comm_CopySensorValues(SystemSnapshot_t *snapPtr){
 	}
 }
 
+static uint16_t CRC16_CCITT(const uint8_t *data, size_t length)
+{
+    uint16_t crc = 0xFFFF;   // common initial value
+
+    for (size_t i = 0; i < length; i++)
+    {
+        crc ^= ((uint16_t)data[i] << 8);
+
+        for (uint8_t bit = 0; bit < 8; bit++)
+        {
+            if (crc & 0x8000)
+                crc = (crc << 1) ^ 0x1021;
+            else
+                crc = (crc << 1);
+        }
+    }
+
+    return crc;
+}
+
+static uint16_t SystemSnapshot_CalculateCRC(const SystemSnapshot_t *packet)
+{
+    return CRC16_CCITT((const uint8_t *)packet,
+                       sizeof(SystemSnapshot_t) - sizeof(packet->crc));
+}
+
 void Comm_UpdateSPISnapshot(void){
 	snapPassive.switchMatrix = Comm_BuildSwitchMatrix();
 	Comm_CopySensorValues(&snapPassive);
+	uint16_t _crc = SystemSnapshot_CalculateCRC(&snapPassive);
+	snapPassive.crc = _crc;
 
 	HAL_NVIC_DisableIRQ(SPI2_IRQn);
 	snapActive = snapPassive;		// If struct becomes too big use pointer-swap
@@ -47,6 +75,12 @@ const void Comm_ClearRxBuffer(uint8_t *rxBuffer){		// CURRENTLY UNUSED
 		rxBuffer[i] = 0;
 	}
 }
+
+
+
+
+
+
 
 void Comm_HandleSPIData(void){
 	SingleSPIData_t _spiData;

@@ -12,7 +12,7 @@
 //#include <Adafruit_Sensor.h>
 
 //#define MAX_SENSOR 6
-#define SPI_DATA_LENGTH 9
+#define SPI_DATA_LENGTH 11
 #define CS_PIN 5
 #define MAX_QUEUE_LENGTH 3
 #define WIFI_WARNING_LED 21
@@ -75,12 +75,6 @@ enum {
   SENSOR_COUNT      // Not tested can cause bug !!!
 };
 
-typedef struct __attribute__((packed))
-{
-	uint8_t switchMatrix;
-	float values[MAX_SENSOR];
-}SystemSnapshot_t;
-
 Sensor sensors[] = {
   { "Temperature Sensor", 25.0f, 1.0f, 0 },
   { "Altitude Sensor",   160.0f, 10.0f, 0 },
@@ -107,8 +101,46 @@ typedef union
     uint8_t raw[6];       // Be carefull about this size
 } SingleSPIData_t;
 
+typedef struct __attribute__((packed))
+{
+	uint8_t switchMatrix;
+	float values[MAX_SENSOR];
+	uint16_t crc;
+}SystemSnapshot_t;
+
 SingleSPIData_t messageQueue[6] = {0};
 uint8_t queueCounter = 0;
+
+uint16_t CRC16_CCITT(const uint8_t *data, size_t length)
+{
+    uint16_t crc = 0xFFFF;   // common initial value
+
+    for (size_t i = 0; i < length; i++)
+    {
+        crc ^= ((uint16_t)data[i] << 8);
+
+        for (uint8_t bit = 0; bit < 8; bit++)
+        {
+            if (crc & 0x8000)
+                crc = (crc << 1) ^ 0x1021;
+            else
+                crc = (crc << 1);
+        }
+    }
+
+    return crc;
+}
+
+uint16_t SystemSnapshot_CalculateCRC(const SystemSnapshot_t *packet)
+{
+    return CRC16_CCITT((const uint8_t *)packet,
+                       sizeof(SystemSnapshot_t) - sizeof(packet->crc));
+}
+
+uint8_t SystemSnapshot_IsValid(const SystemSnapshot_t *packet)
+{
+    return (packet->crc == SystemSnapshot_CalculateCRC(packet));
+}
 
 void QueueMessage(uint8_t _idx, uint8_t _type, float _payload){     // _idx'in type'ı SensorIndex_t yapılabilir sonrasında
   messageQueue[queueCounter].frame.id = _idx;
@@ -175,6 +207,10 @@ void ClearTxBuffer(){
 void ProcessSPIData(){
   SystemSnapshot_t SPISnap;
   memcpy(&SPISnap, rxBuff, SPI_DATA_LENGTH);
+  if(SystemSnapshot_IsValid(&SPISnap) == 0){
+    Serial.println("SPI DATA IS NOT VALID!");
+    return;
+  }
   for(int i = 0; i < MAX_SENSOR; i++){
     sensors[i].value = SPISnap.values[i];
     Serial.print(sensors[i].name);
