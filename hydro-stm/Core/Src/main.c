@@ -69,8 +69,8 @@ static void MX_SPI2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t txBuff[9] = {0xAA, 0xBB, 0xCC, 0xDD, 0x11, 0x22};
-uint8_t rxBuff[9] = {0};
+uint8_t txBuff[11] = {0xAA, 0xBB, 0xCC, 0xDD, 0x11, 0x22};
+uint8_t rxBuff[11] = {0};
 
 //Sensor wiring
 void BMP_Init(I2C_HandleTypeDef *i2c_loc){
@@ -90,7 +90,8 @@ void InitializeSPI(void){
   Comm_UpdateSPISnapshot();
   const SystemSnapshot_t *snap = &snapActive;
   memcpy(txBuff, snap, sizeof(SystemSnapshot_t));
-  HAL_SPI_TransmitReceive_IT(&hspi2, txBuff, rxBuff, 6);
+  HAL_SPI_TransmitReceive_IT(&hspi2, txBuff, rxBuff, 11);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
 }
 /* USER CODE END 0 */
 

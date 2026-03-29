@@ -13,7 +13,17 @@
 #include "math.h"
 #include "common_types.h"
 
-#define SPI_DATA_LENGTH 11
+
+typedef struct __attribute__((packed))
+{
+	uint8_t switchMatrix;
+	float values[SENSOR_COUNT];
+	uint16_t crc;
+}SystemSnapshot_t;
+
+extern SystemSnapshot_t snapActive;
+
+#define SPI_DATA_LENGTH sizeof(SystemSnapshot_t)
 
 typedef union
 {
@@ -26,15 +36,6 @@ typedef union
 
     uint8_t raw[SPI_DATA_LENGTH];       // Be carefull about this size
 } SingleSPIData_t;			// Can be unused from now on
-
-typedef struct __attribute__((packed))
-{
-	uint8_t switchMatrix;
-	float values[SENSOR_COUNT];
-	uint16_t crc;
-}SystemSnapshot_t;
-
-extern SystemSnapshot_t snapActive;
 
 void Comm_UpdateSPISnapshot(void);
 void Comm_PassRxBufferPtr(uint8_t *rxBuff);

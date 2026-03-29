@@ -17,6 +17,7 @@
 #define MAX_QUEUE_LENGTH 3
 #define WIFI_WARNING_LED 21
 #define MAX_SENSOR 2
+#define STM_BUSY_PIN 37
 
 // Replace with your network credentials
 const char* ssid = "KET0";
@@ -44,7 +45,7 @@ JSONVar readings;
 
 // Timer variables
 unsigned long lastTime = 0;  
-unsigned long timerDelay = 10000;
+unsigned long timerDelay = 1000;
 
 // Create a sensor object
 //Adafruit_BME280 bme;         // BME280 connect to ESP32 I2C (GPIO 21 = SDA, GPIO 22 = SCL)
@@ -163,6 +164,7 @@ void FillTxBufferFromQueue(){      // Check this functions functionality
 
 void CommSetup(){
   SPI.begin(14, 12, 13, CS_PIN);   // SCK, MISO, MOSI, SS
+  pinMode(STM_BUSY_PIN, INPUT);
   pinMode(CS_PIN, OUTPUT);         // SS is not currently active on STM side
   digitalWrite(CS_PIN, HIGH);
 }
@@ -209,7 +211,7 @@ void ProcessSPIData(){
   memcpy(&SPISnap, rxBuff, SPI_DATA_LENGTH);
   if(SystemSnapshot_IsValid(&SPISnap) == 0){
     Serial.println("SPI DATA IS NOT VALID!");
-    return;
+    //return;
   }
   for(int i = 0; i < MAX_SENSOR; i++){
     sensors[i].value = SPISnap.values[i];
@@ -237,6 +239,9 @@ void SingleComm(){
 }
 
 void CommManager(){
+  if(digitalRead(STM_BUSY_PIN)){
+    return;
+  }
   int current_sensor_count = 2;     // Make it global later (i.e. MAX_SENSOR)
   int spiCounter = current_sensor_count+1;
   if(queueCounter > spiCounter) spiCounter = queueCounter;
