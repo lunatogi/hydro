@@ -231,6 +231,7 @@ void SingleComm(){
   for (int i = 0; i < SPI_DATA_LENGTH; i++) {
     rxBuff[i] = SPI.transfer(txBuff1[i]);
   }
+  delayMicroseconds(20);
   digitalWrite(CS_PIN, HIGH);
   SPI.endTransaction();
   PrintRxBuffer();

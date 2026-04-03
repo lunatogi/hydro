@@ -23,9 +23,11 @@ static const uint32_t delayControlTick = delaySensorTick;	// Tied by design
 flag_t SPI_Done_Flag = 0;
 
 void SensorUpdateRoutine(void){
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);		// BUSY PIN
 	HAL_NVIC_DisableIRQ(SPI2_IRQn);
 	Sensor_Update();
 	HAL_NVIC_EnableIRQ(SPI2_IRQn);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
 }
 
 void Scheduler_Init(void){
