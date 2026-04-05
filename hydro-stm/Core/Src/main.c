@@ -24,6 +24,7 @@
 #include "scheduler.h"
 #include "sensor_manager.h"
 #include "comm_manager.h"
+#include "LCD.h"
 
 //Sensors
 #include "bmp180.h"
@@ -167,6 +168,21 @@ int main(void)
   if (HAL_I2C_IsDeviceReady(&hi2c2, 0x77<<1, 3, 100) != HAL_OK) {
       lel = 0;
   }
+
+  	 // Initialize the LCD
+     LCD_Init();
+
+     // Clear the LCD screen
+     LCD_Clear();
+
+     // Set the cursor to the first row, first column
+     LCD_SetCursor(0, 0);          // Set cursor to first row, first column
+	 LCD_SendString("Hello World!");
+
+	 // Move to the second line
+	 LCD_SetCursor(1, 0);
+	 LCD_SendString("STM32 Rocks!");
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -185,6 +201,7 @@ int main(void)
 		SPI2_ResetComm();
 		spi_restart_request = 0;
 	}
+
 
     //HAL_SPI_TransmitReceive(&hspi2, spi2tx_buffer, spi2rx_buffer, 4, HAL_MAX_DELAY);
 	//HAL_Delay(1000);
@@ -364,10 +381,14 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_6, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_6
+                          |LCD_EN_Pin|STM_BUSY_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LD2_Pin|LCD_D4_Pin|LCD_RS_Pin|LCD_D5_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, LCD_D6_Pin|LCD_D7_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -375,25 +396,34 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PC0 PC1 PC4 PC6 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_6;
+  /*Configure GPIO pins : PC0 PC1 PC4 PC6
+                           LCD_EN_Pin STM_BUSY_Pin */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_6
+                          |LCD_EN_Pin|STM_BUSY_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LD2_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin;
+  /*Configure GPIO pins : LD2_Pin LCD_D4_Pin LCD_RS_Pin LCD_D5_Pin */
+  GPIO_InitStruct.Pin = LD2_Pin|LCD_D4_Pin|LCD_RS_Pin|LCD_D5_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PC5 */
   GPIO_InitStruct.Pin = GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : LCD_D6_Pin LCD_D7_Pin */
+  GPIO_InitStruct.Pin = LCD_D6_Pin|LCD_D7_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PB6 */
   GPIO_InitStruct.Pin = GPIO_PIN_6;

@@ -5,14 +5,17 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../BSP/Src/LCD.c \
 ../BSP/Src/bmp180.c \
 ../BSP/Src/sensor_hw.c 
 
 OBJS += \
+./BSP/Src/LCD.o \
 ./BSP/Src/bmp180.o \
 ./BSP/Src/sensor_hw.o 
 
 C_DEPS += \
+./BSP/Src/LCD.d \
 ./BSP/Src/bmp180.d \
 ./BSP/Src/sensor_hw.d 
 
@@ -24,7 +27,7 @@ BSP/Src/%.o BSP/Src/%.su BSP/Src/%.cyclo: ../BSP/Src/%.c BSP/Src/subdir.mk
 clean: clean-BSP-2f-Src
 
 clean-BSP-2f-Src:
-	-$(RM) ./BSP/Src/bmp180.cyclo ./BSP/Src/bmp180.d ./BSP/Src/bmp180.o ./BSP/Src/bmp180.su ./BSP/Src/sensor_hw.cyclo ./BSP/Src/sensor_hw.d ./BSP/Src/sensor_hw.o ./BSP/Src/sensor_hw.su
+	-$(RM) ./BSP/Src/LCD.cyclo ./BSP/Src/LCD.d ./BSP/Src/LCD.o ./BSP/Src/LCD.su ./BSP/Src/bmp180.cyclo ./BSP/Src/bmp180.d ./BSP/Src/bmp180.o ./BSP/Src/bmp180.su ./BSP/Src/sensor_hw.cyclo ./BSP/Src/sensor_hw.d ./BSP/Src/sensor_hw.o ./BSP/Src/sensor_hw.su
 
 .PHONY: clean-BSP-2f-Src
 

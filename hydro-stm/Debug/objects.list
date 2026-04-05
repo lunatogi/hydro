@@ -4,6 +4,7 @@
 "./App/Src/control_loop.o"
 "./App/Src/scheduler.o"
 "./App/Src/sensor_manager.o"
+"./BSP/Src/LCD.o"
 "./BSP/Src/bmp180.o"
 "./BSP/Src/sensor_hw.o"
 "./Core/Src/main.o"
