@@ -63,13 +63,7 @@ void Comm_UpdateSPISnapshot(void){
 	Comm_CopySensorValues(&snapPassive);
 	uint16_t _crc = SystemSnapshot_CalculateCRC(&snapPassive);
 	snapPassive.crc = _crc;
-
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);	// STM IS BUSY
-	HAL_NVIC_DisableIRQ(SPI2_IRQn);
 	snapActive = snapPassive;		// If struct becomes too big use pointer-swap
-	HAL_NVIC_EnableIRQ(SPI2_IRQn);
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);	// STM IS FREE
-
 }
 
 const void Comm_ClearRxBuffer(uint8_t *rxBuffer){		// CURRENTLY UNUSED

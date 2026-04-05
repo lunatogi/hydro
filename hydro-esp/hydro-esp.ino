@@ -13,11 +13,12 @@
 
 //#define MAX_SENSOR 6
 #define SPI_DATA_LENGTH 11
+#define COMM_REQUEST 22
 #define CS_PIN 5
 #define MAX_QUEUE_LENGTH 3
 #define WIFI_WARNING_LED 21
 #define MAX_SENSOR 2
-#define STM_BUSY_PIN 37
+#define STM_READY 37
 
 // Replace with your network credentials
 const char* ssid = "KET0";
@@ -164,9 +165,11 @@ void FillTxBufferFromQueue(){      // Check this functions functionality
 
 void CommSetup(){
   SPI.begin(14, 12, 13, CS_PIN);   // SCK, MISO, MOSI, SS
-  pinMode(STM_BUSY_PIN, INPUT);
+  pinMode(STM_READY, INPUT);
   pinMode(CS_PIN, OUTPUT);         // SS is not currently active on STM side
+  pinMode(COMM_REQUEST, OUTPUT);
   digitalWrite(CS_PIN, HIGH);
+  digitalWrite(COMM_REQUEST, LOW);
 }
 
 void PrintRxBuffer(){
@@ -240,9 +243,9 @@ void SingleComm(){
 }
 
 void CommManager(){
-  if(digitalRead(STM_BUSY_PIN)){
-    return;
-  }
+  //if(digitalRead(STM_BUSY_PIN)){
+  //  return;
+  //}
   int current_sensor_count = 2;     // Make it global later (i.e. MAX_SENSOR)
   int spiCounter = current_sensor_count+1;
   if(queueCounter > spiCounter) spiCounter = queueCounter;
@@ -513,13 +516,18 @@ void setup() {
 
 void loop() {
   if ((millis() - lastTime) > timerDelay) {
-    CommManager();
+    digitalWrite(COMM_REQUEST, HIGH);
     String sensorReadings = getSensorReadings();
     Serial.println(sensorReadings);
     if(WiFiConnected) notifyClients(sensorReadings);
     lastTime = millis();
   }else if(queueCounter > 0){
+    digitalWrite(COMM_REQUEST, HIGH);
+  }
+
+  if(digitalRead(STM_READY)){
     CommManager();
+    digitalWrite(COMM_REQUEST, LOW);
   }
 
   if(WiFiConnected) ws.cleanupClients();

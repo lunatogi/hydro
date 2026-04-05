@@ -72,7 +72,7 @@ static void MX_SPI2_Init(void);
 /* USER CODE BEGIN 0 */
 uint8_t txBuff[11] = {0xAA, 0xBB, 0xCC, 0xDD, 0x11, 0x22};
 uint8_t rxBuff[11] = {0};
-volatile uint8_t spi_restart_request = 0;
+const uint32_t SPI_TIMEOUT = 100;
 //Sensor wiring
 void BMP_Init(I2C_HandleTypeDef *i2c_loc){
   BMP180_Init(i2c_loc);
@@ -84,45 +84,20 @@ void AllSensor_Init(void){
   BMP_Init(&hi2c2);
 }
 
-uint8_t spiCounter = 0;
 void InitializeSPI(void){
-  //Comm_FillTxBuffer(txBuff, spiCounter, 0);
   Comm_PassRxBufferPtr(rxBuff);
   Comm_UpdateSPISnapshot();
   const SystemSnapshot_t *snap = &snapActive;
   memcpy(txBuff, snap, sizeof(SystemSnapshot_t));
-  HAL_SPI_TransmitReceive_IT(&hspi2, txBuff, rxBuff, 11);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+  HAL_SPI_TransmitReceive(&hspi2, txBuff, rxBuff, 11, SPI_TIMEOUT);
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
-}
-int spiBusy = 0;
-int spiError = 0;
-HAL_SPI_StateTypeDef spiState;
-HAL_StatusTypeDef halState;
-void SPI2_ResetComm(void)
-{
-   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); // STM_BUSY
 
-   spiState = HAL_SPI_GetState(&hspi2);
-   if(spiState == HAL_SPI_STATE_BUSY){
-	   spiBusy++;
-   }else if(spiState == HAL_SPI_STATE_ERROR){
-	   spiError++;
-   }
-
-    halState = HAL_SPI_Abort(&hspi2);
-    HAL_SPI_DeInit(&hspi2);
-    HAL_SPI_Init(&hspi2);
-
-    Comm_PassRxBufferPtr(rxBuff);
-    Comm_UpdateSPISnapshot();
-    memcpy(txBuff, &snapActive, sizeof(SystemSnapshot_t));
-    memset(rxBuff, 0, sizeof(rxBuff));
-
-
-
-    HAL_SPI_TransmitReceive_IT(&hspi2, txBuff, rxBuff, sizeof(SystemSnapshot_t));
-
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+  //Do below only when CRC is not correct
+  HAL_SPI_Abort(&hspi2);      // stop ongoing transfer (blocking)
+  HAL_SPI_DeInit(&hspi2);     // reset peripheral state
+  HAL_SPI_Init(&hspi2);       // reinitialize
+  //Comm_HandleSPIData();
 }
 /* USER CODE END 0 */
 
@@ -164,7 +139,7 @@ int main(void)
   Scheduler_Init();
   LCD_Init();
   //HAL_SPI_TransmitReceive_IT(&hspi2, txBuff, rxBuff, 6);
-  InitializeSPI();
+  //InitializeSPI();
   int lel = 2;
   if (HAL_I2C_IsDeviceReady(&hi2c2, 0x77<<1, 3, 100) != HAL_OK) {
       lel = 0;
@@ -185,12 +160,9 @@ int main(void)
 		HAL_Delay(300);
 	}
 
-	if(spi_restart_request){
-		SPI2_ResetComm();
-		spi_restart_request = 0;
+	if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_5) == GPIO_PIN_SET){
+		InitializeSPI();
 	}
-
-
     //HAL_SPI_TransmitReceive(&hspi2, spi2tx_buffer, spi2rx_buffer, 4, HAL_MAX_DELAY);
 	//HAL_Delay(1000);
     /* USER CODE END WHILE */
@@ -370,7 +342,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_6
-                          |LCD_EN_Pin|STM_BUSY_Pin, GPIO_PIN_RESET);
+                          |LCD_EN_Pin|STM_READY_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, LD2_Pin|LCD_D4_Pin|LCD_RS_Pin|LCD_D5_Pin, GPIO_PIN_RESET);
@@ -385,9 +357,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PC0 PC1 PC4 PC6
-                           LCD_EN_Pin STM_BUSY_Pin */
+                           LCD_EN_Pin STM_READY_Pin */
   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_6
-                          |LCD_EN_Pin|STM_BUSY_Pin;
+                          |LCD_EN_Pin|STM_READY_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -400,11 +372,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PC5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_5;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  /*Configure GPIO pin : COMM_REQUST_Pin */
+  GPIO_InitStruct.Pin = COMM_REQUST_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_Init(COMM_REQUST_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LCD_D6_Pin LCD_D7_Pin */
   GPIO_InitStruct.Pin = LCD_D6_Pin|LCD_D7_Pin;
@@ -421,34 +393,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
-
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi){
-	if(hspi->Instance == SPI2){
-
-		SPI_Done_Flag = 1;
-
-        const SystemSnapshot_t *snap = &snapActive;
-        memcpy(txBuff, snap, sizeof(SystemSnapshot_t));
-
-        //HAL_SPI_TransmitReceive_IT(&hspi2, txBuff, rxBuff, sizeof(SystemSnapshot_t));
-	}
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-    if (GPIO_Pin == GPIO_PIN_5) {
-    	spi_restart_request = 1;
-    }
-}
 
 /* USER CODE END 4 */
 

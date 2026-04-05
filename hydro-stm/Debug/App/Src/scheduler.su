@@ -1,4 +1,4 @@
 ../App/Src/scheduler.c:26:6:LCDUpdate	56	static
 ../App/Src/scheduler.c:44:6:SensorUpdateRoutine	8	static
-../App/Src/scheduler.c:54:6:Scheduler_Init	16	static
-../App/Src/scheduler.c:64:6:Scheduler_Run	16	static
+../App/Src/scheduler.c:50:6:Scheduler_Init	16	static
+../App/Src/scheduler.c:60:6:Scheduler_Run	16	static
