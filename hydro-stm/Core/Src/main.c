@@ -162,6 +162,7 @@ int main(void)
   Sensor_Init();
   AllSensor_Init();
   Scheduler_Init();
+  LCD_Init();
   //HAL_SPI_TransmitReceive_IT(&hspi2, txBuff, rxBuff, 6);
   InitializeSPI();
   int lel = 2;
@@ -169,19 +170,6 @@ int main(void)
       lel = 0;
   }
 
-  	 // Initialize the LCD
-     LCD_Init();
-
-     // Clear the LCD screen
-     LCD_Clear();
-
-     // Set the cursor to the first row, first column
-     LCD_SetCursor(0, 0);          // Set cursor to first row, first column
-	 LCD_SendString("Hello World!");
-
-	 // Move to the second line
-	 LCD_SetCursor(1, 0);
-	 LCD_SendString("STM32 Rocks!");
 
   /* USER CODE END 2 */
 

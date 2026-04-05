@@ -10,6 +10,7 @@
 #include "sensor_manager.h"
 #include "control_loop.h"
 #include "comm_manager.h"
+#include "LCD.h"
 
 static uint32_t lastSensorTick = 0;
 static uint32_t lastESPTick = 0;
@@ -22,13 +23,33 @@ static const uint32_t delayControlTick = delaySensorTick;	// Tied by design
 
 flag_t SPI_Done_Flag = 0;
 
+void LCDUpdate(){
+
+	char msg[32];
+	float value = Sensor_GetValue(IDX_TEMP);
+	snprintf(msg, sizeof(msg), "Temp: %.2f", value);
+
+    LCD_Clear();
+
+    LCD_SetCursor(0, 0);
+	LCD_SendString(msg);
+
+	value = Sensor_GetValue(IDX_ALT);
+	snprintf(msg, sizeof(msg), "Alt: %.2f", value);
+
+	LCD_SetCursor(1, 0);
+	LCD_SendString(msg);
+}
+
 void SensorUpdateRoutine(void){
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);		// BUSY PIN
 	HAL_NVIC_DisableIRQ(SPI2_IRQn);
 	Sensor_Update();
 	HAL_NVIC_EnableIRQ(SPI2_IRQn);
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+	LCDUpdate();
 }
+
 
 void Scheduler_Init(void){
 	uint32_t nowTick = HAL_GetTick();
