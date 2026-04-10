@@ -70,9 +70,6 @@ static void MX_SPI2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t txBuff[11] = {0xAA, 0xBB, 0xCC, 0xDD, 0x11, 0x22};
-uint8_t rxBuff[11] = {0};
-const uint32_t SPI_TIMEOUT = 100;
 //Sensor wiring
 void BMP_Init(I2C_HandleTypeDef *i2c_loc){
   BMP180_Init(i2c_loc);
@@ -84,6 +81,10 @@ void AllSensor_Init(void){
   BMP_Init(&hi2c2);
 }
 
+uint8_t txBuff[11] = {0xAA, 0xBB, 0xCC, 0xDD, 0x11, 0x22};
+uint8_t rxBuff[11] = {0};
+const uint32_t SPI_TIMEOUT = 30;
+
 void InitializeSPI(void){
   Comm_PassRxBufferPtr(rxBuff);
   Comm_UpdateSPISnapshot();
@@ -94,7 +95,7 @@ void InitializeSPI(void){
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
 
   //Do below only when CRC is not correct
-  HAL_SPI_Abort(&hspi2);      // stop ongoing transfer (blocking)
+  //HAL_SPI_Abort(&hspi2);      // stop ongoing transfer (blocking)
   HAL_SPI_DeInit(&hspi2);     // reset peripheral state
   HAL_SPI_Init(&hspi2);       // reinitialize
   //Comm_HandleSPIData();
@@ -138,8 +139,6 @@ int main(void)
   AllSensor_Init();
   Scheduler_Init();
   LCD_Init();
-  //HAL_SPI_TransmitReceive_IT(&hspi2, txBuff, rxBuff, 6);
-  //InitializeSPI();
   int lel = 2;
   if (HAL_I2C_IsDeviceReady(&hi2c2, 0x77<<1, 3, 100) != HAL_OK) {
       lel = 0;
@@ -160,9 +159,6 @@ int main(void)
 		HAL_Delay(300);
 	}
 
-	if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_5) == GPIO_PIN_SET){
-		InitializeSPI();
-	}
     //HAL_SPI_TransmitReceive(&hspi2, spi2tx_buffer, spi2rx_buffer, 4, HAL_MAX_DELAY);
 	//HAL_Delay(1000);
     /* USER CODE END WHILE */

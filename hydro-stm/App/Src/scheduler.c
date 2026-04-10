@@ -11,6 +11,7 @@
 #include "control_loop.h"
 #include "comm_manager.h"
 #include "LCD.h"
+#include "main.h"
 
 static uint32_t lastSensorTick = 0;
 static uint32_t lastESPTick = 0;
@@ -19,9 +20,12 @@ static uint32_t lastControlTick = 0;
 
 static const uint32_t delaySensorTick = 5000;
 static const uint32_t delayControlTick = delaySensorTick;	// Tied by design
+static const uint32_t delayESPTick = 1000;
 //static const uint32_t delaySaveTick = 10000;
 
 flag_t SPI_Done_Flag = 0;
+
+
 
 void LCDUpdate(){
 
@@ -57,6 +61,8 @@ void Scheduler_Init(void){
 	SensorUpdateRoutine();		// Might need to call all functions here for proper initialization
 }
 
+
+
 void Scheduler_Run(void){
 	uint32_t nowTick = HAL_GetTick();
 	if(nowTick - lastSensorTick >= delaySensorTick){
@@ -71,16 +77,18 @@ void Scheduler_Run(void){
 		lastControlTick = nowTick;
 	}
 
-	if(SPI_Done_Flag){
-		Comm_UpdateSPISnapshot();
-		SPI_Done_Flag = 0;
-	}
-
-	//if(nowTick - lastESPTick >= delayESPTick){
-	//	// Communicate with ESP
-	//	Comm_SendCurrentValues();
-	//	lastESPTick = nowTick;
+	//if(SPI_Done_Flag){
+	//	Comm_UpdateSPISnapshot();
+	//	SPI_Done_Flag = 0;
 	//}
+
+	if(nowTick - lastESPTick >= delayESPTick){
+		// Communicate with ESP
+		if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_5) == GPIO_PIN_SET){
+			InitializeSPI();
+		}
+		lastESPTick = nowTick;
+	}
 
 	//if(nowTick - lastSaveTick >= delaySaveTick){
 		// Save to EEPROM
