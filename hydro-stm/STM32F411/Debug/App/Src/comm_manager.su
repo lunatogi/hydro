@@ -1,0 +1,9 @@
+../App/Src/comm_manager.c:16:6:Comm_PassRxBufferPtr	16	static
+../App/Src/comm_manager.c:20:16:Comm_BuildSwitchMatrix	16	static
+../App/Src/comm_manager.c:29:13:Comm_CopySensorValues	24	static
+../App/Src/comm_manager.c:35:17:CRC16_CCITT	32	static
+../App/Src/comm_manager.c:55:17:SystemSnapshot_CalculateCRC	16	static
+../App/Src/comm_manager.c:61:6:Comm_UpdateSPISnapshot	16	static
+../App/Src/comm_manager.c:69:12:Comm_ClearRxBuffer	24	static
+../App/Src/comm_manager.c:81:6:Comm_HandleSPIData	24	static
+../App/Src/comm_manager.c:92:6:Comm_FillTxBuffer	24	static

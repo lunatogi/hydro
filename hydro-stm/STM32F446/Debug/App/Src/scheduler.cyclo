@@ -1,0 +1,4 @@
+../App/Src/scheduler.c:26:6:LCDUpdate	1
+../App/Src/scheduler.c:43:6:SensorUpdateRoutine	1
+../App/Src/scheduler.c:48:6:Scheduler_Init	1
+../App/Src/scheduler.c:58:6:Scheduler_Run	5

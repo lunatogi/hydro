@@ -1,0 +1,8 @@
+../BSP/Src/LCD.c:14:6:LCD_Init	1
+../BSP/Src/LCD.c:38:6:LCD_Clear	1
+../BSP/Src/LCD.c:44:6:LCD_SetCursor	2
+../BSP/Src/LCD.c:57:6:LCD_SendString	2
+../BSP/Src/LCD.c:64:6:LCD_SendCommand	1
+../BSP/Src/LCD.c:71:6:LCD_SendData	1
+../BSP/Src/LCD.c:78:6:LCD_SendNibble	1
+../BSP/Src/LCD.c:88:6:LCD_Enable	1

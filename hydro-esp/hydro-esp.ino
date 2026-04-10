@@ -214,6 +214,7 @@ void ProcessSPIData(){
   memcpy(&SPISnap, rxBuff, SPI_DATA_LENGTH);
   if(SystemSnapshot_IsValid(&SPISnap) == 0){
     Serial.println("SPI DATA IS NOT VALID!");
+
     //return;
   }
   for(int i = 0; i < MAX_SENSOR; i++){
@@ -516,6 +517,7 @@ void setup() {
 
 void loop() {
   if ((millis() - lastTime) > timerDelay) {
+
     digitalWrite(COMM_REQUEST, HIGH);
     String sensorReadings = getSensorReadings();
     Serial.println(sensorReadings);
