@@ -42,8 +42,4 @@ void Comm_UpdateSPISnapshot(void);
 void Comm_PassRxBufferPtr(uint8_t *rxBuff);
 uint8_t Comm_HandleSPIData(void);
 
-
-
-void Comm_FillTxBuffer(uint8_t *txBuffer, uint8_t id, uint8_t type);
-
 #endif /* INC_COMM_MANAGER_H_ */

@@ -7,4 +7,3 @@
 ../App/Src/comm_manager.c:69:12:Comm_ClearRxBuffer	2
 ../App/Src/comm_manager.c:75:9:SPIMessage_IsValid	1
 ../App/Src/comm_manager.c:79:9:Comm_HandleSPIData	3
-../App/Src/comm_manager.c:101:6:Comm_FillTxBuffer	4
