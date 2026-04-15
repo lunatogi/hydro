@@ -88,7 +88,6 @@ Sensor sensors[] = {
 
 ////////////////////// COMMUNICATION //////////////////////
 uint8_t txBuff[11] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-uint8_t txBuff1[11] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
 uint8_t rxBuff[11] = {0};
 
 typedef union
@@ -132,7 +131,6 @@ uint16_t CRC16_CCITT(const uint8_t *data, size_t length)
                 crc = (crc << 1);
         }
     }
-
     return crc;
 }
 
@@ -205,7 +203,6 @@ String uint8ToBinaryString(uint8_t value) {
   for (int i = 7; i >= 0; --i) {
     out += ((value >> i) & 0x01) ? '1' : '0';
   }
-
   return out;
 }
 
@@ -227,7 +224,7 @@ void ProcessSPIData(){
   if(SystemSnapshot_IsValid(&SPISnap) == 0){
     Serial.println("SPI DATA IS NOT VALID!");
     readFromTemp = true;
-    //return;
+    //return;               // Uncomment this line for release build
   }
   for(int i = 0; i < MAX_SENSOR; i++){
     sensors[i].value = SPISnap.values[i];
@@ -256,9 +253,6 @@ void SingleComm(){
 }
 
 void CommManager(){
-  //if(digitalRead(STM_BUSY_PIN)){
-  //  return;
-  //}
   int current_sensor_count = 2;     // Make it global later (i.e. MAX_SENSOR)
   int spiCounter = current_sensor_count+1;
   if(queueCounter > spiCounter) spiCounter = queueCounter;
@@ -512,7 +506,6 @@ void EEPROMSetup(){
 
     if(!isnan(conv.f)) sensors[i].ref = conv.f; 
   }
-
 }
 
 //////////////////////////////////////////////////////
@@ -529,7 +522,6 @@ void setup() {
 
 void loop() {
   if ((millis() - lastTime) > timerDelay) {
-
     digitalWrite(COMM_REQUEST, HIGH);
     String sensorReadings = getSensorReadings();
     Serial.println(sensorReadings);
