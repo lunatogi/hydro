@@ -1,3 +1,0 @@
-../App/Src/comm_protocol.c:14:6:CommProtocol_Init	1
-../App/Src/comm_protocol.c:18:21:Send_Receive	3
-../App/Src/comm_protocol.c:30:24:Comm_GetInterface	1

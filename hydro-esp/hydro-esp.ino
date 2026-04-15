@@ -98,9 +98,10 @@ typedef union
         uint8_t id;
         uint8_t type;
         float   payload;
+        uint16_t crc;
     } frame;
 
-    uint8_t raw[6];       // Be carefull about this size
+    uint8_t raw[8];       // Be carefull about this size
 } SingleSPIData_t;
 
 typedef struct __attribute__((packed))
@@ -111,6 +112,8 @@ typedef struct __attribute__((packed))
 }SystemSnapshot_t;
 
 SingleSPIData_t messageQueue[6] = {0};
+SingleSPIData_t messageTemp;
+bool readFromTemp = false;
 uint8_t queueCounter = 0;
 
 uint16_t CRC16_CCITT(const uint8_t *data, size_t length)
@@ -152,9 +155,18 @@ void QueueMessage(uint8_t _idx, uint8_t _type, float _payload){     // _idx'in t
 }
 
 void FillTxBufferFromQueue(){      // Check this functions functionality
+    if(readFromTemp){
+      memcpy(txBuff, messageTemp.raw, 8);
+      readFromTemp = false;
+      return;
+    }
     if(queueCounter > 0){
-      memcpy(txBuff, messageQueue[0].raw, 6);
-      for(int i = 1; i < queueCounter; i++){
+      messageTemp = messageQueue[0];
+      messageTemp.frame.crc = CRC16_CCITT((const uint8_t *)&messageTemp.frame, sizeof(messageTemp.frame)-sizeof(messageTemp.frame.crc));
+      Serial.print("ESP CRC: ");
+      Serial.println(messageTemp.frame.crc);
+      memcpy(txBuff, messageTemp.raw, 8);
+      for(int i = 1; i < queueCounter; i++){    // Delete message from queue
         messageQueue[i-1] = messageQueue[i];
       }
       queueCounter--;
@@ -214,7 +226,7 @@ void ProcessSPIData(){
   memcpy(&SPISnap, rxBuff, SPI_DATA_LENGTH);
   if(SystemSnapshot_IsValid(&SPISnap) == 0){
     Serial.println("SPI DATA IS NOT VALID!");
-
+    readFromTemp = true;
     //return;
   }
   for(int i = 0; i < MAX_SENSOR; i++){
@@ -233,7 +245,7 @@ void SingleComm(){
   SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
   digitalWrite(CS_PIN, LOW);
   for (int i = 0; i < SPI_DATA_LENGTH; i++) {
-    rxBuff[i] = SPI.transfer(txBuff1[i]);
+    rxBuff[i] = SPI.transfer(txBuff[i]);
   }
   delayMicroseconds(20);
   digitalWrite(CS_PIN, HIGH);

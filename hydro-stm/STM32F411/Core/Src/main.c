@@ -87,14 +87,12 @@ void InitializeSPI(void){
   const SystemSnapshot_t *snap = &snapActive;
   memcpy(txBuff, snap, sizeof(SystemSnapshot_t));
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
-  HAL_SPI_TransmitReceive(&hspi2, txBuff, rxBuff, 11, SPI_TIMEOUT);
+  HAL_SPI_TransmitReceive(&hspi2, txBuff, rxBuff, SPI_DATA_LENGTH, SPI_TIMEOUT);
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
-
-  //Do below only when CRC is not correct
-  //HAL_SPI_Abort(&hspi2);      // stop ongoing transfer (blocking)
-  HAL_SPI_DeInit(&hspi2);     // reset peripheral state
-  HAL_SPI_Init(&hspi2);       // reinitialize
-  //Comm_HandleSPIData();
+  if(Comm_HandleSPIData() == 0){	// Probably CRC is not correct
+	  HAL_SPI_DeInit(&hspi2);
+	  HAL_SPI_Init(&hspi2);
+  }
 }
 /* USER CODE END 0 */
 

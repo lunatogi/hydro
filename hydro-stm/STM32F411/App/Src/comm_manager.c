@@ -72,22 +72,31 @@ const void Comm_ClearRxBuffer(uint8_t *rxBuffer){		// CURRENTLY UNUSED
 	}
 }
 
+uint8_t SPIMessage_IsValid(SingleSPIData_t * packet){
+	return (packet->frame.crc == CRC16_CCITT((const uint8_t *)&packet->frame, sizeof(packet->frame)-sizeof(packet->frame.crc)));
+}
 
-
-
-
-
-
-void Comm_HandleSPIData(void){
+uint8_t Comm_HandleSPIData(void){
 	SingleSPIData_t _spiData;
 	memcpy(_spiData.raw, rxBuffer, SPI_DATA_LENGTH);
+	if(!SPIMessage_IsValid(&_spiData)){
+		return 0;
+	}
 	switch(_spiData.frame.type){
 		case 1:			// Reference value change
 			Sensor_SetRef(_spiData.frame.id, _spiData.frame.payload);
 			break;
 	}
 	Comm_ClearRxBuffer(rxBuffer);
+	return 1;
 }
+
+
+
+
+
+
+
 
 void Comm_FillTxBuffer(uint8_t *txBuffer, uint8_t id, uint8_t type){
 	if(id < SENSOR_COUNT){					// Fill with sensor values

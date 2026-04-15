@@ -32,6 +32,7 @@ typedef union
         uint8_t id;
         uint8_t type;		// 0 -> Sensor Reading, 1 -> Referemce Values, 2 -> IncDec Matrix
         float   payload;
+        uint16_t crc;
     } frame;
 
     uint8_t raw[SPI_DATA_LENGTH];       // Be carefull about this size
@@ -39,10 +40,10 @@ typedef union
 
 void Comm_UpdateSPISnapshot(void);
 void Comm_PassRxBufferPtr(uint8_t *rxBuff);
+uint8_t Comm_HandleSPIData(void);
 
 
 
-void Comm_HandleSPIData(void);
 void Comm_FillTxBuffer(uint8_t *txBuffer, uint8_t id, uint8_t type);
 
 #endif /* INC_COMM_MANAGER_H_ */
