@@ -7,6 +7,7 @@
 
 #include "sensor_hw.h"
 #include "bmp180.h"
+#include "mq135.h"
 #include <math.h>
 
 static float Read_Temperature(void){
@@ -17,6 +18,10 @@ static float Read_Altitude(void){
 	float pressure = (float)BMP180_GetPressure()/100.0f;
 	float altitude = -44330*(1.0f-powf(1013.25f/pressure, 0.1903f));
 	return altitude;
+}
+
+static float Read_FF(void){
+	return MQ135_GetPPM();
 }
 
 float Read_Sensor(SensorIndex_t idx){
@@ -47,6 +52,7 @@ float Read_Sensor(SensorIndex_t idx){
 	switch(idx){
 		case IDX_TEMP: 	return Read_Temperature();
 		case IDX_ALT: 	return Read_Altitude();
+		case IDX_FF: 	return Read_FF();
 		default: 		return 0.0f;
 	}
 }

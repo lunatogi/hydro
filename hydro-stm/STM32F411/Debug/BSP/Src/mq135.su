@@ -1,0 +1,5 @@
+../BSP/Src/mq135.c:13:6:MQ135_Init	16	static
+../BSP/Src/mq135.c:17:17:adc_read_avg	16	static
+../BSP/Src/mq135.c:28:7:MQ135_ReadRs	16	static
+../BSP/Src/mq135.c:35:6:MQ135_Calibrate	8	static
+../BSP/Src/mq135.c:41:7:MQ135_GetPPM	16	static

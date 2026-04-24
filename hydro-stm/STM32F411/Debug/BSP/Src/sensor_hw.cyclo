@@ -1,3 +1,4 @@
-../BSP/Src/sensor_hw.c:12:14:Read_Temperature	1
-../BSP/Src/sensor_hw.c:16:14:Read_Altitude	1
-../BSP/Src/sensor_hw.c:22:7:Read_Sensor	4
+../BSP/Src/sensor_hw.c:13:14:Read_Temperature	1
+../BSP/Src/sensor_hw.c:17:14:Read_Altitude	1
+../BSP/Src/sensor_hw.c:23:14:Read_FF	1
+../BSP/Src/sensor_hw.c:27:7:Read_Sensor	6

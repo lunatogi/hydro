@@ -3,7 +3,7 @@
 ../App/Src/comm_manager.c:29:13:Comm_CopySensorValues	24	static
 ../App/Src/comm_manager.c:35:17:CRC16_CCITT	32	static
 ../App/Src/comm_manager.c:55:17:SystemSnapshot_CalculateCRC	16	static
-../App/Src/comm_manager.c:61:6:Comm_UpdateSPISnapshot	16	static
+../App/Src/comm_manager.c:61:6:Comm_UpdateSPISnapshot	24	static
 ../App/Src/comm_manager.c:69:12:Comm_ClearRxBuffer	24	static
 ../App/Src/comm_manager.c:75:9:SPIMessage_IsValid	24	static
-../App/Src/comm_manager.c:79:9:Comm_HandleSPIData	24	static
+../App/Src/comm_manager.c:79:9:Comm_HandleSPIData	32	static

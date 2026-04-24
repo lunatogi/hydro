@@ -42,7 +42,7 @@ void LCDUpdate(){
 
 void SensorUpdateRoutine(void){
 	Sensor_Update();
-	LCDUpdate();
+	LCD_Cycle();
 }
 
 void Scheduler_Init(void){

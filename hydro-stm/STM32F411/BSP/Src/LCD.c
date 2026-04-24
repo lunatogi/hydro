@@ -5,6 +5,10 @@
 */
 
 #include "LCD.h"
+#include "sensor_manager.h"
+#include "common_types.h"
+
+SensorIndex_t idx_counter = 0;
 
 // Private function declarations
 void LCD_SendNibble(uint8_t nibble);
@@ -90,4 +94,30 @@ void LCD_Enable(void) {
     HAL_Delay(1);  // Short delay for enable pulse
     HAL_GPIO_WritePin(EN_GPIO_Port, EN_Pin, GPIO_PIN_RESET);
     HAL_Delay(1);  // Short delay to complete
+}
+
+void LCD_WriteOneLine(uint8_t idx){
+	char msg[32];
+	float value = Sensor_GetValue(idx);
+	snprintf(msg, sizeof(msg), "%s: %.2f", LABELS[idx], value);
+
+	uint8_t cursor = idx % 2;
+    LCD_SetCursor(cursor, 0);
+	LCD_SendString(msg);
+}
+
+void LCD_Cycle(void){
+	LCD_Clear();
+	LCD_WriteOneLine(idx_counter);
+	idx_counter++;
+	if(idx_counter >= SENSOR_COUNT){
+		idx_counter = 0;
+		return;
+	}
+	LCD_WriteOneLine(idx_counter);
+	idx_counter++;
+	if(idx_counter >= SENSOR_COUNT){
+		idx_counter = 0;
+		return;
+	}
 }

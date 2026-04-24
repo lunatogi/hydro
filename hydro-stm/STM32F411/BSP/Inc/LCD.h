@@ -6,7 +6,14 @@
 #ifndef LCD_H_
 #define LCD_H_
 
+#include <stdio.h>
 #include "stm32f4xx_hal.h"
+
+static const char *LABELS[] = {
+    "Temp",    // 0
+    "Alt",     // 1
+	"FF"	   // 2
+};
 
 // Define the pin connections
 #define RS_Pin GPIO_PIN_9
@@ -34,5 +41,6 @@ void LCD_SetCursor(uint8_t row, uint8_t col);
 void LCD_SendString(char* str);
 void LCD_SendCommand(uint8_t cmd);
 void LCD_SendData(uint8_t data);
+void LCD_Cycle(void);
 
 #endif /* LCD_H_ */
