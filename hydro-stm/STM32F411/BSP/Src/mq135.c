@@ -10,11 +10,23 @@
 float MQ135_R0 = 10000.0f;
 ADC_HandleTypeDef *hadc;
 
+static HAL_StatusTypeDef select_tds_channel(void)
+{
+    ADC_ChannelConfTypeDef sConfig = {0};
+    sConfig.Channel      = MQ_ADC_CHANNEL;
+    sConfig.Rank         = 1;
+    sConfig.SamplingTime = MQ_SAMPLING_TIME;
+    return HAL_ADC_ConfigChannel(hadc, &sConfig);
+}
+
 void MQ135_Init(ADC_HandleTypeDef *in_hadc){
 	hadc = in_hadc;
 }
 
 static uint32_t adc_read_avg(void) {
+    if (select_tds_channel() != HAL_OK) {
+        return 0.0f;
+    }
     uint32_t sum = 0;
     for (int i = 0; i < 32; i++) {
         HAL_ADC_Start(hadc);

@@ -23,23 +23,6 @@ static const uint32_t delayControlTick = delaySensorTick;	// Tied by design
 static const uint32_t delayESPTick = 1000;
 //static const uint32_t delaySaveTick = 10000;
 
-void LCDUpdate(){
-	char msg[32];
-	float value = Sensor_GetValue(IDX_TEMP);
-	snprintf(msg, sizeof(msg), "Temp: %.2f", value);
-
-    LCD_Clear();
-
-    LCD_SetCursor(0, 0);
-	LCD_SendString(msg);
-
-	value = Sensor_GetValue(IDX_ALT);
-	snprintf(msg, sizeof(msg), "Alt: %.2f", value);
-
-	LCD_SetCursor(1, 0);
-	LCD_SendString(msg);
-}
-
 void SensorUpdateRoutine(void){
 	Sensor_Update();
 	LCD_Cycle();

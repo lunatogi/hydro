@@ -8,6 +8,7 @@
 #include "sensor_hw.h"
 #include "bmp180.h"
 #include "mq135.h"
+#include "tds.h"
 #include <math.h>
 
 static float Read_Temperature(void){
@@ -22,6 +23,10 @@ static float Read_Altitude(void){
 
 static float Read_FF(void){
 	return MQ135_GetPPM();
+}
+
+static float Read_TDS(void){
+	return TDS_Read(Read_Temperature());
 }
 
 float Read_Sensor(SensorIndex_t idx){
@@ -53,6 +58,7 @@ float Read_Sensor(SensorIndex_t idx){
 		case IDX_TEMP: 	return Read_Temperature();
 		case IDX_ALT: 	return Read_Altitude();
 		case IDX_FF: 	return Read_FF();
+		case IDX_TDS: 	return Read_TDS();
 		default: 		return 0.0f;
 	}
 }

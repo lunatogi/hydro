@@ -21,6 +21,10 @@
 #define MQ135_A             96.6f
 #define MQ135_B             -2.84f
 
+// ADC Config
+#define MQ_ADC_CHANNEL ADC_CHANNEL_0          /* PA0 = ADC1_IN0          */
+#define MQ_SAMPLING_TIME ADC_SAMPLETIME_480CYCLES
+
 extern float MQ135_R0;
 
 void MQ135_Init(ADC_HandleTypeDef *in_hadc);

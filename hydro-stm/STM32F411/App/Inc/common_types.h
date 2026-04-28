@@ -17,6 +17,7 @@ typedef enum
     IDX_TEMP = 0,
     IDX_ALT,
 	IDX_FF,
+	IDX_TDS,
 
     SENSOR_COUNT
 } SensorIndex_t;

@@ -1,5 +1,6 @@
-../BSP/Src/mq135.c:13:6:MQ135_Init	1
-../BSP/Src/mq135.c:17:17:adc_read_avg	2
-../BSP/Src/mq135.c:28:7:MQ135_ReadRs	2
-../BSP/Src/mq135.c:35:6:MQ135_Calibrate	1
-../BSP/Src/mq135.c:41:7:MQ135_GetPPM	2
+../BSP/Src/mq135.c:13:26:select_tds_channel	1
+../BSP/Src/mq135.c:22:6:MQ135_Init	1
+../BSP/Src/mq135.c:26:17:adc_read_avg	3
+../BSP/Src/mq135.c:40:7:MQ135_ReadRs	2
+../BSP/Src/mq135.c:47:6:MQ135_Calibrate	1
+../BSP/Src/mq135.c:53:7:MQ135_GetPPM	2

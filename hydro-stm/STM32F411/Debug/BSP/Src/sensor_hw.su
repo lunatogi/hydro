@@ -1,4 +1,5 @@
-../BSP/Src/sensor_hw.c:13:14:Read_Temperature	8	static
-../BSP/Src/sensor_hw.c:17:14:Read_Altitude	16	static
-../BSP/Src/sensor_hw.c:23:14:Read_FF	8	static
-../BSP/Src/sensor_hw.c:27:7:Read_Sensor	16	static
+../BSP/Src/sensor_hw.c:14:14:Read_Temperature	8	static
+../BSP/Src/sensor_hw.c:18:14:Read_Altitude	16	static
+../BSP/Src/sensor_hw.c:24:14:Read_FF	8	static
+../BSP/Src/sensor_hw.c:28:14:Read_TDS	8	static
+../BSP/Src/sensor_hw.c:32:7:Read_Sensor	16	static

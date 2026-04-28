@@ -45,6 +45,18 @@ static const SensorConfig_t sensorConfigDefault[SENSOR_COUNT] =
 		.increasePin = 4,
 		.decreasePort = 2,
 		.decreasePin = 5
+	},
+
+	[IDX_TDS] = {
+		.name = "TDS Sensor",
+		.ref = 75.0f,
+		.margin = 10.0f,
+		.minValue = 0.0f,
+		.maxValue = 500.0f,
+		.increasePort = 2,			// PORTS NEEDS TO BE CHANGED
+		.increasePin = 4,
+		.decreasePort = 2,
+		.decreasePin = 5
 	}
 };
 

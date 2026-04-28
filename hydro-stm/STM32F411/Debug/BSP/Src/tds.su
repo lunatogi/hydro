@@ -1,0 +1,6 @@
+../BSP/Src/tds.c:27:12:compare_u16	24	static
+../BSP/Src/tds.c:41:26:select_tds_channel	24	static
+../BSP/Src/tds.c:52:6:TDS_Init	16	static
+../BSP/Src/tds.c:59:7:TDS_Read	104	static
+../BSP/Src/tds.c:108:7:TDS_GetLastVoltage	4	static
+../BSP/Src/tds.c:113:10:TDS_GetLastRaw	4	static

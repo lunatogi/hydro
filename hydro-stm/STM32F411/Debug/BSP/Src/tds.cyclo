@@ -1,0 +1,6 @@
+../BSP/Src/tds.c:27:12:compare_u16	3
+../BSP/Src/tds.c:41:26:select_tds_channel	1
+../BSP/Src/tds.c:52:6:TDS_Init	1
+../BSP/Src/tds.c:59:7:TDS_Read	6
+../BSP/Src/tds.c:108:7:TDS_GetLastVoltage	1
+../BSP/Src/tds.c:113:10:TDS_GetLastRaw	1

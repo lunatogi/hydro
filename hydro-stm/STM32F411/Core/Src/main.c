@@ -28,6 +28,8 @@
 
 //Sensors
 #include "bmp180.h"
+#include "mq135.h"
+#include "tds.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -55,8 +57,8 @@ SPI_HandleTypeDef hspi2;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-uint8_t txBuff[15] = {0xAA, 0xBB, 0xCC, 0xDD, 0x11, 0x22};
-uint8_t rxBuff[15] = {0};
+uint8_t txBuff[19] = {0xAA, 0xBB, 0xCC, 0xDD, 0x11, 0x22};
+uint8_t rxBuff[19] = {0};
 const uint32_t SPI_TIMEOUT = 30;
 /* USER CODE END PV */
 
@@ -83,6 +85,7 @@ void BMP_Init(I2C_HandleTypeDef *i2c_loc){
 void AllSensor_Init(void){
   BMP_Init(&hi2c2);
   MQ135_Init(&hadc1);
+  TDS_Init(&hadc1);
 }
 
 void InitializeSPI(void){
