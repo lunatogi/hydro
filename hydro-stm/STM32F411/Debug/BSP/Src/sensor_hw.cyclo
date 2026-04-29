@@ -1,5 +1,6 @@
-../BSP/Src/sensor_hw.c:14:14:Read_Temperature	1
-../BSP/Src/sensor_hw.c:18:14:Read_Altitude	1
-../BSP/Src/sensor_hw.c:24:14:Read_FF	1
-../BSP/Src/sensor_hw.c:28:14:Read_TDS	1
-../BSP/Src/sensor_hw.c:32:7:Read_Sensor	6
+../BSP/Src/sensor_hw.c:15:14:Read_Temperature	1
+../BSP/Src/sensor_hw.c:19:14:Read_Altitude	1
+../BSP/Src/sensor_hw.c:25:14:Read_FF	1
+../BSP/Src/sensor_hw.c:29:14:Read_TDS	1
+../BSP/Src/sensor_hw.c:33:14:Read_Humidity	1
+../BSP/Src/sensor_hw.c:37:7:Read_Sensor	7

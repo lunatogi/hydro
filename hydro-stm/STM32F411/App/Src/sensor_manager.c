@@ -57,6 +57,18 @@ static const SensorConfig_t sensorConfigDefault[SENSOR_COUNT] =
 		.increasePin = 4,
 		.decreasePort = 2,
 		.decreasePin = 5
+	},
+
+	[IDX_HUM] = {
+		.name = "Humidity Sensor",
+		.ref = 60.0f,
+		.margin = 5.0f,
+		.minValue = 0.0f,
+		.maxValue = 100.0f,
+		.increasePort = 2,			// PORTS NEEDS TO BE CHANGED
+		.increasePin = 4,
+		.decreasePort = 2,
+		.decreasePin = 5
 	}
 };
 

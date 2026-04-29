@@ -9,6 +9,7 @@
 #include "bmp180.h"
 #include "mq135.h"
 #include "tds.h"
+#include "aht10.h"
 #include <math.h>
 
 static float Read_Temperature(void){
@@ -27,6 +28,10 @@ static float Read_FF(void){
 
 static float Read_TDS(void){
 	return TDS_Read(Read_Temperature());
+}
+
+static float Read_Humidity(void){
+	return AHT10_GetHumidity();
 }
 
 float Read_Sensor(SensorIndex_t idx){
@@ -59,6 +64,7 @@ float Read_Sensor(SensorIndex_t idx){
 		case IDX_ALT: 	return Read_Altitude();
 		case IDX_FF: 	return Read_FF();
 		case IDX_TDS: 	return Read_TDS();
+		case IDX_HUM: 	return Read_Humidity();
 		default: 		return 0.0f;
 	}
 }

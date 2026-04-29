@@ -1,0 +1,8 @@
+../BSP/Src/aht10.c:24:21:aht10_read_status_byte	2
+../BSP/Src/aht10.c:33:21:aht10_trigger_measurement	2
+../BSP/Src/aht10.c:43:21:aht10_read_measurement	5
+../BSP/Src/aht10.c:85:14:AHT10_Init	6
+../BSP/Src/aht10.c:121:14:AHT10_Read	3
+../BSP/Src/aht10.c:136:7:AHT10_GetTemperature	2
+../BSP/Src/aht10.c:146:7:AHT10_GetHumidity	2
+../BSP/Src/aht10.c:156:14:AHT10_SoftReset	3

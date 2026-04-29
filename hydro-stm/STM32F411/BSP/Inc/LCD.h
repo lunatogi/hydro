@@ -13,7 +13,8 @@ static const char *LABELS[] = {
     "Temp",    // 0
     "Alt",     // 1
 	"FF",	   // 2
-	"TDS"	   // 3
+	"TDS",	   // 3
+	"Hum"	   // 4
 };
 
 // Define the pin connections

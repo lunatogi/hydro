@@ -18,6 +18,7 @@ typedef enum
     IDX_ALT,
 	IDX_FF,
 	IDX_TDS,
+	IDX_HUM,
 
     SENSOR_COUNT
 } SensorIndex_t;

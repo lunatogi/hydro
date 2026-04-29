@@ -30,6 +30,7 @@
 #include "bmp180.h"
 #include "mq135.h"
 #include "tds.h"
+#include "aht10.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,8 +58,8 @@ SPI_HandleTypeDef hspi2;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-uint8_t txBuff[19] = {0xAA, 0xBB, 0xCC, 0xDD, 0x11, 0x22};
-uint8_t rxBuff[19] = {0};
+uint8_t txBuff[23] = {0xAA, 0xBB, 0xCC, 0xDD, 0x11, 0x22};
+uint8_t rxBuff[23] = {0};
 const uint32_t SPI_TIMEOUT = 30;
 /* USER CODE END PV */
 
@@ -86,6 +87,13 @@ void AllSensor_Init(void){
   BMP_Init(&hi2c2);
   MQ135_Init(&hadc1);
   TDS_Init(&hadc1);
+  printf("Scanning I2C bus...\r\n");
+  for (uint8_t addr = 1; addr < 128; addr++) {
+      if (HAL_I2C_IsDeviceReady(&hi2c2, addr << 1, 2, 10) == HAL_OK) {
+          printf("  Found device at 0x%02X\r\n", addr);
+      }
+  }
+  AHT10_Init(&hi2c2);
 }
 
 void InitializeSPI(void){
