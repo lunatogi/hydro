@@ -12,7 +12,7 @@
 //#include <Adafruit_Sensor.h>
 
 //#define MAX_SENSOR 6
-#define SPI_DATA_LENGTH 11
+#define SPI_DATA_LENGTH 23
 #define COMM_REQUEST 22
 #define CS_PIN 5
 #define MAX_QUEUE_LENGTH 3
@@ -70,25 +70,23 @@ struct Sensor {
 enum {
   IDX_TEMP = 0,
   IDX_ALT,
-  IDX_HUM,
-  IDX_PH,
-  IDX_TDS,
   IDX_FF,
+  IDX_TDS,
+  IDX_HUM,
   SENSOR_COUNT      // Not tested can cause bug !!!
 };
 
 Sensor sensors[] = {
   { "Temperature Sensor", 25.0f, 1.0f, 0 },
   { "Altitude Sensor",   160.0f, 10.0f, 0 },
-  { "Humidity Sensor",    73.0f, 3.0f, 0 },
-  { "pH Sensor",           7.0f, 1.0f, 0 },
+  { "Air Quality Sensor",  50.0f, 1.0f, 0 },
   { "TDS Sensor",        300.0f, 1.0f, 0 },
-  { "Air Quality Sensor",  50.0f, 1.0f, 0 }
+  { "Humidity Sensor",    73.0f, 3.0f, 0 },
 };
 
 ////////////////////// COMMUNICATION //////////////////////
-uint8_t txBuff[11] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-uint8_t rxBuff[11] = {0};
+uint8_t txBuff[23] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
+uint8_t rxBuff[23] = {0};
 
 typedef union
 {
@@ -106,7 +104,7 @@ typedef union
 typedef struct __attribute__((packed))
 {
 	uint8_t switchMatrix;
-	float values[MAX_SENSOR];
+	float values[SENSOR_COUNT];
 	uint16_t crc;
 }SystemSnapshot_t;
 
@@ -226,7 +224,7 @@ void ProcessSPIData(){
     readFromTemp = true;
     //return;               // Uncomment this line for release build
   }
-  for(int i = 0; i < MAX_SENSOR; i++){
+  for(int i = 0; i < SENSOR_COUNT; i++){
     sensors[i].value = SPISnap.values[i];
     Serial.print(sensors[i].name);
     Serial.print(" new value: ");
@@ -253,7 +251,7 @@ void SingleComm(){
 }
 
 void CommManager(){
-  int current_sensor_count = 2;     // Make it global later (i.e. MAX_SENSOR)
+  int current_sensor_count = SENSOR_COUNT;
   int spiCounter = current_sensor_count+1;
   if(queueCounter > spiCounter) spiCounter = queueCounter;
   Serial.println("--- SPI Communication ---");
@@ -311,10 +309,10 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
         valStr = msg.substring(msg.indexOf(':') + 1);
         float newValue = valStr.toFloat();
         UpdateRefValue(IDX_TEMP, 0, newValue);
-      } else if(msg.startsWith("refpH")){
-        valStr = msg.substring(msg.indexOf(':') + 1);
-        float newValue = valStr.toFloat();
-        UpdateRefValue(IDX_PH, 12, newValue);
+      // } else if(msg.startsWith("refpH")){
+        //valStr = msg.substring(msg.indexOf(':') + 1);
+        //float newValue = valStr.toFloat();
+        //UpdateRefValue(IDX_PH, 12, newValue);
       } else if(msg.startsWith("refAlt")){
         valStr = msg.substring(msg.indexOf(':') + 1);
         float newValue = valStr.toFloat();
@@ -405,14 +403,14 @@ void listFS(){
 // Get Sensor Readings and return JSON object
 String getSensorReadings(){
   readings["temperature"] = sensors[IDX_TEMP].value;
-  readings["ph"] = sensors[IDX_PH].value;
+  //readings["ph"] = sensors[IDX_PH].value;
   readings["altitude"] = sensors[IDX_ALT].value;
   readings["tds"] = sensors[IDX_TDS].value;
   readings["ff"] = sensors[IDX_FF].value;
   readings["humidity"] = sensors[IDX_HUM].value;
 
   readings["refTemperature"] = sensors[IDX_TEMP].ref;
-  readings["refpH"] = sensors[IDX_PH].ref;
+  //readings["refpH"] = sensors[IDX_PH].ref;
   readings["refAlt"] = sensors[IDX_ALT].ref;
   readings["refTDS"] = sensors[IDX_TDS].ref;
   readings["refFF"] = sensors[IDX_FF].ref;

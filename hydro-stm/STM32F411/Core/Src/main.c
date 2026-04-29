@@ -83,16 +83,19 @@ void BMP_Init(I2C_HandleTypeDef *i2c_loc){
   BMP180_UpdateCalibrationData();
 }
 
+void CheckForI2CDevices(void){			// !! Currently not being used
+  printf("Scanning I2C bus...\r\n");
+  for (uint8_t addr = 1; addr < 128; addr++) {
+    if (HAL_I2C_IsDeviceReady(&hi2c2, addr << 1, 2, 10) == HAL_OK) {
+      printf("  Found device at 0x%02X\r\n", addr);
+    }
+  }
+}
+
 void AllSensor_Init(void){
   BMP_Init(&hi2c2);
   MQ135_Init(&hadc1);
   TDS_Init(&hadc1);
-  printf("Scanning I2C bus...\r\n");
-  for (uint8_t addr = 1; addr < 128; addr++) {
-      if (HAL_I2C_IsDeviceReady(&hi2c2, addr << 1, 2, 10) == HAL_OK) {
-          printf("  Found device at 0x%02X\r\n", addr);
-      }
-  }
   AHT10_Init(&hi2c2);
 }
 
